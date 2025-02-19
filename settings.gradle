@@ -1,0 +1,9 @@
+rootProject.name = 'BE'
+
+// 멀티 모듈 설정
+include 'api-gateway'
+include 'eureka-server'
+include 'user-service'
+include 'stock-service'
+include 'snowflake-service'
+include 'util-service'
