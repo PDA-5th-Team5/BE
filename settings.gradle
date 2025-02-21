@@ -7,3 +7,11 @@ include 'user-service'
 include 'stock-service'
 include 'snowflake-service'
 include 'util-service'
+
+// 하위 모듈이 `src/` 내부에 있으므로 프로젝트 경로 설정
+project(':api-gateway').projectDir = file('src/api-gateway')
+project(':eureka-server').projectDir = file('src/eureka-server')
+project(':snowflake-service').projectDir = file('src/snowflake-service')
+project(':stock-service').projectDir = file('src/stock-service')
+project(':user-service').projectDir = file('src/user-service')
+project(':util-service').projectDir = file('src/util-service')
