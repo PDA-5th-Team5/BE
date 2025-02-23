@@ -23,6 +23,7 @@ ex) feat(#12): 로그인 기능 추가
 - style : 코드 스타일 변경, 코드 자체 변경이 없는 경우
 - remove : 파일 또는 코드, 리소스 제거
 - resource : 이미지 리소스, prefab 등의 코드와 상관없는 리소스 추가
+- settings : 인프라, 환경변수, 의존성 추가 
 
 ### 3. Pull Request
 
