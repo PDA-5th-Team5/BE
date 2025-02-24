@@ -17,12 +17,26 @@ pipeline {
             }
         }
 
-        stage('DockerHub Login') {
+        stage('Build Jar') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh """
-                    echo ${PASSWORD} | docker login -u ${USERNAME} --password-stdin
-                    """
+                script {
+                    if (params.SERVICE == 'all') {
+                        def parallelJarBuild = [:]
+                        ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service'].each { service ->
+                            parallelJarBuild["Build Jar ${service}"] = {
+                                sh """
+                                cd /var/lib/jenkins/workspace/snowper-pipeline/src/${service} && \
+                                ./gradlew clean build
+                                """
+                            }
+                        }
+                        parallel parallelJarBuild
+                    } else {
+                        sh """
+                        cd /var/lib/jenkins/workspace/snowper-pipeline/src/${params.SERVICE} && \
+                        ./gradlew clean build
+                        """
+                    }
                 }
             }
         }
@@ -31,7 +45,7 @@ pipeline {
             steps {
                 script {
                     if (params.SERVICE == 'all') {
-                        def parallelStages = [:]  // 병렬 실행할 스테이지 저장할 변수
+                        def parallelStages = [:]
                         ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service'].each { service ->
                             parallelStages["Build & Push ${service}"] = {
                                 sh """
@@ -41,7 +55,7 @@ pipeline {
                                 """
                             }
                         }
-                        parallel parallelStages  // 병렬 실행
+                        parallel parallelStages
                     } else {
                         sh """
                         cd /var/lib/jenkins/workspace/snowper-pipeline/ && \
@@ -87,7 +101,7 @@ pipeline {
                                 """
                             }
                         }
-                        parallel parallelDeploy  // 병렬 배포 실행
+                        parallel parallelDeploy
                     } else {
                         def targetServer = SERVER_MAPPING[params.SERVICE]
                         sh """
