@@ -8,7 +8,27 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/PDA-5th-Team5/BE.git"
         DOCKER_USER = "grrrrr1123"
-        PRODUCTION_SERVER = "ubuntu@43.200.225.24"
+        PRODUCTION_SERVER = "production"  // SSH Config에 등록된 alias 사용
+
+        // SSH Config에 설정된 호스트명 사용
+        SERVER_MAPPING = [
+            "api-gateway" : "apigateway",
+            "eureka-server" : "apigateway",
+            "util-service" : "apigateway",
+            "stock-service" : "stock",
+            "snowflake-service" : "snowflake",
+            "user-service" : "user"
+        ]
+
+        // 포트 매핑
+        PORT_MAPPING = [
+            "api-gateway": "8081:8081",
+            "eureka-server": "8761:8761",
+            "util-service": "8082:8082",
+            "user-service": "8083:8083",
+            "stock-service": "8084:8084",
+            "snowflake-service": "8085:8085"
+        ]
     }
 
     stages {
@@ -18,59 +38,29 @@ pipeline {
             }
         }
 
-        stage('DockerHub Login') {
+        stage('DockerHub Login on Production Server') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh "echo ${PASSWORD} | docker login -u ${USERNAME} --password-stdin"
+                    sh """
+                    ssh ${PRODUCTION_SERVER} "
+                        echo ${PASSWORD} | docker login -u ${USERNAME} --password-stdin
+                    "
+                    """
                 }
             }
         }
 
-        stage('Build & Push Docker Image') {
+        stage('Build & Push Docker Image on Production Server') {
             steps {
                 script {
-                    def services = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service']
-
                     if (params.SERVICE == 'all') {
-                        parallel services.collectEntries { service ->
+                        parallel SERVER_MAPPING.collectEntries { service, server ->
                             ["Build & Push ${service}" : {
                                 sh """
-                                docker build -t ${DOCKER_USER}/${service}:latest ${service}
-                                docker push ${DOCKER_USER}/${service}:latest
-                                """
-                            }]
-                        }
-                    } else {
-                        sh """
-                        docker build -t ${DOCKER_USER}/${params.SERVICE}:latest ${params.SERVICE}
-                        docker push ${DOCKER_USER}/${params.SERVICE}:latest
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to Server') {
-            steps {
-                script {
-                    def services = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service']
-                    def portMapping = [
-                        "api-gateway": "8081:8081",
-                        "eureka-server": "8761:8761",
-                        "util-service": "8082:8082",
-                        "user-service": "8083:8083",
-                        "stock-service": "8084:8084",
-                        "snowflake-service": "8085:8085"
-                    ]
-
-                    if (params.SERVICE == 'all') {
-                        parallel services.collectEntries { service ->
-                            ["Deploy ${service}" : {
-                                sh """
                                 ssh ${PRODUCTION_SERVER} "
-                                    docker pull ${DOCKER_USER}/${service}:latest && \
-                                    if docker ps -q --filter name=${service}; then docker stop ${service} && docker rm ${service}; fi && \
-                                    docker run -d --name ${service} -p ${portMapping[service]} ${DOCKER_USER}/${service}:latest
+                                    cd /var/lib/jenkins/workspace/snowper-pipeline/ && \
+                                    docker build -t ${DOCKER_USER}/${service}:latest -f ./src/${service}/Dockerfile ./src/${service} && \
+                                    docker push ${DOCKER_USER}/${service}:latest
                                 "
                                 """
                             }]
@@ -78,9 +68,39 @@ pipeline {
                     } else {
                         sh """
                         ssh ${PRODUCTION_SERVER} "
+                            cd /var/lib/jenkins/workspace/snowper-pipeline/ && \
+                            docker build -t ${DOCKER_USER}/${params.SERVICE}:latest -f ./src/${params.SERVICE}/Dockerfile ./src/${params.SERVICE} && \
+                            docker push ${DOCKER_USER}/${params.SERVICE}:latest
+                        "
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Application Servers') {
+            steps {
+                script {
+                    if (params.SERVICE == 'all') {
+                        parallel SERVER_MAPPING.collectEntries { service, server ->
+                            ["Deploy ${service}" : {
+                                sh """
+                                ssh ${server} "
+                                    docker pull ${DOCKER_USER}/${service}:latest && \
+                                    if docker ps -q --filter name=${service}; then docker stop ${service} && docker rm ${service}; fi && \
+                                    docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest
+                                "
+                                """
+                            }]
+                        }
+                    } else {
+                        def targetServer = SERVER_MAPPING[params.SERVICE]
+
+                        sh """
+                        ssh ${targetServer} "
                             docker pull ${DOCKER_USER}/${params.SERVICE}:latest && \
                             if docker ps -q --filter name=${params.SERVICE}; then docker stop ${params.SERVICE} && docker rm ${params.SERVICE}; fi && \
-                            docker run -d --name ${params.SERVICE} -p ${portMapping[params.SERVICE]} ${DOCKER_USER}/${params.SERVICE}:latest
+                            docker run -d --name ${params.SERVICE} -p ${PORT_MAPPING[params.SERVICE]} ${DOCKER_USER}/${params.SERVICE}:latest
                         "
                         """
                     }
