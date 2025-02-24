@@ -105,11 +105,11 @@ pipeline {
                                 ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no ${BASTION_HOST} '
                                     ssh -i ~/.ssh/id_rsa ubuntu@${privateIP} \\"tmux new-session -d -s deploy-${service} \\"docker pull ${DOCKER_USER}/${service}:latest && docker stop ${service} && docker rm ${service} && docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest \\"\\""
                                 '
+                                echo "SSH 접속 테스트 중"
+                                echo "SSH Key 위치: $SSH_KEY_FILE"
+                                echo "Bastion Host 위치: $BASTION_HOST"
                                 """
                             }
-                            echo "SSH 접속 테스트 중"
-                            echo "SSH Key 위치: $SSH_KEY_FILE"
-                            echo "Bastion Host 위치: $BASTION_HOST"
                         }
                     }
                     parallel parallelDeploy
