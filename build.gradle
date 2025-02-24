@@ -131,6 +131,17 @@ project(':util-service') {
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'org.apache.commons:commons-lang3'
     }
+
+    // 실행 가능한 JAR이 필요 없으므로 bootJar 비활성화
+    bootJar {
+        enabled = false
+    }
+
+    // 일반 JAR 파일을 util-service.jar로 생성
+    jar {
+        enabled = true
+        archiveBaseName = 'util-service'
+    }
 }
 
 subprojects {
@@ -138,8 +149,17 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'java'
 
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter'
+    }
+
+    // 기본적으로 bootJar 사용 (실행 가능한 JAR)
+    bootJar {
+        archiveFileName = 'app.jar' // 실행 가능한 JAR을 app.jar로 설정
+    }
+
+    // 모든 서브 프로젝트에 대해 공통 JAR 설정
     jar {
-        archiveBaseName = 'app' // JAR 파일명을 app.jar로 변경
-        archiveVersion = '' // 버전 정보 제거
+        archiveBaseName = project.name // JAR 파일명을 프로젝트 이름으로 설정
     }
 }
