@@ -31,15 +31,17 @@ pipeline {
             steps {
                 script {
                     if (params.SERVICE == 'all') {
-                        parallel ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service'].collectEntries { service ->
-                            ["Build & Push ${service}" : {
+                        def parallelStages = [:]  // 병렬 실행할 스테이지 저장할 변수
+                        ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service'].each { service ->
+                            parallelStages["Build & Push ${service}"] = {
                                 sh """
                                 cd /var/lib/jenkins/workspace/snowper-pipeline/ && \
                                 docker build -t ${DOCKER_USER}/${service}:latest -f ./src/${service}/Dockerfile ./src/${service} && \
                                 docker push ${DOCKER_USER}/${service}:latest
                                 """
-                            }]
+                            }
                         }
+                        parallel parallelStages  // 병렬 실행
                     } else {
                         sh """
                         cd /var/lib/jenkins/workspace/snowper-pipeline/ && \
@@ -73,8 +75,9 @@ pipeline {
                     ]
 
                     if (params.SERVICE == 'all') {
-                        parallel SERVER_MAPPING.collectEntries { service, server ->
-                            ["Deploy ${service}" : {
+                        def parallelDeploy = [:]
+                        SERVER_MAPPING.each { service, server ->
+                            parallelDeploy["Deploy ${service}"] = {
                                 sh """
                                 ssh ${server} "
                                     docker pull ${DOCKER_USER}/${service}:latest && \
@@ -82,11 +85,11 @@ pipeline {
                                     docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest
                                 "
                                 """
-                            }]
+                            }
                         }
+                        parallel parallelDeploy  // 병렬 배포 실행
                     } else {
                         def targetServer = SERVER_MAPPING[params.SERVICE]
-
                         sh """
                         ssh ${targetServer} "
                             docker pull ${DOCKER_USER}/${params.SERVICE}:latest && \
