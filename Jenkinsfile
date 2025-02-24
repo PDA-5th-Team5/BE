@@ -36,9 +36,24 @@ pipeline {
                         ["Build Jar ${service}": {
                             sh """
                             cd src/${service} && \
-                            ./gradlew build --build-cache --parallel --daemon
+                            ./gradlew clean build --build-cache --parallel --daemon
                             """
                         }]
+                    }
+                }
+            }
+        }
+
+        stage('Verify JAR File') {
+            steps {
+                script {
+                    def services = env.SERVICES_TO_BUILD.split(',')
+                    services.each { service ->
+                        def jarPath = "src/${service}/build/libs/"
+                        def jarExists = sh(script: "ls ${jarPath}*.jar | grep -E '(${service}-.*.jar|app.jar)'", returnStatus: true) == 0
+                        if (!jarExists) {
+                            error "JAR 파일이 생성되지 않았습니다: ${service}"
+                        }
                     }
                 }
             }
@@ -85,13 +100,11 @@ pipeline {
                     env.SERVICES_TO_BUILD.split(',').each { service ->
                         def privateIP = SERVER_MAPPING[service]
                         parallelDeploy["Deploy ${service}"] = {
-                            withCredentials([sshUserPrivateKey(credentialsId: 'bastion-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+                            withCredentials([sshUserPrivateKey(credentialsId: 'bastion-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
                                 sh """
-                                ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${BASTION_HOST} "
-                                    ssh -i ~/.ssh/id_rsa ubuntu@${privateIP} '
-                                        tmux new-session -d -s deploy-${service} \\"docker pull ${DOCKER_USER}/${service}:latest && docker stop ${service} && docker rm ${service} && docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest \\"
-                                    '
-                                "
+                                ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no ${BASTION_HOST} '
+                                    ssh -i ~/.ssh/id_rsa ubuntu@${privateIP} \\"tmux new-session -d -s deploy-${service} \\"docker pull ${DOCKER_USER}/${service}:latest && docker stop ${service} && docker rm ${service} && docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest \\"\\""
+                                '
                                 """
                             }
                         }
