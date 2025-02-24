@@ -7,7 +7,6 @@ pipeline {
 
     environment {
         GIT_REPO = "https://github.com/PDA-5th-Team5/BE.git"
-        REPO_DIR = "BE"
         DOCKER_USER = "grrrrr1123"
         PRODUCTION_SERVER = "ubuntu@43.200.225.24"
     }
@@ -36,14 +35,14 @@ pipeline {
                         parallel services.collectEntries { service ->
                             ["Build & Push ${service}" : {
                                 sh """
-                                docker build -t ${DOCKER_USER}/${service}:latest ${REPO_DIR}/${service}
+                                docker build -t ${DOCKER_USER}/${service}:latest ${service}
                                 docker push ${DOCKER_USER}/${service}:latest
                                 """
                             }]
                         }
                     } else {
                         sh """
-                        docker build -t ${DOCKER_USER}/${params.SERVICE}:latest ${REPO_DIR}/${params.SERVICE}
+                        docker build -t ${DOCKER_USER}/${params.SERVICE}:latest ${params.SERVICE}
                         docker push ${DOCKER_USER}/${params.SERVICE}:latest
                         """
                     }
