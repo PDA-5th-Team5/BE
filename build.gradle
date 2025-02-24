@@ -34,6 +34,7 @@ allprojects {
     }
 
     dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-web'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         compileOnly 'org.projectlombok:lombok'
@@ -49,13 +50,12 @@ project(':api-gateway') {
     apply plugin: 'org.springframework.boot'
 
     dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation project(':util-service')
 
         implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
         implementation 'org.springframework.boot:spring-boot-starter-security'
         implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-        implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
-
         implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     }
 }
@@ -80,15 +80,12 @@ project(':user-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation project(':util-service')
-        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-        implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
 
         implementation 'org.springframework.boot:spring-boot-starter-security'
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
         implementation 'org.springframework.boot:spring-boot-starter-validation'
         implementation 'org.springframework.boot:spring-boot-starter-mail'
-        implementation 'mysql:mysql-connector-java:8.0.33'
-
+        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
         implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
         // OAuth2 + Refresh Token
@@ -104,7 +101,6 @@ project(':stock-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation project(':util-service')
-        implementation 'mysql:mysql-connector-java:8.0.33'
 
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
         implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
@@ -120,9 +116,7 @@ project(':snowflake-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation project(':util-service')
-        implementation 'mysql:mysql-connector-java:8.0.33'
-        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-        implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
         implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     }
