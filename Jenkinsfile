@@ -8,33 +8,43 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/PDA-5th-Team5/BE.git"
         DOCKER_USER = "grrrrr1123"
-        PRODUCTION_SERVER = "production"  // SSH Config에 등록된 alias 사용
-
-        // SSH Config에 설정된 호스트명 사용
-        SERVER_MAPPING = [
-            "api-gateway" : "apigateway",
-            "eureka-server" : "apigateway",
-            "util-service" : "apigateway",
-            "stock-service" : "stock",
-            "snowflake-service" : "snowflake",
-            "user-service" : "user"
-        ]
-
-        // 포트 매핑
-        PORT_MAPPING = [
-            "api-gateway": "8081:8081",
-            "eureka-server": "8761:8761",
-            "util-service": "8082:8082",
-            "user-service": "8083:8083",
-            "stock-service": "8084:8084",
-            "snowflake-service": "8085:8085"
-        ]
+        PRODUCTION_SERVER = "production"  // SSH Config에서 설정한 alias 사용
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Set Variables') {
+            steps {
+                script {
+                    // 서버별 서비스 매핑 (환경 변수 X, script 블록에서 선언해야 함)
+                    def SERVER_MAPPING = [
+                        "api-gateway" : "apigateway",
+                        "eureka-server" : "apigateway",
+                        "util-service" : "apigateway",
+                        "stock-service" : "stock",
+                        "snowflake-service" : "snowflake",
+                        "user-service" : "user"
+                    ]
+
+                    // 포트 매핑 (환경 변수 X, script 블록에서 선언해야 함)
+                    def PORT_MAPPING = [
+                        "api-gateway": "8081:8081",
+                        "eureka-server": "8761:8761",
+                        "util-service": "8082:8082",
+                        "user-service": "8083:8083",
+                        "stock-service": "8084:8084",
+                        "snowflake-service": "8085:8085"
+                    ]
+
+                    // 공유 변수로 사용 가능하도록 this.pipeline에 저장
+                    this.SERVER_MAPPING = SERVER_MAPPING
+                    this.PORT_MAPPING = PORT_MAPPING
+                }
             }
         }
 
