@@ -102,12 +102,14 @@ pipeline {
                         parallelDeploy["Deploy ${service}"] = {
                             withCredentials([sshUserPrivateKey(credentialsId: 'bastion-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
                                 sh """
-                                ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no ${BASTION_HOST} '
-                                    ssh -vvv -i ~/.ssh/id_rsa ubuntu@${privateIP} \\"tmux new-session -d -s deploy-${service} \\"docker pull ${DOCKER_USER}/${service}:latest && docker stop ${service} && docker rm ${service} && docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest \\"\\""
+                                ssh -i ${env.SSH_KEY_FILE} -o StrictHostKeyChecking=no ubuntu@43.200.225.24 <<EOF
+                                ssh -i ~/.ssh/id_rsa ubuntu@10.0.2.61 '
+                                    docker pull grrrrr1123/util-service:latest &&
+                                    docker stop util-service &&
+                                    docker rm util-service &&
+                                    docker run -d --name util-service -p 8082:8082 grrrrr1123/util-service:latest
                                 '
-                                echo "SSH 접속 테스트 중"
-                                echo "SSH Key 위치: $SSH_KEY_FILE"
-                                echo "Bastion Host 위치: $BASTION_HOST"
+                                EOF
                                 """
                             }
                         }
