@@ -107,6 +107,9 @@ pipeline {
                                 '
                                 """
                             }
+                            echo "SSH 접속 테스트 중"
+                            echo "SSH Key 위치: $SSH_KEY_FILE"
+                            echo "Bastion Host 위치: $BASTION_HOST"
                         }
                     }
                     parallel parallelDeploy
