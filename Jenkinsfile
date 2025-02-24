@@ -13,15 +13,30 @@ pipeline {
             }
         }
 
+        stage('Detect Changed Services') {
+            steps {
+                script {
+                    def changedFiles = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim().split("\n")
+                    def servicesToBuild = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service'].findAll { service ->
+                        changedFiles.any { it.contains(service) }
+                    }
+                    if (servicesToBuild.isEmpty()) {
+                        servicesToBuild = ['util-service']
+                    }
+                    env.SERVICES_TO_BUILD = servicesToBuild.join(',')
+                }
+            }
+        }
+
         stage('Build Jar') {
             steps {
                 script {
-                    def services = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service']
+                    def services = env.SERVICES_TO_BUILD.split(',')
                     parallel services.collectEntries { service ->
                         ["Build Jar ${service}": {
                             sh """
                             cd src/${service} && \
-                            ./gradlew clean build
+                            ./gradlew build --build-cache --parallel --daemon
                             """
                         }]
                     }
@@ -32,11 +47,11 @@ pipeline {
         stage('Build & Push Docker Image') {
             steps {
                 script {
-                    def services = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service']
+                    def services = env.SERVICES_TO_BUILD.split(',')
                     parallel services.collectEntries { service ->
                         ["Build & Push ${service}": {
                             sh """
-                            docker build -t ${DOCKER_USER}/${service}:latest -f ./src/${service}/Dockerfile ./src/${service} && \
+                            docker build --cache-from=${DOCKER_USER}/${service}:latest -t ${DOCKER_USER}/${service}:latest -f ./src/${service}/Dockerfile ./src/${service}
                             docker push ${DOCKER_USER}/${service}:latest
                             """
                         }]
@@ -67,15 +82,14 @@ pipeline {
                     ]
 
                     def parallelDeploy = [:]
-                    SERVER_MAPPING.each { service, privateIP ->
+                    env.SERVICES_TO_BUILD.split(',').each { service ->
+                        def privateIP = SERVER_MAPPING[service]
                         parallelDeploy["Deploy ${service}"] = {
                             withCredentials([sshUserPrivateKey(credentialsId: 'bastion-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                                 sh """
                                 ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${BASTION_HOST} "
                                     ssh -i ~/.ssh/id_rsa ubuntu@${privateIP} '
-                                        docker pull ${DOCKER_USER}/${service}:latest && \
-                                        if docker ps -q --filter name=${service}; then docker stop ${service} && docker rm ${service}; fi && \
-                                        docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest
+                                        tmux new-session -d -s deploy-${service} \\"docker pull ${DOCKER_USER}/${service}:latest && docker stop ${service} && docker rm ${service} && docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest \\"
                                     '
                                 "
                                 """
