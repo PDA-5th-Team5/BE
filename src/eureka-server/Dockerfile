@@ -1,13 +1,11 @@
-# Ubuntu 24.04 + OpenJDK 17 사용
-FROM ubuntu:24.04
-
-RUN apt update && apt install -y openjdk-17-jdk
-
-# 작업 디렉터리 설정
+FROM gradle:8.0-jdk17 AS build
 WORKDIR /app
+COPY . .
+RUN gradle clean build --build-cache --parallel --daemon
 
-COPY build/libs/app.jar app.jar
+FROM openjdk:17-slim
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
 
-EXPOSE 8081
-
+EXPOSE 8761
 CMD ["java", "-jar", "app.jar"]

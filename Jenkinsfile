@@ -28,37 +28,6 @@ pipeline {
             }
         }
 
-        stage('Build Jar') {
-            steps {
-                script {
-                    def services = env.SERVICES_TO_BUILD.split(',')
-                    parallel services.collectEntries { service ->
-                        ["Build Jar ${service}": {
-                            sh """
-                            cd src/${service} && \
-                            ./gradlew clean build --build-cache --parallel --daemon
-                            """
-                        }]
-                    }
-                }
-            }
-        }
-
-        stage('Verify JAR File') {
-            steps {
-                script {
-                    def services = env.SERVICES_TO_BUILD.split(',')
-                    services.each { service ->
-                        def jarPath = "src/${service}/build/libs/"
-                        def jarExists = sh(script: "ls ${jarPath}*.jar | grep -E '(${service}-.*.jar|app.jar)'", returnStatus: true) == 0
-                        if (!jarExists) {
-                            error "JAR 파일이 생성되지 않았습니다: ${service}"
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Build & Push Docker Image') {
             steps {
                 script {
@@ -66,7 +35,8 @@ pipeline {
                     parallel services.collectEntries { service ->
                         ["Build & Push ${service}": {
                             sh """
-                            docker build --cache-from=${DOCKER_USER}/${service}:latest -t ${DOCKER_USER}/${service}:latest -f ./src/${service}/Dockerfile ./src/${service}
+                            cd src/${service} && \
+                            docker build -t ${DOCKER_USER}/${service}:latest . && \
                             docker push ${DOCKER_USER}/${service}:latest
                             """
                         }]
@@ -99,12 +69,24 @@ pipeline {
                     def parallelDeploy = [:]
                     env.SERVICES_TO_BUILD.split(',').each { service ->
                         def privateIP = SERVER_MAPPING[service]
+                        def portMapping = PORT_MAPPING[service]
                         parallelDeploy["Deploy ${service}"] = {
                             withCredentials([sshUserPrivateKey(credentialsId: 'bastion-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
                                 sh """
-                                ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no ${BASTION_HOST} '
-                                    ssh -i ~/.ssh/id_rsa ubuntu@${privateIP} \\"tmux new-session -d -s deploy-${service} \\"docker pull ${DOCKER_USER}/${service}:latest && docker stop ${service} && docker rm ${service} && docker run -d --name ${service} -p ${PORT_MAPPING[service]} ${DOCKER_USER}/${service}:latest \\"\\""
+                                ssh -i ${env.SSH_KEY_FILE} -o StrictHostKeyChecking=no ubuntu@${BASTION_HOST} <<EOF
+                                ssh -i ~/.ssh/id_rsa ubuntu@${privateIP} '
+                                    IMAGE_ID=\$(docker images -q ${DOCKER_USER}/${service}:latest)
+                                    if [ -z "\$IMAGE_ID" ]; then
+                                        echo "새로운 이미지 다운로드 중: ${DOCKER_USER}/${service}:latest"
+                                        docker pull ${DOCKER_USER}/${service}:latest
+                                    else
+                                        echo "이미 최신 이미지가 존재합니다. 다운로드하지 않습니다."
+                                    fi
+                                    docker stop ${service} || true
+                                    docker rm ${service} || true
+                                    docker run -d --name ${service} -p ${portMapping} ${DOCKER_USER}/${service}:latest
                                 '
+                                EOF
                                 """
                             }
                         }
