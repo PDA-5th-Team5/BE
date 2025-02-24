@@ -1,10 +1,11 @@
-FROM ubuntu:24.04
-
-RUN apt update && apt install -y openjdk-17-jdk
-
+FROM gradle:8.0-jdk17 AS build
 WORKDIR /app
-COPY build/libs/app.jar app.jar
+COPY . .
+RUN gradle clean build --build-cache --parallel --daemon
+
+FROM openjdk:17-slim  # ✅ Ubuntu 24.04와 무관, 최적화된 실행 환경
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8085
-
 CMD ["java", "-jar", "app.jar"]
