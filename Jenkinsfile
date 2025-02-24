@@ -35,8 +35,8 @@ pipeline {
                     parallel services.collectEntries { service ->
                         ["Build & Push ${service}": {
                             sh """
-                            cd src/${service} && \
-                            docker build -t ${DOCKER_USER}/${service}:latest . && \
+                            cd ${service} && \
+                            docker build -t ${DOCKER_USER}/${service}:latest -f Dockerfile . && \
                             docker push ${DOCKER_USER}/${service}:latest
                             """
                         }]
@@ -73,8 +73,8 @@ pipeline {
                         parallelDeploy["Deploy ${service}"] = {
                             withCredentials([sshUserPrivateKey(credentialsId: 'bastion-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
                                 sh """
-                                ssh -i ${env.SSH_KEY_FILE} -o StrictHostKeyChecking=no ubuntu@${BASTION_HOST} <<EOF
-                                ssh -i ~/.ssh/id_rsa ubuntu@${privateIP} '
+                                ssh -vvv -i ${env.SSH_KEY_FILE} -o StrictHostKeyChecking=no ubuntu@${BASTION_HOST} <<EOF
+                                ssh -vvv -i ~/.ssh/id_rsa ubuntu@${privateIP} '
                                     IMAGE_ID=\$(docker images -q ${DOCKER_USER}/${service}:latest)
                                     if [ -z "\$IMAGE_ID" ]; then
                                         echo "새로운 이미지 다운로드 중: ${DOCKER_USER}/${service}:latest"
