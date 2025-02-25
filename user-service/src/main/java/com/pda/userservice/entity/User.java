@@ -6,6 +6,7 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -17,6 +18,8 @@ public class User {
 
     private String nickname;
 
+    private String username;
+
     private String passwordHash;
 
     private String email;
@@ -26,4 +29,11 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private UserType userType;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.userId == null) {
+            this.userId = UUID.randomUUID().toString();
+        }
+    }
 }
