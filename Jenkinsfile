@@ -17,7 +17,7 @@ pipeline {
             steps {
                 script {
                     def changedFiles = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim().split("\n")
-                    def servicesToBuild = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'snowflake-service'].findAll { service ->
+                    def servicesToBuild = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'portfolio-service'].findAll { service ->
                         changedFiles.any { it.contains(service) }
                     }
                     if (servicesToBuild.isEmpty()) {
@@ -84,7 +84,7 @@ pipeline {
                         "util-service": "10.0.2.61",
                         "user-service": "10.0.2.44",
                         "stock-service": "10.0.2.96",
-                        "snowflake-service": "10.0.2.25"
+                        "portfolio-service": "10.0.2.25"
                     ]
 
                     def PORT_MAPPING = [
@@ -93,7 +93,7 @@ pipeline {
                         "util-service": "8082:8082",
                         "user-service": "8083:8083",
                         "stock-service": "8084:8084",
-                        "snowflake-service": "8085:8085"
+                        "portfolio-service": "8085:8085"
                     ]
 
                     def parallelDeploy = [:]

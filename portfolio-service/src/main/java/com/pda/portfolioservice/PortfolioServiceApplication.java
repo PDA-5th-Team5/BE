@@ -1,13 +1,13 @@
-package com.pda.snowflakeservice;
+package com.pda.portfolioservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SnowflakeServiceApplication {
+public class PortfolioServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SnowflakeServiceApplication.class, args);
+        SpringApplication.run(PortfolioServiceApplication.class, args);
     }
 
 }

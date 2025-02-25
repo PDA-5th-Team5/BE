@@ -1,10 +1,10 @@
-package com.pda.snowflakeservice;
+package com.pda.portfolioservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SnowflakeServiceApplicationTests {
+class PortfolioServiceApplicationTests {
 
     @Test
     void contextLoads() {

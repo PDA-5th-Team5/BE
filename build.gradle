@@ -99,8 +99,8 @@ project(':stock-service') {
     }
 }
 
-// ✅ Snowflake Service 모듈
-project(':snowflake-service') {
+// ✅ portfolio Service 모듈
+project(':portfolio-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation project(':util-service')
