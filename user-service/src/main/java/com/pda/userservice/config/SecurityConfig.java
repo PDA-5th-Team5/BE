@@ -1,5 +1,8 @@
 package com.pda.userservice.config;
 
+import com.pda.userservice.jwt.JWTUtil;
+import com.pda.userservice.jwt.LoginFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,7 +17,11 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final JWTUtil jwtUtil;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -55,6 +62,8 @@ public class SecurityConfig {
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
