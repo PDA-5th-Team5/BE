@@ -1,5 +1,5 @@
 package com.pda.userservice.dto;
 
-public class JoinParam {
+public class JoinDTO {
 
 }
