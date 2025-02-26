@@ -1,6 +1,6 @@
 package com.pda.userservice.enums;
 
 public enum UserType {
-    ADMIN,
-    GUEST
+    ROLE_ADMIN,
+    ROLE_GUEST
 }
