@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'FULL_BUILD', defaultValue: false, description: '전체 모듈을 빌드할지 여부')
+    }
+
     environment {
         DOCKER_HUB_USERNAME = 'qpwisu'
         DOCKER_HUB_PASSWORD = credentials('docker-hub-password')  // Jenkins에서 저장한 Docker Hub 패스워드
@@ -24,28 +28,33 @@ pipeline {
         stage('Detect Changed Modules') {
             steps {
                 script {
-                    def changedFiles = sh(script: "git diff --name-only HEAD^ HEAD", returnStdout: true).trim().split("\n")
                     def affectedModules = []
 
-                    // 변경된 파일이 있을 경우만 리스트에 추가
-                    if (changedFiles.any { it.startsWith("util-service/") }) {
-                        affectedModules.addAll(["api-gateway", "eureka-server", "stock-service", "user-service", "portfolio-service"])
-                    }
+                    if (params.FULL_BUILD) {
+                        // 전체 빌드 실행 (수동 트리거)
+                        affectedModules = ["api-gateway", "eureka-server", "stock-service", "user-service", "portfolio-service"]
+                    } else {
+                        // 변경된 파일 확인 후 감지
+                        def changedFiles = sh(script: "git diff --name-only HEAD^ HEAD", returnStdout: true).trim().split("\n")
 
-                    if (changedFiles.any { it.startsWith("api-gateway/") }) {
-                        affectedModules.add("api-gateway")
-                    }
-                    if (changedFiles.any { it.startsWith("eureka-server/") }) {
-                        affectedModules.add("eureka-server")
-                    }
-                    if (changedFiles.any { it.startsWith("stock-service/") }) {
-                        affectedModules.add("stock-service")
-                    }
-                    if (changedFiles.any { it.startsWith("user-service/") }) {
-                        affectedModules.add("user-service")
-                    }
-                    if (changedFiles.any { it.startsWith("portfolio-service/") }) {
-                        affectedModules.add("portfolio-service")
+                        if (changedFiles.any { it.startsWith("util-service/") }) {
+                            affectedModules.addAll(["api-gateway", "eureka-server", "stock-service", "user-service", "portfolio-service"])
+                        }
+                        if (changedFiles.any { it.startsWith("api-gateway/") }) {
+                            affectedModules.add("api-gateway")
+                        }
+                        if (changedFiles.any { it.startsWith("eureka-server/") }) {
+                            affectedModules.add("eureka-server")
+                        }
+                        if (changedFiles.any { it.startsWith("stock-service/") }) {
+                            affectedModules.add("stock-service")
+                        }
+                        if (changedFiles.any { it.startsWith("user-service/") }) {
+                            affectedModules.add("user-service")
+                        }
+                        if (changedFiles.any { it.startsWith("portfolio-service/") }) {
+                            affectedModules.add("portfolio-service")
+                        }
                     }
 
                     // 중복 제거 후 환경 변수 설정
