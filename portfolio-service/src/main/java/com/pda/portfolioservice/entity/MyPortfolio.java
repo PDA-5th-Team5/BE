@@ -2,10 +2,12 @@ package com.pda.portfolioservice.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
 public class MyPortfolio {
 
     @Id
