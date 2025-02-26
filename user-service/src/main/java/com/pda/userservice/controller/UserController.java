@@ -1,11 +1,7 @@
 package com.pda.userservice.controller;
 
-import com.pda.userservice.dto.JoinDTO;
+import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.service.UserService;
-import com.pda.userservice.service.UserServiceImpl;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

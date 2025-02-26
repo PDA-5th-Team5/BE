@@ -1,8 +1,7 @@
-package com.pda.userservice.dto;
+package com.pda.userservice.dto.request;
 
 import com.pda.userservice.entity.User;
 import com.pda.userservice.enums.UserType;
-import lombok.Builder;
 import lombok.Data;
 
 @Data

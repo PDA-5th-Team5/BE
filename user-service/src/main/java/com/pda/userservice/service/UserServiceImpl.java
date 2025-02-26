@@ -1,6 +1,6 @@
 package com.pda.userservice.service;
 
-import com.pda.userservice.dto.JoinDTO;
+import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.entity.User;
 import com.pda.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
