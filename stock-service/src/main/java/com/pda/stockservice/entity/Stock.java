@@ -29,14 +29,14 @@ public class Stock {
     private double eps;
     private double bps;
     private double pbr;
-    private double dividendYield;
+    private Double dividendYield;
     private double foreignerRatio;
-    private double sps;
+    private Double sps;
     private Long saleAccount;
-    private double crntRate;
-    private double lbltRate;
-    private double ntinInrt;
-    private double bsopPrfiInrt;
+    private Double crntRate;
+    private Double lbltRate;
+    private Double ntinInrt;
+    private Double bsopPrfiInrt;
     private double grs;
     private double roeVal;
 
