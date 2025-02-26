@@ -11,7 +11,7 @@ pipeline {
     }
 
     triggers {
-        githubPush()  // GitHub Webhook을 감지하여 실행
+        githubPush()
     }
 
     stages {
@@ -27,10 +27,15 @@ pipeline {
         stage('Load Environment Variables') {
             steps {
                 script {
-                    def envVariables = sh(script: "cat ${ENV_FILE} | grep -v '^#' | xargs", returnStdout: true).trim()
-                    withEnv([envVariables]) {
-                        echo "✅ Environment variables loaded successfully: ${envVariables}"
+                    def envVars = sh(script: "cat ${ENV_FILE} | grep -v '^#' | xargs", returnStdout: true).trim()
+                    def envList = envVars.split(" ")
+                    envList.each { envVar ->
+                        def keyValue = envVar.split("=")
+                        if (keyValue.size() == 2) {
+                            env[keyValue[0]] = keyValue[1]
+                        }
                     }
+                    echo "✅ Environment variables loaded successfully."
                 }
             }
         }
@@ -84,43 +89,41 @@ pipeline {
                     script {
                         sh "echo \${DOCKER_HUB_PASSWORD} | docker login -u \${DOCKER_HUB_USERNAME} --password-stdin"
 
-                        withEnv(["$(cat ${ENV_FILE} | grep -v '^#' | xargs)"]) {
-                            env.AFFECTED_MODULES.split(" ").each { module ->
-                                def buildArgs = ""
+                        env.AFFECTED_MODULES.split(" ").each { module ->
+                            def buildArgs = ""
 
-                                if (module == "api-gateway") {
-                                    buildArgs = "--build-arg SERVER_PORT=${env.APIGATEWAY_SERVER_PORT} " +
-                                                "--build-arg EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${env.APIGATEWAY_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}"
-                                } else if (module == "eureka-server") {
-                                    buildArgs = "--build-arg SERVER_PORT=${env.EUREKA_SERVER_PORT} " +
-                                                "--build-arg EUREKA_INSTANCE_HOSTNAME=${env.EUREKA_INSTANCE_HOSTNAME} " +
-                                                "--build-arg ENABLE_SELF_PRESERVATION=${env.EUREKA_SERVER_ENABLE_SELF_PRESERVATION}"
-                                } else if (module == "stock-service") {
-                                    buildArgs = "--build-arg SERVER_PORT=${env.STOCK_SERVER_PORT} " +
-                                                "--build-arg SPRING_DATASOURCE_URL=${env.STOCK_SPRING_DATASOURCE_URL} " +
-                                                "--build-arg SPRING_DATASOURCE_USERNAME=${env.STOCK_SPRING_DATASOURCE_USERNAME} " +
-                                                "--build-arg SPRING_DATASOURCE_PASSWORD=${env.STOCK_SPRING_DATASOURCE_PASSWORD}"
-                                } else if (module == "user-service") {
-                                    buildArgs = "--build-arg SERVER_PORT=${env.USER_SERVER_PORT} " +
-                                                "--build-arg SPRING_DATASOURCE_URL=${env.USER_SPRING_DATASOURCE_URL} " +
-                                                "--build-arg SPRING_DATASOURCE_USERNAME=${env.USER_SPRING_DATASOURCE_USERNAME} " +
-                                                "--build-arg SPRING_DATASOURCE_PASSWORD=${env.USER_SPRING_DATASOURCE_PASSWORD}"
-                                } else if (module == "portfolio-service") {
-                                    buildArgs = "--build-arg SERVER_PORT=${env.PORTFOLIO_SERVER_PORT} " +
-                                                "--build-arg SPRING_DATASOURCE_URL=${env.PORTFOLIO_SPRING_DATASOURCE_URL} " +
-                                                "--build-arg SPRING_DATASOURCE_USERNAME=${env.PORTFOLIO_SPRING_DATASOURCE_USERNAME} " +
-                                                "--build-arg SPRING_DATASOURCE_PASSWORD=${env.PORTFOLIO_SPRING_DATASOURCE_PASSWORD}"
-                                }
-
-                                sh """
-                                echo ">>> Building ${module}"
-                                cd ${module} || exit 1
-                                chmod +x ./gradlew
-                                ./gradlew clean build
-                                docker build ${buildArgs} -t qpwisu/${module}:latest .
-                                docker push qpwisu/${module}:latest
-                                """
+                            if (module == "api-gateway") {
+                                buildArgs = "--build-arg SERVER_PORT=${env.APIGATEWAY_SERVER_PORT} " +
+                                            "--build-arg EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${env.APIGATEWAY_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}"
+                            } else if (module == "eureka-server") {
+                                buildArgs = "--build-arg SERVER_PORT=${env.EUREKA_SERVER_PORT} " +
+                                            "--build-arg EUREKA_INSTANCE_HOSTNAME=${env.EUREKA_INSTANCE_HOSTNAME} " +
+                                            "--build-arg ENABLE_SELF_PRESERVATION=${env.EUREKA_SERVER_ENABLE_SELF_PRESERVATION}"
+                            } else if (module == "stock-service") {
+                                buildArgs = "--build-arg SERVER_PORT=${env.STOCK_SERVER_PORT} " +
+                                            "--build-arg SPRING_DATASOURCE_URL=${env.STOCK_SPRING_DATASOURCE_URL} " +
+                                            "--build-arg SPRING_DATASOURCE_USERNAME=${env.STOCK_SPRING_DATASOURCE_USERNAME} " +
+                                            "--build-arg SPRING_DATASOURCE_PASSWORD=${env.STOCK_SPRING_DATASOURCE_PASSWORD}"
+                            } else if (module == "user-service") {
+                                buildArgs = "--build-arg SERVER_PORT=${env.USER_SERVER_PORT} " +
+                                            "--build-arg SPRING_DATASOURCE_URL=${env.USER_SPRING_DATASOURCE_URL} " +
+                                            "--build-arg SPRING_DATASOURCE_USERNAME=${env.USER_SPRING_DATASOURCE_USERNAME} " +
+                                            "--build-arg SPRING_DATASOURCE_PASSWORD=${env.USER_SPRING_DATASOURCE_PASSWORD}"
+                            } else if (module == "portfolio-service") {
+                                buildArgs = "--build-arg SERVER_PORT=${env.PORTFOLIO_SERVER_PORT} " +
+                                            "--build-arg SPRING_DATASOURCE_URL=${env.PORTFOLIO_SPRING_DATASOURCE_URL} " +
+                                            "--build-arg SPRING_DATASOURCE_USERNAME=${env.PORTFOLIO_SPRING_DATASOURCE_USERNAME} " +
+                                            "--build-arg SPRING_DATASOURCE_PASSWORD=${env.PORTFOLIO_SPRING_DATASOURCE_PASSWORD}"
                             }
+
+                            sh """
+                            echo ">>> Building ${module}"
+                            cd ${module} || exit 1
+                            chmod +x ./gradlew
+                            ./gradlew clean build
+                            docker build ${buildArgs} -t qpwisu/${module}:latest .
+                            docker push qpwisu/${module}:latest
+                            """
                         }
                     }
                 }
