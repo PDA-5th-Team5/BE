@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_USERNAME = 'qpwisu'
-        ENV_FILE = "~/common.env"
+        ENV_FILE = "/home/ubuntu/common.env" // EC2에 저장된 환경 변수 파일 경로
     }
 
     triggers {
@@ -20,6 +20,17 @@ pipeline {
                 script {
                     checkout scm
                     sh "git pull origin develop"
+                }
+            }
+        }
+
+        stage('Load Environment Variables') {
+            steps {
+                script {
+                    def envVariables = sh(script: "cat ${ENV_FILE} | grep -v '^#' | xargs", returnStdout: true).trim()
+                    withEnv([envVariables]) {
+                        echo "✅ Environment variables loaded successfully: ${envVariables}"
+                    }
                 }
             }
         }
@@ -73,41 +84,43 @@ pipeline {
                     script {
                         sh "echo \${DOCKER_HUB_PASSWORD} | docker login -u \${DOCKER_HUB_USERNAME} --password-stdin"
 
-                        env.AFFECTED_MODULES.split(" ").each { module ->
-                            def buildArgs = ""
+                        withEnv(["$(cat ${ENV_FILE} | grep -v '^#' | xargs)"]) {
+                            env.AFFECTED_MODULES.split(" ").each { module ->
+                                def buildArgs = ""
 
-                            if (module == "api-gateway") {
-                                buildArgs = "--build-arg SERVER_PORT=\\${APIGATEWAY_SERVER_PORT} " +
-                                            "--build-arg EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=\\${APIGATEWAY_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}"
-                            } else if (module == "eureka-server") {
-                                buildArgs = "--build-arg SERVER_PORT=\\${EUREKA_SERVER_PORT} " +
-                                            "--build-arg EUREKA_INSTANCE_HOSTNAME=\\${EUREKA_INSTANCE_HOSTNAME} " +
-                                            "--build-arg ENABLE_SELF_PRESERVATION=\\${EUREKA_SERVER_ENABLE_SELF_PRESERVATION}"
-                            } else if (module == "stock-service") {
-                                buildArgs = "--build-arg SERVER_PORT=\\${STOCK_SERVER_PORT} " +
-                                            "--build-arg SPRING_DATASOURCE_URL=\\${STOCK_SPRING_DATASOURCE_URL} " +
-                                            "--build-arg SPRING_DATASOURCE_USERNAME=\\${STOCK_SPRING_DATASOURCE_USERNAME} " +
-                                            "--build-arg SPRING_DATASOURCE_PASSWORD=\\${STOCK_SPRING_DATASOURCE_PASSWORD}"
-                            } else if (module == "user-service") {
-                                buildArgs = "--build-arg SERVER_PORT=\\${USER_SERVER_PORT} " +
-                                            "--build-arg SPRING_DATASOURCE_URL=\\${USER_SPRING_DATASOURCE_URL} " +
-                                            "--build-arg SPRING_DATASOURCE_USERNAME=\\${USER_SPRING_DATASOURCE_USERNAME} " +
-                                            "--build-arg SPRING_DATASOURCE_PASSWORD=\\${USER_SPRING_DATASOURCE_PASSWORD}"
-                            } else if (module == "portfolio-service") {
-                                buildArgs = "--build-arg SERVER_PORT=\\${PORTFOLIO_SERVER_PORT} " +
-                                            "--build-arg SPRING_DATASOURCE_URL=\\${PORTFOLIO_SPRING_DATASOURCE_URL} " +
-                                            "--build-arg SPRING_DATASOURCE_USERNAME=\\${PORTFOLIO_SPRING_DATASOURCE_USERNAME} " +
-                                            "--build-arg SPRING_DATASOURCE_PASSWORD=\\${PORTFOLIO_SPRING_DATASOURCE_PASSWORD}"
+                                if (module == "api-gateway") {
+                                    buildArgs = "--build-arg SERVER_PORT=${env.APIGATEWAY_SERVER_PORT} " +
+                                                "--build-arg EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${env.APIGATEWAY_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}"
+                                } else if (module == "eureka-server") {
+                                    buildArgs = "--build-arg SERVER_PORT=${env.EUREKA_SERVER_PORT} " +
+                                                "--build-arg EUREKA_INSTANCE_HOSTNAME=${env.EUREKA_INSTANCE_HOSTNAME} " +
+                                                "--build-arg ENABLE_SELF_PRESERVATION=${env.EUREKA_SERVER_ENABLE_SELF_PRESERVATION}"
+                                } else if (module == "stock-service") {
+                                    buildArgs = "--build-arg SERVER_PORT=${env.STOCK_SERVER_PORT} " +
+                                                "--build-arg SPRING_DATASOURCE_URL=${env.STOCK_SPRING_DATASOURCE_URL} " +
+                                                "--build-arg SPRING_DATASOURCE_USERNAME=${env.STOCK_SPRING_DATASOURCE_USERNAME} " +
+                                                "--build-arg SPRING_DATASOURCE_PASSWORD=${env.STOCK_SPRING_DATASOURCE_PASSWORD}"
+                                } else if (module == "user-service") {
+                                    buildArgs = "--build-arg SERVER_PORT=${env.USER_SERVER_PORT} " +
+                                                "--build-arg SPRING_DATASOURCE_URL=${env.USER_SPRING_DATASOURCE_URL} " +
+                                                "--build-arg SPRING_DATASOURCE_USERNAME=${env.USER_SPRING_DATASOURCE_USERNAME} " +
+                                                "--build-arg SPRING_DATASOURCE_PASSWORD=${env.USER_SPRING_DATASOURCE_PASSWORD}"
+                                } else if (module == "portfolio-service") {
+                                    buildArgs = "--build-arg SERVER_PORT=${env.PORTFOLIO_SERVER_PORT} " +
+                                                "--build-arg SPRING_DATASOURCE_URL=${env.PORTFOLIO_SPRING_DATASOURCE_URL} " +
+                                                "--build-arg SPRING_DATASOURCE_USERNAME=${env.PORTFOLIO_SPRING_DATASOURCE_USERNAME} " +
+                                                "--build-arg SPRING_DATASOURCE_PASSWORD=${env.PORTFOLIO_SPRING_DATASOURCE_PASSWORD}"
+                                }
+
+                                sh """
+                                echo ">>> Building ${module}"
+                                cd ${module} || exit 1
+                                chmod +x ./gradlew
+                                ./gradlew clean build
+                                docker build ${buildArgs} -t qpwisu/${module}:latest .
+                                docker push qpwisu/${module}:latest
+                                """
                             }
-
-                            sh """
-                            echo ">>> Building ${module}"
-                            cd ${module} || exit 1
-                            chmod +x ./gradlew
-                            ./gradlew clean build
-                            docker build ${buildArgs} -t qpwisu/${module}:latest .
-                            docker push qpwisu/${module}:latest
-                            """
                         }
                     }
                 }
