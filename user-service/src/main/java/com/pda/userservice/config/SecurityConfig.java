@@ -1,5 +1,6 @@
 package com.pda.userservice.config;
 
+import com.pda.userservice.jwt.JWTFilter;
 import com.pda.userservice.jwt.JWTUtil;
 import com.pda.userservice.jwt.LoginFilter;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +63,8 @@ public class SecurityConfig {
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http
+                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 

@@ -1,6 +1,7 @@
 package com.pda.userservice.dto;
 
 import com.pda.userservice.entity.User;
+import com.pda.userservice.enums.UserType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
