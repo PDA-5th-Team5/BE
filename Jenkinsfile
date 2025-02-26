@@ -109,7 +109,7 @@ pipeline {
                     env.AFFECTED_MODULES.split(" ").each { module ->
                         def targetServer = ""
                         if (module == "api-gateway" || module == "eureka-server") {
-                            targetServer = "api-gateway-eureka"
+                            targetServer = "api-gateway"
                         } else if (module == "stock-service") {
                             targetServer = "stock"
                         } else if (module == "user-service") {
@@ -122,6 +122,10 @@ pipeline {
                         # .env 파일 복사 후 실행
                         scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
                         ssh ${targetServer} 'cd /home/ubuntu && docker-compose pull && docker-compose --env-file /home/ubuntu/common.env up -d ${module}'
+                        """
+                        sh """
+                        sudo -u ubuntu scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
+                        sudo -u ubuntu ssh ubuntu@${targetServer} 'cd /home/ubuntu && docker-compose pull && docker-compose --env-file /home/ubuntu/common.env up -d ${module}'
                         """
                     }
                 }
