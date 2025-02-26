@@ -7,7 +7,6 @@ pipeline {
 
     environment {
         DOCKER_HUB_USERNAME = 'qpwisu'
-        DOCKER_HUB_PASSWORD = credentials('docker-hub-password')  // Jenkins에서 저장한 Docker Hub 패스워드
         ENV_FILE = "~/env/common.env"
     }
 
@@ -19,8 +18,8 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 script {
-                    checkout scm  // GitHub에서 최신 코드 체크아웃
-                    sh "git pull origin develop"  // 최신 코드 반영
+                    checkout scm
+                    sh "git pull origin develop"
                 }
             }
         }
@@ -31,10 +30,8 @@ pipeline {
                     def affectedModules = []
 
                     if (params.FULL_BUILD) {
-                        // 전체 빌드 실행 (수동 트리거)
                         affectedModules = ["api-gateway", "eureka-server", "stock-service", "user-service", "portfolio-service"]
                     } else {
-                        // 변경된 파일 확인 후 감지
                         def changedFiles = sh(script: "git diff --name-only HEAD^ HEAD", returnStdout: true).trim().split("\n")
 
                         if (changedFiles.any { it.startsWith("util-service/") }) {
@@ -57,7 +54,6 @@ pipeline {
                         }
                     }
 
-                    // 중복 제거 후 환경 변수 설정
                     env.AFFECTED_MODULES = affectedModules.unique().join(" ")
                     if (env.AFFECTED_MODULES.trim().isEmpty()) {
                         currentBuild.result = 'SUCCESS'
@@ -70,47 +66,49 @@ pipeline {
 
         stage('Build & Push Docker Images') {
             when {
-                expression { return !env.AFFECTED_MODULES.trim().isEmpty() }  // 변경 사항이 있을 때만 실행
+                expression { return !env.AFFECTED_MODULES.trim().isEmpty() }
             }
             steps {
-                script {
-                    echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin
+                withCredentials([string(credentialsId: 'docker-hub-password', variable: 'DOCKER_HUB_PASSWORD')]) {
+                    script {
+                        sh "echo \${DOCKER_HUB_PASSWORD} | docker login -u \${DOCKER_HUB_USERNAME} --password-stdin"
 
-                    env.AFFECTED_MODULES.split(" ").each { module ->
-                        def buildArgs = ""
+                        env.AFFECTED_MODULES.split(" ").each { module ->
+                            def buildArgs = ""
 
-                        if (module == "api-gateway") {
-                            buildArgs = "--build-arg SERVER_PORT=\\${APIGATEWAY_SERVER_PORT} " +
-                                        "--build-arg EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=\\${APIGATEWAY_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}"
-                        } else if (module == "eureka-server") {
-                            buildArgs = "--build-arg SERVER_PORT=\\${EUREKA_SERVER_PORT} " +
-                                        "--build-arg EUREKA_INSTANCE_HOSTNAME=\\${EUREKA_INSTANCE_HOSTNAME} " +
-                                        "--build-arg ENABLE_SELF_PRESERVATION=\\${EUREKA_SERVER_ENABLE_SELF_PRESERVATION}"
-                        } else if (module == "stock-service") {
-                            buildArgs = "--build-arg SERVER_PORT=\\${STOCK_SERVER_PORT} " +
-                                        "--build-arg SPRING_DATASOURCE_URL=\\${STOCK_SPRING_DATASOURCE_URL} " +
-                                        "--build-arg SPRING_DATASOURCE_USERNAME=\\${STOCK_SPRING_DATASOURCE_USERNAME} " +
-                                        "--build-arg SPRING_DATASOURCE_PASSWORD=\\${STOCK_SPRING_DATASOURCE_PASSWORD}"
-                        } else if (module == "user-service") {
-                            buildArgs = "--build-arg SERVER_PORT=\\${USER_SERVER_PORT} " +
-                                        "--build-arg SPRING_DATASOURCE_URL=\\${USER_SPRING_DATASOURCE_URL} " +
-                                        "--build-arg SPRING_DATASOURCE_USERNAME=\\${USER_SPRING_DATASOURCE_USERNAME} " +
-                                        "--build-arg SPRING_DATASOURCE_PASSWORD=\\${USER_SPRING_DATASOURCE_PASSWORD}"
-                        } else if (module == "portfolio-service") {
-                            buildArgs = "--build-arg SERVER_PORT=\\${PORTFOLIO_SERVER_PORT} " +
-                                        "--build-arg SPRING_DATASOURCE_URL=\\${PORTFOLIO_SPRING_DATASOURCE_URL} " +
-                                        "--build-arg SPRING_DATASOURCE_USERNAME=\\${PORTFOLIO_SPRING_DATASOURCE_USERNAME} " +
-                                        "--build-arg SPRING_DATASOURCE_PASSWORD=\\${PORTFOLIO_SPRING_DATASOURCE_PASSWORD}"
+                            if (module == "api-gateway") {
+                                buildArgs = "--build-arg SERVER_PORT=\\${APIGATEWAY_SERVER_PORT} " +
+                                            "--build-arg EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=\\${APIGATEWAY_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}"
+                            } else if (module == "eureka-server") {
+                                buildArgs = "--build-arg SERVER_PORT=\\${EUREKA_SERVER_PORT} " +
+                                            "--build-arg EUREKA_INSTANCE_HOSTNAME=\\${EUREKA_INSTANCE_HOSTNAME} " +
+                                            "--build-arg ENABLE_SELF_PRESERVATION=\\${EUREKA_SERVER_ENABLE_SELF_PRESERVATION}"
+                            } else if (module == "stock-service") {
+                                buildArgs = "--build-arg SERVER_PORT=\\${STOCK_SERVER_PORT} " +
+                                            "--build-arg SPRING_DATASOURCE_URL=\\${STOCK_SPRING_DATASOURCE_URL} " +
+                                            "--build-arg SPRING_DATASOURCE_USERNAME=\\${STOCK_SPRING_DATASOURCE_USERNAME} " +
+                                            "--build-arg SPRING_DATASOURCE_PASSWORD=\\${STOCK_SPRING_DATASOURCE_PASSWORD}"
+                            } else if (module == "user-service") {
+                                buildArgs = "--build-arg SERVER_PORT=\\${USER_SERVER_PORT} " +
+                                            "--build-arg SPRING_DATASOURCE_URL=\\${USER_SPRING_DATASOURCE_URL} " +
+                                            "--build-arg SPRING_DATASOURCE_USERNAME=\\${USER_SPRING_DATASOURCE_USERNAME} " +
+                                            "--build-arg SPRING_DATASOURCE_PASSWORD=\\${USER_SPRING_DATASOURCE_PASSWORD}"
+                            } else if (module == "portfolio-service") {
+                                buildArgs = "--build-arg SERVER_PORT=\\${PORTFOLIO_SERVER_PORT} " +
+                                            "--build-arg SPRING_DATASOURCE_URL=\\${PORTFOLIO_SPRING_DATASOURCE_URL} " +
+                                            "--build-arg SPRING_DATASOURCE_USERNAME=\\${PORTFOLIO_SPRING_DATASOURCE_USERNAME} " +
+                                            "--build-arg SPRING_DATASOURCE_PASSWORD=\\${PORTFOLIO_SPRING_DATASOURCE_PASSWORD}"
+                            }
+
+                            sh """
+                            echo ">>> Building ${module}"
+                            cd ${module} || exit 1
+                            chmod +x ./gradlew
+                            ./gradlew clean build
+                            docker build ${buildArgs} -t qpwisu/${module}:latest .
+                            docker push qpwisu/${module}:latest
+                            """
                         }
-
-                        sh """
-                        echo ">>> Building ${module}"
-                        cd ${module} || exit 1  # ${module} 폴더로 이동
-                        chmod +x ./gradlew  # 실행 권한 부여
-                        ./gradlew clean build  # 클린 빌드 수행
-                        docker build ${buildArgs} -t qpwisu/${module}:latest .
-                        docker push qpwisu/${module}:latest
-                        """
                     }
                 }
             }
@@ -118,7 +116,7 @@ pipeline {
 
         stage('Deploy to EC2') {
             when {
-                expression { return !env.AFFECTED_MODULES.trim().isEmpty() }  // 변경 사항이 있을 때만 실행
+                expression { return !env.AFFECTED_MODULES.trim().isEmpty() }
             }
             steps {
                 script {
