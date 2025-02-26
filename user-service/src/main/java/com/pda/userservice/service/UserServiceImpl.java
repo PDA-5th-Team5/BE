@@ -48,14 +48,17 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<?> handleReissue(HttpServletRequest request, HttpServletResponse response) {
         String refresh = extractRefreshToken(request);
 
+        // Refresh 토큰이 헤더에 있는지 확인
         if (refresh == null) {
             return new ResponseEntity<>("refresh token null", HttpStatus.UNAUTHORIZED);
         }
 
+        // Refresh 토큰 만료 여부 확인
         if (isTokenExpired(refresh)) {
             return new ResponseEntity<>("refresh token expired", HttpStatus.UNAUTHORIZED);
         }
 
+        // Refresh 토큰이 맞는지 확인
         if (!isRefreshTokenValid(refresh)) {
             return new ResponseEntity<>("invalid refresh token", HttpStatus.UNAUTHORIZED);
         }
@@ -63,6 +66,7 @@ public class UserServiceImpl implements UserService {
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
 
+        // DB에 토큰 존재 여부 확인
         if (!isTokenStoredInDB(refresh, username)) {
             return new ResponseEntity<>("invalid refresh token(DB)", HttpStatus.UNAUTHORIZED);
         }

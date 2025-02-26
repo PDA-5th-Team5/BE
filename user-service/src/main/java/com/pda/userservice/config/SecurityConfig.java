@@ -1,5 +1,6 @@
 package com.pda.userservice.config;
 
+import com.pda.userservice.jwt.CustomLogoutFilter;
 import com.pda.userservice.jwt.JWTFilter;
 import com.pda.userservice.jwt.JWTUtil;
 import com.pda.userservice.jwt.LoginFilter;
@@ -65,6 +66,8 @@ public class SecurityConfig {
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
+        http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
 
         //세션 설정
         http
