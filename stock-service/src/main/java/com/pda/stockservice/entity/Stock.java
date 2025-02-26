@@ -25,20 +25,20 @@ public class Stock {
     private Long marketCap;
     private Long thtrNtin;
     private Long bsopPrti;
-    private Float per;
-    private Float eps;
-    private Float bps;
-    private Float pbr;
-    private Float dividendYield;
-    private Float foreignerRatio;
-    private Float sps;
+    private double per;
+    private double eps;
+    private double bps;
+    private double pbr;
+    private double dividendYield;
+    private double foreignerRatio;
+    private double sps;
     private Long saleAccount;
-    private Float crntRate;
-    private Float lbltRate;
-    private Float ntinInrt;
-    private Float bsopPrfiInrt;
-    private Float grs;
-    private Float roeVal;
+    private double crntRate;
+    private double lbltRate;
+    private double ntinInrt;
+    private double bsopPrfiInrt;
+    private double grs;
+    private double roeVal;
 
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
     private List<StockComment> comments = new ArrayList<>();

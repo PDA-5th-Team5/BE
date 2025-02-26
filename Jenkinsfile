@@ -1,120 +1,133 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'FULL_BUILD', defaultValue: false, description: '전체 모듈을 빌드할지 여부')
+    }
+
     environment {
-        DOCKER_USER = "grrrrr1123"
-        BASTION_HOST = "ubuntu@43.200.225.24"
+        DOCKER_HUB_USERNAME = 'qpwisu'
+        ENV_FILE = "/home/ubuntu/common.env" // EC2에 저장된 환경 변수 파일 경로
+    }
+
+    triggers {
+        githubPush()
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Detect Changed Services') {
-            steps {
                 script {
-                    def changedFiles = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim().split("\n")
-                    def servicesToBuild = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'portfolio-service'].findAll { service ->
-                        changedFiles.any { it.contains(service) }
-                    }
-                    if (servicesToBuild.isEmpty()) {
-                        servicesToBuild = ['util-service']
-                    }
-                    env.SERVICES_TO_BUILD = servicesToBuild.join(',')
+                    checkout scm
                 }
             }
         }
 
-        stage('Build Jar') {
+        stage('Load Environment Variables') {
             steps {
                 script {
-                    def services = env.SERVICES_TO_BUILD.split(',')
-                    parallel services.collectEntries { service ->
-                        ["Build Jar ${service}": {
+                    def envVars = sh(script: "cat ${ENV_FILE} | grep -v '^#'", returnStdout: true).trim().split("\n")
+                    def envList = envVars.collect { it.replace("\"", "").trim() }.findAll { it.contains("=") }
+                    def formattedEnvVars = envList.collect { "export " + it }
+                    writeFile(file: 'env_export.sh', text: formattedEnvVars.join("\n"))
+                    sh "chmod +x env_export.sh"
+                    echo "✅ Environment variables loaded successfully."
+                }
+            }
+        }
+
+        stage('Detect Changed Modules') {
+            steps {
+                script {
+                    def affectedModules = []
+
+                    if (params.FULL_BUILD) {
+                        affectedModules = ["eureka-server","api-gateway", "stock-service", "user-service", "portfolio-service"]
+                    } else {
+                        def changedFiles = sh(script: "git diff --name-only HEAD^ HEAD", returnStdout: true).trim().split("\n")
+
+                        if (changedFiles.any { it.startsWith("util-service/") }) {
+                            affectedModules.addAll(["eureka-server", "api-gateway", "stock-service", "user-service", "portfolio-service"])
+                        }
+                        if (changedFiles.any { it.startsWith("eureka-server/") }) {
+                            affectedModules.add("eureka-server")
+                        }
+                        if (changedFiles.any { it.startsWith("api-gateway/") }) {
+                            affectedModules.add("api-gateway")
+                        }
+                        if (changedFiles.any { it.startsWith("stock-service/") }) {
+                            affectedModules.add("stock-service")
+                        }
+                        if (changedFiles.any { it.startsWith("user-service/") }) {
+                            affectedModules.add("user-service")
+                        }
+                        if (changedFiles.any { it.startsWith("portfolio-service/") }) {
+                            affectedModules.add("portfolio-service")
+                        }
+                    }
+
+                    env.AFFECTED_MODULES = affectedModules.unique().join(" ")
+                    if (env.AFFECTED_MODULES.trim().isEmpty()) {
+                        currentBuild.result = 'SUCCESS'
+                        echo "✅ 변경된 모듈이 없어 빌드 및 배포를 건너뜁니다."
+                        return
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Docker Images') {
+            when {
+                expression { return !env.AFFECTED_MODULES.trim().isEmpty() }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-password', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                    script {
+                        sh "echo \${DOCKER_HUB_PASSWORD} | docker login -u \${DOCKER_HUB_USERNAME} --password-stdin"
+
+                        env.AFFECTED_MODULES.split(" ").each { module ->
                             sh """
-                            cd src/${service} && \
-                            ./gradlew clean build --build-cache --parallel --daemon
+                            echo ">>> Building ${module}"
+                            cd ${module} || exit 1
+                            chmod +x ./gradlew
+                            ./gradlew clean build -x test
+                            docker build --build-arg SERVER_PORT=\${SERVER_PORT} -t qpwisu/${module}:latest .
+                            docker push qpwisu/${module}:latest
                             """
-                        }]
-                    }
-                }
-            }
-        }
-
-        stage('Verify JAR File') {
-            steps {
-                script {
-                    def services = env.SERVICES_TO_BUILD.split(',')
-                    services.each { service ->
-                        def jarPath = "src/${service}/build/libs/"
-                        def jarExists = sh(script: "ls ${jarPath}*.jar | grep -E '(${service}-.*.jar|app.jar)'", returnStatus: true) == 0
-                        if (!jarExists) {
-                            error "JAR 파일이 생성되지 않았습니다: ${service}"
                         }
                     }
                 }
             }
         }
 
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    def services = env.SERVICES_TO_BUILD.split(',')
-                    parallel services.collectEntries { service ->
-                        ["Build & Push ${service}": {
-                            sh """
-                            docker build --cache-from=${DOCKER_USER}/${service}:latest -t ${DOCKER_USER}/${service}:latest -f ./src/${service}/Dockerfile ./src/${service}
-                            docker push ${DOCKER_USER}/${service}:latest
-                            """
-                        }]
-                    }
-                }
+        stage('Deploy to EC2') {
+            when {
+                expression { return !env.AFFECTED_MODULES.trim().isEmpty() }
             }
-        }
-
-        stage('Deploy to Private Subnet Servers') {
             steps {
                 script {
-                    def SERVER_MAPPING = [
-                        "api-gateway": "10.0.2.61",
-                        "eureka-server": "10.0.2.61",
-                        "util-service": "10.0.2.61",
-                        "user-service": "10.0.2.44",
-                        "stock-service": "10.0.2.96",
-                        "portfolio-service": "10.0.2.25"
-                    ]
-
-                    def PORT_MAPPING = [
-                        "api-gateway": "8081:8081",
-                        "eureka-server": "8761:8761",
-                        "util-service": "8082:8082",
-                        "user-service": "8083:8083",
-                        "stock-service": "8084:8084",
-                        "portfolio-service": "8085:8085"
-                    ]
-
-                    def parallelDeploy = [:]
-                    env.SERVICES_TO_BUILD.split(',').each { service ->
-                        def privateIP = SERVER_MAPPING[service]
-                        parallelDeploy["Deploy ${service}"] = {
-                            withCredentials([sshUserPrivateKey(credentialsId: 'bastion-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
-                                sh """
-                                ssh -i ${env.SSH_KEY_FILE} -o StrictHostKeyChecking=no ubuntu@43.200.225.24 <<EOF
-                                ssh -i ~/.ssh/id_rsa ubuntu@10.0.2.61 '
-                                    docker pull grrrrr1123/util-service:latest &&
-                                    docker stop util-service &&
-                                    docker rm util-service &&
-                                    docker run -d --name util-service -p 8082:8082 grrrrr1123/util-service:latest
-                                '
-                                EOF
-                                """
-                            }
+                    env.AFFECTED_MODULES.split(" ").each { module ->
+                        def targetServer = ""
+                        if (module == "api-gateway" || module == "eureka-server") {
+                            targetServer = "api-gateway"
+                        } else if (module == "stock-service") {
+                            targetServer = "stock"
+                        } else if (module == "user-service") {
+                            targetServer = "user"
+                        } else if (module == "portfolio-service") {
+                            targetServer = "portfolio"
                         }
+
+                        sh """
+                        # .env 파일 복사 후 실행
+                        scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
+                        ssh ${targetServer} 'cd /home/ubuntu && docker-compose pull && docker-compose --env-file /home/ubuntu/common.env up -d ${module}'
+                        """
+                        sh """
+                        scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
+                        ssh ubuntu@${targetServer} 'cd /home/ubuntu && docker-compose pull && docker-compose --env-file /home/ubuntu/common.env up -d ${module}'
+                        """
                     }
-                    parallel parallelDeploy
                 }
             }
         }
