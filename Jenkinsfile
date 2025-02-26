@@ -74,7 +74,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
+                    echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin
 
                     env.AFFECTED_MODULES.split(" ").each { module ->
                         def buildArgs = ""
