@@ -48,12 +48,16 @@ subprojects {
 // ✅ API Gateway 모듈
 project(':api-gateway') {
     dependencies {
-        implementation project(':util-service')
+//        implementation project(':util-service')
+        implementation(project(':util-service')) {
+            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-web'
+        }
         implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
         implementation 'org.springframework.boot:spring-boot-starter-security'
         implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
         implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
         implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+//        implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0'
     }
 }
 
@@ -126,7 +130,7 @@ project(':util-service') {
         implementation 'org.apache.commons:commons-lang3'
         implementation 'org.springframework.boot:spring-boot-starter-validation'
         implementation 'org.springframework.boot:spring-boot-starter-web'
-        'org.springframework.boot:spring-boot-starter-data-jpa'
+//        'org.springframework.boot:spring-boot-starter-data-jpa'
     }
 
     bootJar {
