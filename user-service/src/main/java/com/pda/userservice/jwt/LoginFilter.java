@@ -1,5 +1,7 @@
 package com.pda.userservice.jwt;
 
+import com.pda.userservice.entity.Refresh;
+import com.pda.userservice.repository.RefreshRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +24,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
-//    private final RefreshRepository refreshRepository;
+    private final RefreshRepository refreshRepository;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -54,7 +56,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // Refresh 토큰 DB에 저장
 //        addRefreshEntity(username, refresh, 86400000L); // mysql
-//        addRefreshEntity(username, refresh); // redis
+        addRefreshEntity(username, refresh); // redis
 
         //응답 설정
         response.setHeader("access", access);
@@ -64,17 +66,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     // TODO to redis
-//    private void addRefreshEntity(String username, String refresh) {
-//
-////        Date date = new Date(System.currentTimeMillis() + expiredMs);
-//
-//        RefreshEntity refreshEntity = new RefreshEntity();
-//        refreshEntity.setUsername(username);
-//        refreshEntity.setRefresh(refresh);
-////        refreshEntity.setExpiration(date.toString());
-//
-//        refreshRepository.save(refreshEntity);
-//    }
+    private void addRefreshEntity(String username, String refresh) {
+
+//        Date date = new Date(System.currentTimeMillis() + expiredMs);
+
+        Refresh refreshEntity = new Refresh();
+        refreshEntity.setUsername(username);
+        refreshEntity.setRefresh(refresh);
+//        refreshEntity.setExpiration(date.toString());
+
+        refreshRepository.save(refreshEntity);
+    }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {

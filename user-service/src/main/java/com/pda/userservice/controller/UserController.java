@@ -2,6 +2,8 @@ package com.pda.userservice.controller;
 
 import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +41,11 @@ public class UserController {
         }
 
         return new ResponseEntity<>("회원가입 성공", HttpStatus.OK);
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+        return userService.handleReissue(request, response);
     }
 
 }
