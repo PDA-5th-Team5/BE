@@ -1,4 +1,8 @@
 package com.pda.stockservice.service;
 
-public class StockService {
+import com.pda.stockservice.dto.response.StockInfoResponseDTO;
+
+public interface StockService {
+    StockInfoResponseDTO getStocks(Short stockId);
+
 }
