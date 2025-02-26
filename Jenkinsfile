@@ -2,119 +2,98 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER = "grrrrr1123"
-        BASTION_HOST = "ubuntu@43.200.225.24"
+        DOCKER_HUB_USERNAME = 'qpwisu'
+        DOCKER_HUB_PASSWORD = credentials('docker-hub-password')  // Jenkins에서 저장한 Docker Hub 패스워드
+        ENV_FILE = "~/env/common.env"
+    }
+
+    triggers {
+        githubPush()  // GitHub Webhook을 감지하여 실행
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Detect Changed Services') {
-            steps {
                 script {
-                    def changedFiles = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim().split("\n")
-                    def servicesToBuild = ['api-gateway', 'eureka-server', 'util-service', 'user-service', 'stock-service', 'portfolio-service'].findAll { service ->
-                        changedFiles.any { it.contains(service) }
-                    }
-                    if (servicesToBuild.isEmpty()) {
-                        servicesToBuild = ['util-service']
-                    }
-                    env.SERVICES_TO_BUILD = servicesToBuild.join(',')
+                    checkout scm  // GitHub에서 최신 코드 체크아웃
+                    sh "git pull origin develop"  // 최신 코드 반영
                 }
             }
         }
 
-        stage('Build Jar') {
+        stage('Detect Changed Modules') {
             steps {
                 script {
-                    def services = env.SERVICES_TO_BUILD.split(',')
-                    parallel services.collectEntries { service ->
-                        ["Build Jar ${service}": {
-                            sh """
-                            cd src/${service} && \
-                            ./gradlew clean build --build-cache --parallel --daemon
-                            """
-                        }]
+                    def changedFiles = sh(script: "git diff --name-only HEAD~1", returnStdout: true).trim().split("\n")
+                    def affectedModules = []
+
+                    // util-service가 변경되면 모든 관련 서비스 재빌드
+                    if (changedFiles.any { it.startsWith("util-service/") }) {
+                        affectedModules.addAll(["api-gateway", "eureka-server", "stock-service", "user-service", "portfolio-service"])
+                    }
+
+                    if (changedFiles.any { it.startsWith("api-gateway/") }) {
+                        affectedModules.add("api-gateway")
+                    }
+                    if (changedFiles.any { it.startsWith("eureka-server/") }) {
+                        affectedModules.add("eureka-server")
+                    }
+                    if (changedFiles.any { it.startsWith("stock-service/") }) {
+                        affectedModules.add("stock-service")
+                    }
+                    if (changedFiles.any { it.startsWith("user-service/") }) {
+                        affectedModules.add("user-service")
+                    }
+                    if (changedFiles.any { it.startsWith("portfolio-service/") }) {
+                        affectedModules.add("portfolio-service")
+                    }
+
+                    env.AFFECTED_MODULES = affectedModules.unique().join(" ")
+                }
+            }
+        }
+
+        stage('Build & Push Docker Images') {
+            steps {
+                script {
+                    env.AFFECTED_MODULES.split(" ").each { module ->
+                        sh """
+                        cd ${module}
+                        ./gradlew clean build  # 전체 클린 빌드 수행
+                        docker build --build-arg SERVER_PORT=${module.toUpperCase()}_SERVER_PORT \
+                                     --build-arg SPRING_DATASOURCE_URL=${module.toUpperCase()}_SPRING_DATASOURCE_URL \
+                                     --build-arg SPRING_DATASOURCE_USERNAME=${module.toUpperCase()}_SPRING_DATASOURCE_USERNAME \
+                                     --build-arg SPRING_DATASOURCE_PASSWORD=${module.toUpperCase()}_SPRING_DATASOURCE_PASSWORD \
+                                     -t qpwisu/${module}:latest .
+                        docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+                        docker push qpwisu/${module}:latest
+                        """
                     }
                 }
             }
         }
 
-        stage('Verify JAR File') {
+        stage('Deploy to EC2') {
             steps {
                 script {
-                    def services = env.SERVICES_TO_BUILD.split(',')
-                    services.each { service ->
-                        def jarPath = "src/${service}/build/libs/"
-                        def jarExists = sh(script: "ls ${jarPath}*.jar | grep -E '(${service}-.*.jar|app.jar)'", returnStatus: true) == 0
-                        if (!jarExists) {
-                            error "JAR 파일이 생성되지 않았습니다: ${service}"
+                    env.AFFECTED_MODULES.split(" ").each { module ->
+                        def targetServer = ""
+                        if (module == "api-gateway" || module == "eureka-server") {
+                            targetServer = "api-gateway-eureka"
+                        } else if (module == "stock-service") {
+                            targetServer = "stock"
+                        } else if (module == "user-service") {
+                            targetServer = "user"
+                        } else if (module == "portfolio-service") {
+                            targetServer = "portfolio"
                         }
+
+                        sh """
+                        # .env 파일 복사 후 실행
+                        scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
+                        ssh ${targetServer} 'cd /home/ubuntu && docker-compose pull && docker-compose --env-file /home/ubuntu/common.env up -d ${module}'
+                        """
                     }
-                }
-            }
-        }
-
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    def services = env.SERVICES_TO_BUILD.split(',')
-                    parallel services.collectEntries { service ->
-                        ["Build & Push ${service}": {
-                            sh """
-                            docker build --cache-from=${DOCKER_USER}/${service}:latest -t ${DOCKER_USER}/${service}:latest -f ./src/${service}/Dockerfile ./src/${service}
-                            docker push ${DOCKER_USER}/${service}:latest
-                            """
-                        }]
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to Private Subnet Servers') {
-            steps {
-                script {
-                    def SERVER_MAPPING = [
-                        "api-gateway": "10.0.2.61",
-                        "eureka-server": "10.0.2.61",
-                        "util-service": "10.0.2.61",
-                        "user-service": "10.0.2.44",
-                        "stock-service": "10.0.2.96",
-                        "portfolio-service": "10.0.2.25"
-                    ]
-
-                    def PORT_MAPPING = [
-                        "api-gateway": "8081:8081",
-                        "eureka-server": "8761:8761",
-                        "util-service": "8082:8082",
-                        "user-service": "8083:8083",
-                        "stock-service": "8084:8084",
-                        "portfolio-service": "8085:8085"
-                    ]
-
-                    def parallelDeploy = [:]
-                    env.SERVICES_TO_BUILD.split(',').each { service ->
-                        def privateIP = SERVER_MAPPING[service]
-                        parallelDeploy["Deploy ${service}"] = {
-                            withCredentials([sshUserPrivateKey(credentialsId: 'bastion-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
-                                sh """
-                                ssh -i ${env.SSH_KEY_FILE} -o StrictHostKeyChecking=no ubuntu@43.200.225.24 <<EOF
-                                ssh -i ~/.ssh/id_rsa ubuntu@10.0.2.61 '
-                                    docker pull grrrrr1123/util-service:latest &&
-                                    docker stop util-service &&
-                                    docker rm util-service &&
-                                    docker run -d --name util-service -p 8082:8082 grrrrr1123/util-service:latest
-                                '
-                                EOF
-                                """
-                            }
-                        }
-                    }
-                    parallel parallelDeploy
                 }
             }
         }

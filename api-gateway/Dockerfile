@@ -1,13 +1,11 @@
-# Ubuntu 24.04 + OpenJDK 17 사용
-FROM ubuntu:24.04
-
-RUN apt update && apt install -y openjdk-17-jdk
-
-# 작업 디렉터리 설정
+FROM openjdk:17-jdk-slim
 WORKDIR /app
 
-COPY build/libs/app.jar app.jar
+ARG SERVER_PORT
+ARG EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
 
-EXPOSE 8081
+ENV SERVER_PORT=$SERVER_PORT
+ENV EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=$EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
 
-CMD ["java", "-jar", "app.jar"]
+COPY build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
