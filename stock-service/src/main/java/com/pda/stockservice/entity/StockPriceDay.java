@@ -30,10 +30,10 @@ public class StockPriceDay {
     @JoinColumn(name = "stock_id")
     private Stock stock;
 
-    private Integer openPrice;
-    private Integer highPrice;
-    private Integer lowPrice;
-    private Integer closePrice;
+    private int openPrice;
+    private int highPrice;
+    private int lowPrice;
+    private int closePrice;
     private Long volume;
-    private Float changeRate;
+    private double changeRate;
 }

@@ -23,7 +23,7 @@ public class MarketIndicatorPrice {
 
     @EmbeddedId
     private MarketIndicatorPriceId id;
-    private Integer price;
+    private int price;
 
 
 }
