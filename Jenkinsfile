@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_USERNAME = 'qpwisu'
-        ENV_FILE = "~/env/common.env"
+        ENV_FILE = "~/common.env"
     }
 
     triggers {
