@@ -57,14 +57,36 @@ pipeline {
             steps {
                 script {
                     env.AFFECTED_MODULES.split(" ").each { module ->
+                        def buildArgs = ""
+
+                        if (module == "api-gateway") {
+                            buildArgs = "--build-arg SERVER_PORT=\${APIGATEWAY_SERVER_PORT} " +
+                                        "--build-arg EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=\${APIGATEWAY_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}"
+                        } else if (module == "eureka-server") {
+                            buildArgs = "--build-arg SERVER_PORT=\${EUREKA_SERVER_PORT} " +
+                                        "--build-arg EUREKA_INSTANCE_HOSTNAME=\${EUREKA_INSTANCE_HOSTNAME} " +
+                                        "--build-arg ENABLE_SELF_PRESERVATION=\${EUREKA_SERVER_ENABLE_SELF_PRESERVATION}"
+                        } else if (module == "stock-service") {
+                            buildArgs = "--build-arg SERVER_PORT=\${STOCK_SERVER_PORT} " +
+                                        "--build-arg SPRING_DATASOURCE_URL=\${STOCK_SPRING_DATASOURCE_URL} " +
+                                        "--build-arg SPRING_DATASOURCE_USERNAME=\${STOCK_SPRING_DATASOURCE_USERNAME} " +
+                                        "--build-arg SPRING_DATASOURCE_PASSWORD=\${STOCK_SPRING_DATASOURCE_PASSWORD}"
+                        } else if (module == "user-service") {
+                            buildArgs = "--build-arg SERVER_PORT=\${USER_SERVER_PORT} " +
+                                        "--build-arg SPRING_DATASOURCE_URL=\${USER_SPRING_DATASOURCE_URL} " +
+                                        "--build-arg SPRING_DATASOURCE_USERNAME=\${USER_SPRING_DATASOURCE_USERNAME} " +
+                                        "--build-arg SPRING_DATASOURCE_PASSWORD=\${USER_SPRING_DATASOURCE_PASSWORD}"
+                        } else if (module == "portfolio-service") {
+                            buildArgs = "--build-arg SERVER_PORT=\${PORTFOLIO_SERVER_PORT} " +
+                                        "--build-arg SPRING_DATASOURCE_URL=\${PORTFOLIO_SPRING_DATASOURCE_URL} " +
+                                        "--build-arg SPRING_DATASOURCE_USERNAME=\${PORTFOLIO_SPRING_DATASOURCE_USERNAME} " +
+                                        "--build-arg SPRING_DATASOURCE_PASSWORD=\${PORTFOLIO_SPRING_DATASOURCE_PASSWORD}"
+                        }
+
                         sh """
                         cd ${module}
-                        ./gradlew clean build  # 전체 클린 빌드 수행
-                        docker build --build-arg SERVER_PORT=${module.toUpperCase()}_SERVER_PORT \
-                                     --build-arg SPRING_DATASOURCE_URL=${module.toUpperCase()}_SPRING_DATASOURCE_URL \
-                                     --build-arg SPRING_DATASOURCE_USERNAME=${module.toUpperCase()}_SPRING_DATASOURCE_USERNAME \
-                                     --build-arg SPRING_DATASOURCE_PASSWORD=${module.toUpperCase()}_SPRING_DATASOURCE_PASSWORD \
-                                     -t qpwisu/${module}:latest .
+                        ./gradlew clean build  # 클린 빌드 수행
+                        docker build ${buildArgs} -t qpwisu/${module}:latest .
                         docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
                         docker push qpwisu/${module}:latest
                         """
