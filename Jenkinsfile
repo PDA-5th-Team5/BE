@@ -42,18 +42,18 @@ pipeline {
                     def affectedModules = []
 
                     if (params.FULL_BUILD) {
-                        affectedModules = ["api-gateway", "eureka-server", "stock-service", "user-service", "portfolio-service"]
+                        affectedModules = ["eureka-server","api-gateway", "stock-service", "user-service", "portfolio-service"]
                     } else {
                         def changedFiles = sh(script: "git diff --name-only HEAD^ HEAD", returnStdout: true).trim().split("\n")
 
                         if (changedFiles.any { it.startsWith("util-service/") }) {
-                            affectedModules.addAll(["api-gateway", "eureka-server", "stock-service", "user-service", "portfolio-service"])
-                        }
-                        if (changedFiles.any { it.startsWith("api-gateway/") }) {
-                            affectedModules.add("api-gateway")
+                            affectedModules.addAll(["eureka-server", "api-gateway", "stock-service", "user-service", "portfolio-service"])
                         }
                         if (changedFiles.any { it.startsWith("eureka-server/") }) {
                             affectedModules.add("eureka-server")
+                        }
+                        if (changedFiles.any { it.startsWith("api-gateway/") }) {
+                            affectedModules.add("api-gateway")
                         }
                         if (changedFiles.any { it.startsWith("stock-service/") }) {
                             affectedModules.add("stock-service")
@@ -90,8 +90,7 @@ pipeline {
                             echo ">>> Building ${module}"
                             cd ${module} || exit 1
                             chmod +x ./gradlew
-                            ./gradlew clean build
-                            source ../env_export.sh
+                            ./gradlew clean build -x test
                             docker build --build-arg SERVER_PORT=\${SERVER_PORT} -t qpwisu/${module}:latest .
                             docker push qpwisu/${module}:latest
                             """
