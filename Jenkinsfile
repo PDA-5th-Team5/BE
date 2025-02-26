@@ -26,14 +26,11 @@ pipeline {
         stage('Load Environment Variables') {
             steps {
                 script {
-                    def envVars = sh(script: "cat ${ENV_FILE} | grep -v '^#' | xargs", returnStdout: true).trim()
-                    def envList = envVars.split(" ")
-                    envList.each { envVar ->
-                        def keyValue = envVar.split("=")
-                        if (keyValue.size() == 2) {
-                            env.put(keyValue[0], keyValue[1])  // putAt 대신 put 사용
-                        }
-                    }
+                    def envVars = sh(script: "cat ${ENV_FILE} | grep -v '^#'", returnStdout: true).trim().split("\n")
+                    def envList = envVars.collect { it.replace("\"", "").trim() }.findAll { it.contains("=") }
+                    def formattedEnvVars = envList.collect { "export " + it }
+                    writeFile(file: 'env_export.sh', text: formattedEnvVars.join("\n"))
+                    sh "chmod +x env_export.sh"
                     echo "✅ Environment variables loaded successfully."
                 }
             }
@@ -69,7 +66,7 @@ pipeline {
                         }
                     }
 
-                    env.put("AFFECTED_MODULES", affectedModules.unique().join(" "))  // putAt 대신 put 사용
+                    env.AFFECTED_MODULES = affectedModules.unique().join(" ")
                     if (env.AFFECTED_MODULES.trim().isEmpty()) {
                         currentBuild.result = 'SUCCESS'
                         echo "✅ 변경된 모듈이 없어 빌드 및 배포를 건너뜁니다."
@@ -89,38 +86,13 @@ pipeline {
                         sh "echo \${DOCKER_HUB_PASSWORD} | docker login -u \${DOCKER_HUB_USERNAME} --password-stdin"
 
                         env.AFFECTED_MODULES.split(" ").each { module ->
-                            def buildArgs = ""
-
-                            if (module == "api-gateway") {
-                                buildArgs = "--build-arg SERVER_PORT=${env.APIGATEWAY_SERVER_PORT} " +
-                                            "--build-arg EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${env.APIGATEWAY_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}"
-                            } else if (module == "eureka-server") {
-                                buildArgs = "--build-arg SERVER_PORT=${env.EUREKA_SERVER_PORT} " +
-                                            "--build-arg EUREKA_INSTANCE_HOSTNAME=${env.EUREKA_INSTANCE_HOSTNAME} " +
-                                            "--build-arg ENABLE_SELF_PRESERVATION=${env.EUREKA_SERVER_ENABLE_SELF_PRESERVATION}"
-                            } else if (module == "stock-service") {
-                                buildArgs = "--build-arg SERVER_PORT=${env.STOCK_SERVER_PORT} " +
-                                            "--build-arg SPRING_DATASOURCE_URL=${env.STOCK_SPRING_DATASOURCE_URL} " +
-                                            "--build-arg SPRING_DATASOURCE_USERNAME=${env.STOCK_SPRING_DATASOURCE_USERNAME} " +
-                                            "--build-arg SPRING_DATASOURCE_PASSWORD=${env.STOCK_SPRING_DATASOURCE_PASSWORD}"
-                            } else if (module == "user-service") {
-                                buildArgs = "--build-arg SERVER_PORT=${env.USER_SERVER_PORT} " +
-                                            "--build-arg SPRING_DATASOURCE_URL=${env.USER_SPRING_DATASOURCE_URL} " +
-                                            "--build-arg SPRING_DATASOURCE_USERNAME=${env.USER_SPRING_DATASOURCE_USERNAME} " +
-                                            "--build-arg SPRING_DATASOURCE_PASSWORD=${env.USER_SPRING_DATASOURCE_PASSWORD}"
-                            } else if (module == "portfolio-service") {
-                                buildArgs = "--build-arg SERVER_PORT=${env.PORTFOLIO_SERVER_PORT} " +
-                                            "--build-arg SPRING_DATASOURCE_URL=${env.PORTFOLIO_SPRING_DATASOURCE_URL} " +
-                                            "--build-arg SPRING_DATASOURCE_USERNAME=${env.PORTFOLIO_SPRING_DATASOURCE_USERNAME} " +
-                                            "--build-arg SPRING_DATASOURCE_PASSWORD=${env.PORTFOLIO_SPRING_DATASOURCE_PASSWORD}"
-                            }
-
                             sh """
                             echo ">>> Building ${module}"
                             cd ${module} || exit 1
                             chmod +x ./gradlew
                             ./gradlew clean build
-                            docker build ${buildArgs} -t qpwisu/${module}:latest .
+                            source ../env_export.sh
+                            docker build --build-arg SERVER_PORT=\${SERVER_PORT} -t qpwisu/${module}:latest .
                             docker push qpwisu/${module}:latest
                             """
                         }
