@@ -18,6 +18,12 @@ public class StockController {
 
     private final StockService stockService;
 
+    @GetMapping("/test")
+    public String test2() {
+        return "stock test";
+    }
+
+
     //개별종목 정보조회
     @GetMapping("/{stockId}")
     public ApiResponse<StockInfoResponseDTO> getStocks(@PathVariable("stockId") Short stockId) {
