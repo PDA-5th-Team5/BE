@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_USERNAME = 'qpwisu'
-        ENV_FILE = "/home/ubuntu/common.env" // EC2에 저장된 환경 변수 파일 경로
+        ENV_FILE = "/home/ubuntu/common.env"
     }
 
     triggers {
@@ -40,7 +40,6 @@ pipeline {
             steps {
                 script {
                     def affectedModules = []
-                    def currentBranch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
 
                     if (params.FULL_BUILD) {
                         affectedModules = ["eureka-server", "api-gateway", "stock-service", "user-service", "portfolio-service"]
@@ -120,7 +119,6 @@ pipeline {
                         }
 
                         sh """
-                        # .env 파일 복사 후 실행
                         scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
                         ssh ubuntu@${targetServer} '
                         dos2unix /home/ubuntu/common.env || true
@@ -151,10 +149,9 @@ pipeline {
                         }
 
                         sh """
-                        ssh ubuntu@${targetServer} '
-                        set -o pipefail &&
-                        docker images --format "{{.Repository}} {{.Tag}} {{.ID}}" | grep "qpwisu/${module}" | sort -k2 -V | awk "NR>10 {print \\\$3}" | grep -v "^$" | xargs --no-run-if-empty docker rmi -f || true
-                        '
+                        ssh ubuntu@${targetServer} """
+                        docker images --format "{{.Repository}} {{.Tag}} {{.ID}}" | grep "qpwisu/${module}" | sort -k2 -V | awk 'NR>10 {print \$3}' | grep -v "^$" | xargs --no-run-if-empty docker rmi -f || true
+                        """
                         """
                     }
                 }
@@ -165,7 +162,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker images --format "{{.Repository}} {{.Tag}} {{.ID}}" | grep "qpwisu/" | sort -k2 -V | awk "NR>10 {print \\\$3}" | grep -v "^$" | xargs --no-run-if-empty docker rmi -f || true
+                    docker images --format "{{.Repository}} {{.Tag}} {{.ID}}" | grep "qpwisu/" | sort -k2 -V | awk 'NR>10 {print \$3}' | grep -v "^$" | xargs --no-run-if-empty docker rmi -f || true
                     """
                 }
             }
