@@ -1,8 +1,6 @@
-package com.pda.userservice.jwt;
+package com.pda.apigateway.filter;
 
-import com.pda.userservice.dto.CustomUserDetails;
-import com.pda.userservice.entity.User;
-import com.pda.userservice.enums.UserType;
+import com.pda.apigateway.filter.CustomUserDetails;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,7 +27,7 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        System.out.println("JWTFilter.doFilterInternal");
+        System.out.println("JWTFilter.doFilterInternal API Gateway");
 
         //request에서 Authorization 헤더를 찾음
         String authorization= request.getHeader("Authorization");
@@ -89,13 +87,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // username, role 값을 획득
         String username = jwtUtil.getUsername(accessToken);
-        String roleS = jwtUtil.getRole(accessToken);
-        UserType role = UserType.ROLE_ADMIN.toString().equals(roleS) ? UserType.ROLE_ADMIN : UserType.ROLE_GUEST;
+        String role = jwtUtil.getRole(accessToken);
 
-        User user = new User();
-        user.setUsername(username);
-        user.setUserType(role);
-        CustomUserDetails customUserDetails = new CustomUserDetails(user);
+        CustomUserDetails customUserDetails = new CustomUserDetails(username, role);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);

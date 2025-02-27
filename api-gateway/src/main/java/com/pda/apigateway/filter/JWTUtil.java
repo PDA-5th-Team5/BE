@@ -1,4 +1,4 @@
-package com.pda.userservice.jwt;
+package com.pda.apigateway.filter;
 
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,15 +39,4 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
-    public String createJwt(String category, String username, String role, Long expiredMs) {
-
-        return Jwts.builder()
-                .claim("category", category) // access 토큰, refresh 토큰
-                .claim("username", username)
-                .claim("role", role)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
-                .signWith(secretKey)
-                .compact();
-    }
 }
