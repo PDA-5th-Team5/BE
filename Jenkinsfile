@@ -122,8 +122,7 @@ pipeline {
                         sh """
                         # .env 파일 복사 후 실행
                         scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
-                        ssh ${targetServer} 'cd /home/ubuntu && docker-compose pull && docker-compose up -d ${module}'
-                        docker image prune -a -f
+                        ssh ${targetServer} "cd /home/ubuntu && docker-compose --env-file /home/ubuntu/common.env pull && docker-compose --env-file /home/ubuntu/common.env up -d ${module}"                        docker image prune -a -f
                         """
 //                         sh """
 //                         scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
