@@ -1,7 +1,6 @@
 package com.pda.userservice.config;
 
 import com.pda.userservice.jwt.CustomLogoutFilter;
-import com.pda.userservice.jwt.JWTFilter;
 import com.pda.userservice.jwt.JWTUtil;
 import com.pda.userservice.jwt.LoginFilter;
 import com.pda.userservice.repository.RefreshRepository;
@@ -58,13 +57,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .anyRequest().permitAll());
-//                        .requestMatchers("/login", "/", "/join").permitAll()
-//                        .requestMatchers("/admin").hasRole("ADMIN")
-//                        .requestMatchers("/reissue").permitAll()
-//                        .anyRequest().authenticated());
 
-        http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
         http
