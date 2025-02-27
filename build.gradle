@@ -102,6 +102,7 @@ project(':user-service') {
 project(':stock-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
         implementation project(':util-service')
         implementation 'mysql:mysql-connector-java:8.0.33'
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
