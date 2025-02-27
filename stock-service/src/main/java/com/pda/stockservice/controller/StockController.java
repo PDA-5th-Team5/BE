@@ -6,10 +6,7 @@ import com.pda.stockservice.service.StockService;
 import com.pda.stockservice.service.StockServiceImpl;
 import com.pda.utilservice.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,5 +20,19 @@ public class StockController {
     public ApiResponse<StockInfoResponseDTO> getStocks(@PathVariable("stockId") Short stockId) {
         StockInfoResponseDTO stockInfoResponseDTO = stockService.getStocks(stockId);
         return ApiResponse.onSuccess(stockInfoResponseDTO);
+    }
+
+    //관심종목 추가
+    @PostMapping("/{stockId}/watchlist")
+    public ApiResponse<Void> addFavoriteStock(@PathVariable("stockId") Short stockId){
+        stockService.addFavoriteStock(stockId);
+        return ApiResponse.onSuccess(null);
+    }
+
+    //관심종목 삭제
+    @DeleteMapping("/{stockId}/watchlist")
+    public  ApiResponse<Void> deleteFavoriteStock(@PathVariable("stockId") Short stockId){
+        stockService.deleteFavoriteStock(stockId);
+        return ApiResponse.onSuccess(null);
     }
 }
