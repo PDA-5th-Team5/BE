@@ -40,11 +40,12 @@ pipeline {
             steps {
                 script {
                     def affectedModules = []
+                    def currentBranch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
 
                     if (params.FULL_BUILD) {
-                        affectedModules = ["eureka-server","api-gateway", "stock-service", "user-service", "portfolio-service"]
+                        affectedModules = ["eureka-server", "api-gateway", "stock-service", "user-service", "portfolio-service"]
                     } else {
-                        def changedFiles = sh(script: "git diff --name-only HEAD^ HEAD", returnStdout: true).trim().split("\n")
+                        def changedFiles = sh(script: "git diff origin/develop --name-only", returnStdout: true).trim().split("\n")
 
                         if (changedFiles.any { it.startsWith("util-service/") }) {
                             affectedModules.addAll(["eureka-server", "api-gateway", "stock-service", "user-service", "portfolio-service"])
@@ -91,7 +92,7 @@ pipeline {
                             cd ${module} || exit 1
                             chmod +x ./gradlew
                             ./gradlew clean build -x test
-                            docker build --build-arg SERVER_PORT=\${SERVER_PORT} -t qpwisu/${module}:latest .
+                            docker build -t qpwisu/${module}:latest .
                             docker push qpwisu/${module}:latest
                             """
                         }
@@ -121,13 +122,51 @@ pipeline {
                         sh """
                         # .env 파일 복사 후 실행
                         scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
-                        ssh ${targetServer} 'cd /home/ubuntu && docker-compose pull && docker-compose --env-file /home/ubuntu/common.env up -d ${module}'
-                        """
-                        sh """
-                        scp ${ENV_FILE} ubuntu@${targetServer}:/home/ubuntu/common.env
-                        ssh ubuntu@${targetServer} 'cd /home/ubuntu && docker-compose pull && docker-compose --env-file /home/ubuntu/common.env up -d ${module}'
+                        ssh ubuntu@${targetServer} '
+                        dos2unix /home/ubuntu/common.env || true
+                        export \$(grep -v "^#" /home/ubuntu/common.env | xargs) &&
+                        cd /home/ubuntu &&
+                        docker-compose pull &&
+                        docker-compose --env-file /home/ubuntu/common.env up -d ${module}
+                        '
                         """
                     }
+                }
+            }
+        }
+
+        stage('Cleanup Old Docker Images on EC2') {
+            steps {
+                script {
+                    env.AFFECTED_MODULES.split(" ").each { module ->
+                        def targetServer = ""
+                        if (module == "api-gateway" || module == "eureka-server") {
+                            targetServer = "api-gateway"
+                        } else if (module == "stock-service") {
+                            targetServer = "stock"
+                        } else if (module == "user-service") {
+                            targetServer = "user"
+                        } else if (module == "portfolio-service") {
+                            targetServer = "portfolio"
+                        }
+
+                        sh """
+                        ssh ubuntu@${targetServer} '
+                        set -o pipefail &&
+                        docker images --format "{{.Repository}} {{.Tag}} {{.ID}}" | grep "qpwisu/${module}" | sort -k2 -V | awk "NR>10 {print \\\$3}" | grep -v "^$" | xargs --no-run-if-empty docker rmi -f || true
+                        '
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Cleanup Old Docker Images on Jenkins') {
+            steps {
+                script {
+                    sh """
+                    docker images --format "{{.Repository}} {{.Tag}} {{.ID}}" | grep "qpwisu/" | sort -k2 -V | awk "NR>10 {print \\\$3}" | grep -v "^$" | xargs --no-run-if-empty docker rmi -f || true
+                    """
                 }
             }
         }
