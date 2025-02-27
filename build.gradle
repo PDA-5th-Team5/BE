@@ -48,14 +48,17 @@ subprojects {
 // ✅ API Gateway 모듈
 project(':api-gateway') {
     dependencies {
-//        implementation project(':util-service')
         implementation(project(':util-service'))
         implementation 'org.springframework.cloud:spring-cloud-starter-gateway-mvc'
         implementation 'org.springframework.boot:spring-boot-starter-security'
         implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
         implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
         implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-//        implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0'
+
+        // JWT
+        implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+        implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+        implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
     }
 }
 
