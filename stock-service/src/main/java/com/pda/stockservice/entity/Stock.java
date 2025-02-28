@@ -18,7 +18,13 @@ public class Stock {
     private Short stockId;
 
     private String ticker;
-    private String marketType;
+
+    @Enumerated(EnumType.STRING)
+    private Market market;
+
+    @Enumerated(EnumType.STRING)
+    private Sectors sectors;
+
     private String companyName;
     private String sector;
     private String companyOverview;

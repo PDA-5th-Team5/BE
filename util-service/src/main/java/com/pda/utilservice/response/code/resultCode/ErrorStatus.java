@@ -17,7 +17,11 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // Stock 관련 에러 응답
     STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 주식 정보입니다."),
-    FAVORITE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 관심 종목 주식 정보입니다.");
+    FAVORITE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 관심 종목 주식 정보입니다."),
+
+    // Portfolio 관련 응답
+    PORTFOLIO_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 포트폴리오입니다.");
+
     private final HttpStatus httpStatus;
     private final int status;
     private final String message;
