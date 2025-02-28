@@ -1,7 +1,9 @@
 package com.pda.userservice.controller;
 
 import com.pda.userservice.dto.request.JoinDTO;
+import com.pda.userservice.dto.response.NicknameResponseDTO;
 import com.pda.userservice.service.UserService;
+import com.pda.utilservice.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -48,4 +50,10 @@ public class UserController {
         return userService.handleReissue(request, response);
     }
 
+    @GetMapping("/{userId}/nickname")
+    public ApiResponse<NicknameResponseDTO> getNickname(@PathVariable String userId) {
+        System.out.println("UserController.getNickname");
+        NicknameResponseDTO nicknameResponseDTO = userService.getNicknameByUserId(userId);
+        return ApiResponse.onSuccess(nicknameResponseDTO);
+    }
 }

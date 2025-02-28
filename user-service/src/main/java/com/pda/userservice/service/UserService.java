@@ -1,6 +1,7 @@
 package com.pda.userservice.service;
 
 import com.pda.userservice.dto.request.JoinDTO;
+import com.pda.userservice.dto.response.NicknameResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
@@ -21,4 +22,6 @@ public interface UserService {
      * @return 재발급 결과에 대한 ResponseEntity
      */
     ResponseEntity<?> handleReissue(HttpServletRequest request, HttpServletResponse response);
+
+    NicknameResponseDTO getNicknameByUserId(String userId);
 }

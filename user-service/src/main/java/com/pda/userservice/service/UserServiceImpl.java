@@ -1,11 +1,14 @@
 package com.pda.userservice.service;
 
 import com.pda.userservice.dto.request.JoinDTO;
+import com.pda.userservice.dto.response.NicknameResponseDTO;
 import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.entity.User;
 import com.pda.userservice.repository.UserRepository;
 import com.pda.userservice.repository.RefreshRepository;
 import com.pda.userservice.jwt.JWTUtil;
+import com.pda.utilservice.response.code.resultCode.ErrorStatus;
+import com.pda.utilservice.response.exception.handler.UserHandler;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -75,6 +78,13 @@ public class UserServiceImpl implements UserService {
         response.setHeader("access", newAccess);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Override
+    public NicknameResponseDTO getNicknameByUserId(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
+        return NicknameResponseDTO.toDTO(user);
     }
 
     private String extractRefreshToken(HttpServletRequest request) {
