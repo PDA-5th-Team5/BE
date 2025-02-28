@@ -1,4 +1,4 @@
-package com.pda.stockservice.entity;
+package com.pda.stockservice.enums;
 
 import java.util.Arrays;
 import java.util.List;

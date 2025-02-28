@@ -1,5 +1,7 @@
 package com.pda.stockservice.entity;
 
+import com.pda.stockservice.enums.Market;
+import com.pda.stockservice.enums.Sectors;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

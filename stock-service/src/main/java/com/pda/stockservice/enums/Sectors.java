@@ -1,4 +1,4 @@
-package com.pda.stockservice.entity;
+package com.pda.stockservice.enums;
 
 public enum Sectors {
     철강,

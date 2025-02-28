@@ -1,7 +1,7 @@
 package com.pda.stockservice.dto.response;
 
-import com.pda.stockservice.entity.Market;
-import com.pda.stockservice.entity.Sectors;
+import com.pda.stockservice.enums.Market;
+import com.pda.stockservice.enums.Sectors;
 import com.pda.stockservice.entity.Stock;
 import lombok.Builder;
 import lombok.Getter;
