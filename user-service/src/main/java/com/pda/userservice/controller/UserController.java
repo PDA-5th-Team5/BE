@@ -52,6 +52,7 @@ public class UserController {
 
     @GetMapping("/{userId}/nickname")
     public ApiResponse<NicknameResponseDTO> getNickname(@PathVariable String userId) {
+        System.out.println("UserController.getNickname");
         NicknameResponseDTO nicknameResponseDTO = userService.getNicknameByUserId(userId);
         return ApiResponse.onSuccess(nicknameResponseDTO);
     }

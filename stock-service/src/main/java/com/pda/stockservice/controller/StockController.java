@@ -3,6 +3,7 @@ package com.pda.stockservice.controller;
 import com.pda.stockservice.dto.response.CandleResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 
+import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.stockservice.service.StockService;
 import com.pda.stockservice.service.StockServiceImpl;
 import com.pda.utilservice.response.ApiResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class StockController {
 
     private final StockService stockService;
+    private final UserServiceClient userServiceClient;
 
     @GetMapping("/test")
     public String test2() {
@@ -49,6 +51,16 @@ public class StockController {
     public ApiResponse<CandleResponseDTO> getCandle(@PathVariable("stockId") Short stockId) {
         CandleResponseDTO candleResponseDTO = stockService.getCandle(stockId);
         return ApiResponse.onSuccess(candleResponseDTO);
+    }
+
+    @GetMapping("/openfeign")
+    public String test() {
+
+        System.out.println("StockController.test");
+
+        System.out.println(userServiceClient.getNickname("42b57999-e5ac-4869-a090-ca247852ba6c"));
+
+        return "test";
     }
 
 }
