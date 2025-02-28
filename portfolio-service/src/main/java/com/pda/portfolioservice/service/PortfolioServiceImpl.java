@@ -3,6 +3,7 @@ package com.pda.portfolioservice.service;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
+import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
 import com.pda.portfolioservice.entity.MyPortfolio;
 import com.pda.portfolioservice.entity.SharePortfolio;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
@@ -80,4 +81,43 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         sharePortfolioCommentRepository.save(comment);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SharePortfolioCommentResponseDTO getComments(Long sharePortfolioId) {
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBySharePortfolioId(sharePortfolioId);
+
+        if (comments.isEmpty()) {
+            return SharePortfolioCommentResponseDTO.builder()
+                    .commentsCnt(0)
+                    .comments(List.of())
+                    .build();
+        }
+
+        return SharePortfolioCommentResponseDTO.toDTO(comments);
+
+    }
+
+    @Override
+    public void updateComment(Long sharePortfolioId, Long commentId, SharePortfolioCommentRequestDTO requestDTO) {
+        SharePortfolioComment comment = sharePortfolioCommentRepository.findById(commentId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_COMMENT_NOT_FOUND));
+
+        if (!comment.getSharePortfolio().getSharePortfolioId().equals(sharePortfolioId)) {
+            throw new PortfolioHandler(ErrorStatus.PORTFOLIO_COMMENT_NOT_INCLUDED);
+        }
+
+        comment.setContent(requestDTO.getContent());
+    }
+
+    @Override
+    public void deleteComment(Long sharePortfolioId, Long commentId) {
+        SharePortfolioComment comment = sharePortfolioCommentRepository.findById(commentId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_COMMENT_NOT_FOUND));
+
+        sharePortfolioCommentRepository.deleteById(commentId);
+
+    }
+
+
 }

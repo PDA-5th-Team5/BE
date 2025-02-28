@@ -20,7 +20,9 @@ public enum ErrorStatus implements BaseErrorCode {
     FAVORITE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 관심 종목 주식 정보입니다."),
 
     // Portfolio 관련 응답
-    PORTFOLIO_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 포트폴리오입니다.");
+    PORTFOLIO_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 포트폴리오입니다."),
+    PORTFOLIO_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "해당 댓글이 존재하지 않습니다."),
+    PORTFOLIO_COMMENT_NOT_INCLUDED(HttpStatus.BAD_REQUEST, 400, "해당 포트폴리오에 속한 댓글이 아닙니다.");
 
     private final HttpStatus httpStatus;
     private final int status;
