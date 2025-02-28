@@ -1,4 +1,9 @@
 package com.pda.portfolioservice.feign;
 
-public class UserServiceClient {
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@FeignClient(name = "userservice")
+public interface UserServiceClient {
+
 }
