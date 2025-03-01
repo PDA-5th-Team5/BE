@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface SharePortfolioCommentRepository extends JpaRepository<SharePortfolioComment, Long> {
-    List<SharePortfolioComment> findBySharePortfolioId(Long sharePortfolioId);
+    List<SharePortfolioComment> findBysharePortfolio_SharePortfolioId(Long sharePortfolioId);
 }

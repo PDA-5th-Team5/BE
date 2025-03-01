@@ -85,7 +85,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     @Transactional(readOnly = true)
     public SharePortfolioCommentResponseDTO getComments(Long sharePortfolioId) {
-        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBySharePortfolioId(sharePortfolioId);
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId);
 
         if (comments.isEmpty()) {
             return SharePortfolioCommentResponseDTO.builder()
