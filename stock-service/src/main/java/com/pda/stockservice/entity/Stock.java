@@ -1,5 +1,7 @@
 package com.pda.stockservice.entity;
 
+import com.pda.stockservice.enums.Market;
+import com.pda.stockservice.enums.Sectors;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,7 +20,13 @@ public class Stock {
     private Short stockId;
 
     private String ticker;
-    private String marketType;
+
+    @Enumerated(EnumType.STRING)
+    private Market market;
+
+    @Enumerated(EnumType.STRING)
+    private Sectors sectors;
+
     private String companyName;
     private String sector;
     private String companyOverview;
