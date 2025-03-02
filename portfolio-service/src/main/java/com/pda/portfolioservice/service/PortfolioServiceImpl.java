@@ -1,32 +1,38 @@
 package com.pda.portfolioservice.service;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
-import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
-import com.pda.portfolioservice.dto.response.PortfolioSummaryResponseDTO;
-import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
-import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
+import com.pda.portfolioservice.dto.response.*;
 import com.pda.portfolioservice.entity.MyPortfolio;
 import com.pda.portfolioservice.entity.SharePortfolio;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
+import com.pda.portfolioservice.feign.StockServiceClient;
+import com.pda.portfolioservice.feign.UserServiceClient;
 import com.pda.portfolioservice.repository.MyPortfolioRepository;
 import com.pda.portfolioservice.repository.SharePortfolioCommentRepository;
 import com.pda.portfolioservice.repository.SharePortfolioRepository;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PortfolioServiceImpl implements PortfolioService {
 
+    private final StockServiceClient stockServiceClient;
+    private final UserServiceClient userServiceClient;
     private final MyPortfolioRepository myPortfolioRepository;
     private final SharePortfolioRepository sharePortfolioRepository;
     private final SharePortfolioCommentRepository sharePortfolioCommentRepository;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -77,6 +83,27 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
         myPortfolioRepository.deleteById(myPortfolio.getMyPortfolioId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SharePortfolioListResponseDTO getSharePortfolios(String sort, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<SharePortfolio> sharePortfolios = sharePortfolioRepository.findAll(pageRequest);
+
+        List<SharePortfolioListResponseDTO.SharePortfolioDTO> sharePortfolioDTOList = sharePortfolios.stream()
+                .map(sharePortfolio -> SharePortfolioListResponseDTO.SharePortfolioDTO.builder()
+                        .sharePortfolioId(sharePortfolio.getSharePortfolioId())
+                        .sharePortfolioTitle(sharePortfolio.getTitle())
+                        .sharePortfolioDescription(sharePortfolio.getDescription())
+                        .sharePortfolioImportCnt(sharePortfolio.getLoadCount())
+                        .build()
+                ).collect(Collectors.toList());
+
+        return SharePortfolioListResponseDTO.builder()
+                .sharePortfoliosCnt(sharePortfolioDTOList.size())
+                .sharePortfolios(sharePortfolioDTOList)
+                .build();
     }
 
     @Override

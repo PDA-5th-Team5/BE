@@ -1,10 +1,7 @@
 package com.pda.portfolioservice.controller;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
-import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
-import com.pda.portfolioservice.dto.response.PortfolioSummaryResponseDTO;
-import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
-import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
+import com.pda.portfolioservice.dto.response.*;
 import com.pda.portfolioservice.service.PortfolioService;
 import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
@@ -51,6 +48,16 @@ public class PortfolioController {
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 
+    // 공유 포트폴리오 리스트 조회
+    @GetMapping("/share")
+    public ApiResponse<SharePortfolioListResponseDTO> getSharePortfolios(
+            @RequestParam(defaultValue = "date") String sort,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "24") int size) {
+
+        SharePortfolioListResponseDTO response = portfolioService.getSharePortfolios(sort, page, size);
+        return ApiResponse.onSuccess(response);
+    }
 
     // 공유 포트폴리오 댓글 작성
     @PostMapping("/share/{sharePortfolioId}/comments")

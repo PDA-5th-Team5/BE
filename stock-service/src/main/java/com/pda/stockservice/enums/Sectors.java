@@ -1,5 +1,9 @@
 package com.pda.stockservice.enums;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public enum Sectors {
     철강,
     무역회사와판매업체,
@@ -76,5 +80,31 @@ public enum Sectors {
     다각화된소비자서비스,
     문구류,
     카드,
-    복합유틸리티
+    복합유틸리티,
+    UNKNOWN;
+
+    public static List<Sectors> fromString(String sectorString) {
+        if (sectorString == null || sectorString.trim().isEmpty()) {
+            return List.of(Sectors.UNKNOWN); // null 또는 빈 값일 경우 UNKNOWN 반환
+        }
+        return Arrays.stream(sectorString.split(","))
+                .map(String::trim) // 공백 제거
+                .map(s -> {
+                    try {
+                        return Sectors.valueOf(s);
+                    } catch (IllegalArgumentException e) {
+                        return Sectors.UNKNOWN;
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    public static String toString(List<Sectors> sectors) {
+        if (sectors == null || sectors.isEmpty()) {
+            return "UNKNOWN";
+        }
+        return sectors.stream()
+                .map(Enum::name)
+                .collect(Collectors.joining(","));
+    }
 }

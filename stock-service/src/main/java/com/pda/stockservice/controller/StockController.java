@@ -3,14 +3,16 @@ package com.pda.stockservice.controller;
 import com.pda.stockservice.dto.response.CandleResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 
+import com.pda.stockservice.enums.Market;
+import com.pda.stockservice.enums.Sectors;
 import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.stockservice.service.StockService;
-import com.pda.stockservice.service.StockServiceImpl;
 import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
-import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -61,6 +63,18 @@ public class StockController {
         System.out.println(userServiceClient.getNickname("42b57999-e5ac-4869-a090-ca247852ba6c"));
 
         return "test";
+    }
+
+    // 시장 (KOSPI, KOSDAQ, ALL) 조회 OpenFeign 통신 코드
+    @GetMapping("/markets")
+    public List<Market> getMarkets(@RequestParam(required = false) Market market) {
+        return Market.getMarkets(market);
+    }
+
+    // 섹터 조회 OpenFeign 통신 코드
+    @GetMapping("/sectors")
+    public List<Sectors> getSectors(@RequestParam(required = false) String sectors) {
+        return Sectors.fromString(sectors);
     }
 
 }
