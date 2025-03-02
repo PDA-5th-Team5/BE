@@ -2,6 +2,7 @@ package com.pda.portfolioservice.controller;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
+import com.pda.portfolioservice.dto.response.PortfolioSummaryResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
 import com.pda.portfolioservice.service.PortfolioService;
@@ -22,6 +23,12 @@ public class PortfolioController {
         return "Portfolio test";
     }
 
+    // 나의 포트폴리오 요약 조회
+    @GetMapping("/{myPortfolioId}/summary")
+    public ApiResponse<PortfolioSummaryResponseDTO> getPortfolioSummary(@PathVariable Long myPortfolioId) {
+        PortfolioSummaryResponseDTO response = portfolioService.getPortfolioSummary(myPortfolioId);
+        return ApiResponse.onSuccess(response);
+    }
 
     // 나의 포트폴리오 제목 리스트 조회
     @GetMapping("/my")

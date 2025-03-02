@@ -2,6 +2,7 @@ package com.pda.portfolioservice.service;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
+import com.pda.portfolioservice.dto.response.PortfolioSummaryResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
 import com.pda.portfolioservice.entity.MyPortfolio;
@@ -26,6 +27,15 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final MyPortfolioRepository myPortfolioRepository;
     private final SharePortfolioRepository sharePortfolioRepository;
     private final SharePortfolioCommentRepository sharePortfolioCommentRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public PortfolioSummaryResponseDTO getPortfolioSummary(Long myPortfolioId) {
+        MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+
+        return PortfolioSummaryResponseDTO.toDTO(myPortfolio);
+    }
 
     @Override
     @Transactional(readOnly = true)
