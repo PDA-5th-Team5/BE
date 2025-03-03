@@ -1,14 +1,17 @@
 package com.pda.portfolioservice.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter @Setter
 public class SharePortfolio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

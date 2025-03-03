@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface StockStatRepository extends JpaRepository<StockStat, Short> {
     List<StockStat> findByStockIdIn(List<Short> stockIds);
+
+
 }

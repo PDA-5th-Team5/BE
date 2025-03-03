@@ -4,6 +4,7 @@ import com.pda.stockservice.dto.response.CandleResponseDTO;
 import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 
+import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.stockservice.service.StockService;
 import com.pda.stockservice.service.StockServiceImpl;
 import com.pda.utilservice.response.ApiResponse;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class StockController {
 
     private final StockService stockService;
+    private final UserServiceClient userServiceClient;
 
     @GetMapping("/test")
     public String test2() {
@@ -52,6 +54,7 @@ public class StockController {
         return ApiResponse.onSuccess(candleResponseDTO);
     }
 
+
     //경쟁사 정보조회
     @GetMapping("/{stockId}/competitors")
     public ApiResponse<CompetitorsResponseDTO> getCompetitors(
@@ -59,6 +62,16 @@ public class StockController {
             @RequestParam(value = "sector", required = false) String sector) {
                 CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId , sector);
                 return ApiResponse.onSuccess(competitorsResponseDTO);
+
+    // openfeign 테스트
+    @GetMapping("/openfeign")
+    public String test() {
+
+        System.out.println("StockController.test");
+
+        System.out.println(userServiceClient.getNickname("42b57999-e5ac-4869-a090-ca247852ba6c"));
+
+        return "test";
 
     }
 
