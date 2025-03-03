@@ -60,8 +60,9 @@ public class StockController {
     public ApiResponse<CompetitorsResponseDTO> getCompetitors(
             @PathVariable("stockId") Short stockId,
             @RequestParam(value = "sector", required = false) String sector) {
-                CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId , sector);
-                return ApiResponse.onSuccess(competitorsResponseDTO);
+        CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId, sector);
+        return ApiResponse.onSuccess(competitorsResponseDTO);
+    }
 
     // openfeign 테스트
     @GetMapping("/openfeign")
