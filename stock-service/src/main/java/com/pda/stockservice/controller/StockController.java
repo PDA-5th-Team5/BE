@@ -1,6 +1,7 @@
 package com.pda.stockservice.controller;
 
 import com.pda.stockservice.dto.response.CandleResponseDTO;
+import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 
 import com.pda.stockservice.service.StockService;
@@ -49,6 +50,16 @@ public class StockController {
     public ApiResponse<CandleResponseDTO> getCandle(@PathVariable("stockId") Short stockId) {
         CandleResponseDTO candleResponseDTO = stockService.getCandle(stockId);
         return ApiResponse.onSuccess(candleResponseDTO);
+    }
+
+    //경쟁사 정보조회
+    @GetMapping("/{stockId}/competitors")
+    public ApiResponse<CompetitorsResponseDTO> getCompetitors(
+            @PathVariable("stockId") Short stockId,
+            @RequestParam(value = "sector", required = false) String sector) {
+                CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId , sector);
+                return ApiResponse.onSuccess(competitorsResponseDTO);
+
     }
 
 }

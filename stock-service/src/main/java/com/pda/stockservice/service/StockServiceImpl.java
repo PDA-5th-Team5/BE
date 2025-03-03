@@ -1,20 +1,26 @@
 package com.pda.stockservice.service;
 
 import com.pda.stockservice.dto.response.CandleResponseDTO;
+import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 import com.pda.stockservice.entity.FavoriteStock;
 import com.pda.stockservice.entity.Stock;
 import com.pda.stockservice.entity.StockPriceDay;
+import com.pda.stockservice.entity.StockStat;
 import com.pda.stockservice.repository.FavoriteStockRepository;
 import com.pda.stockservice.repository.StockPriceDayRepository;
 import com.pda.stockservice.repository.StockRepository;
+import com.pda.stockservice.repository.StockStatRepository;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +29,7 @@ public class StockServiceImpl implements StockService {
     private final StockRepository stockRepository;
     private final FavoriteStockRepository favoriteStockRepository;
     private final StockPriceDayRepository stockPriceDayRepository;
+    private final StockStatRepository stockStatRepository;
     // 개별 종목 정보 조회
     @Transactional(readOnly = true)
     public StockInfoResponseDTO getStocks(Short stockId){
@@ -43,6 +50,33 @@ public class StockServiceImpl implements StockService {
 
         return CandleResponseDTO.toDTO(stockPriceDays);
 
+    }
+
+    //개별종목 경쟁사 조회
+    @Override
+    public CompetitorsResponseDTO getCompetitors(Short stockId, String sector) {
+        // 1. 섹터 정보 결정
+        String targetSector = sector;
+        if (targetSector == null || targetSector.isEmpty()) {
+            Stock stock = stockRepository.findById(stockId)
+                    .orElseThrow(() -> new EntityNotFoundException("Stock not found"));
+            targetSector = stock.getSector();
+        }
+
+        // 2. 해당 섹터의 시총 상위 5개 종목 가져오기
+        List<Stock> topStocks = stockRepository.findTop6BySectorOrderByMarketCapDesc(targetSector);
+
+        // 3. 종목 ID 리스트 추출
+        List<Short> orderedStockIds = topStocks.stream()
+                .filter(stock -> !stock.getStockId().equals(stockId))
+                .map(Stock::getStockId)
+                .collect(Collectors.toList());
+
+        // 4. 해당 종목들의 StockStat 정보 가져오기
+        List<StockStat> stockStats = stockStatRepository.findByStockIdIn(orderedStockIds);
+
+        // 5. DTO로 변환하여 반환 (변환 로직은 DTO 클래스에서)
+        return CompetitorsResponseDTO.toDTO(stockStats, orderedStockIds);
     }
 
     // 관심종목추가
