@@ -2,6 +2,7 @@ package com.pda.userservice.jwt;
 
 import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.repository.RefreshRepository;
+import com.pda.utilservice.jwt.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
