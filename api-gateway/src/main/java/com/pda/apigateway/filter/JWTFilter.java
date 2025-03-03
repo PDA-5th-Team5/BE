@@ -1,6 +1,7 @@
 package com.pda.apigateway.filter;
 
 import com.pda.apigateway.filter.CustomUserDetails;
+import com.pda.utilservice.jwt.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,6 +35,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 필터를 무시할 URL 패턴 설정
         List<String> excludeUrlPatterns = Arrays.asList(
+                "/user",
                 "/user/join",
                 "/user/login",
                 "/user/logout",
