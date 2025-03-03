@@ -53,6 +53,7 @@ public class StockController {
         return ApiResponse.onSuccess(candleResponseDTO);
     }
 
+    // openfeign 테스트
     @GetMapping("/openfeign")
     public String test() {
 
