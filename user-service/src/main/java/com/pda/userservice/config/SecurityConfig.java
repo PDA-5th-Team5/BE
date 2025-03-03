@@ -3,6 +3,7 @@ package com.pda.userservice.config;
 import com.pda.userservice.jwt.CustomLogoutFilter;
 import com.pda.userservice.jwt.LoginFilter;
 import com.pda.userservice.repository.RefreshRepository;
+import com.pda.userservice.repository.UserRepository;
 import com.pda.utilservice.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final Environment environment;
     private final RefreshRepository refreshRepository;
+    private final UserRepository userRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -64,7 +66,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll());
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository, userRepository), UsernamePasswordAuthenticationFilter.class);
         http
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
 
