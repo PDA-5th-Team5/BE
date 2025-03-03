@@ -107,6 +107,15 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public SharePortfolioSummaryResponseDTO getSharePortfolioSummary(Long sharePortfolioId) {
+        SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+
+        return SharePortfolioSummaryResponseDTO.toDTO(sharePortfolio);
+    }
+
+    @Override
     public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO) {
         SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));

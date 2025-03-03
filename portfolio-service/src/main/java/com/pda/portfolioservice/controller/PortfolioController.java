@@ -59,6 +59,14 @@ public class PortfolioController {
         return ApiResponse.onSuccess(response);
     }
 
+    // 공유 포트폴리오 요약 조회
+    @GetMapping("/share/{sharePortfolioId}/summary")
+    public ApiResponse<SharePortfolioSummaryResponseDTO> getSharePortfolioSummary(@PathVariable Long sharePortfolioId) {
+        SharePortfolioSummaryResponseDTO response = portfolioService.getSharePortfolioSummary(sharePortfolioId);
+
+        return ApiResponse.onSuccess(response);
+    }
+
     // 공유 포트폴리오 댓글 작성
     @PostMapping("/share/{sharePortfolioId}/comments")
     public ApiResponse<SuccessStatus> addComment(@PathVariable Long sharePortfolioId, @RequestBody SharePortfolioCommentRequestDTO requestDTO) {
