@@ -36,14 +36,14 @@ public class PortfolioController {
 
     // 나의 포트폴리오 공유
     @PostMapping("/my/{myPortfolioId}")
-    public ApiResponse<ShareMyPortfolioResponseDTO> shareMyPortfolio(@PathVariable Long myPortfolioId) {
+    public ApiResponse<ShareMyPortfolioResponseDTO> shareMyPortfolio(@PathVariable(value = "myPortfolioId") Long myPortfolioId) {
         ShareMyPortfolioResponseDTO response = portfolioService.shareMyPortfolio(myPortfolioId);
         return ApiResponse.onSuccess(response);
     }
 
     // 나의 포트폴리오 삭제
     @DeleteMapping("/my/{myPortfolioId}")
-    public ApiResponse<SuccessStatus> deleteMyPortfolio(@PathVariable Long myPortfolioId) {
+    public ApiResponse<SuccessStatus> deleteMyPortfolio(@PathVariable(value = "myPortfolioId") Long myPortfolioId) {
         portfolioService.deleteMyPortfolio(myPortfolioId);
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
