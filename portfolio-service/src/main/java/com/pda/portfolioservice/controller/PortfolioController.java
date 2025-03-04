@@ -29,8 +29,8 @@ public class PortfolioController {
 
     // 나의 포트폴리오 제목 리스트 조회
     @GetMapping("/my")
-    public ApiResponse<MyPortfolioTitleResponseDTO.myPortfolioListDTO> getMyPortfolioTitleList(@PathVariable Long myPortfolioId) {
-        MyPortfolioTitleResponseDTO.myPortfolioListDTO response = portfolioService.getMyPortfolioTitleList(myPortfolioId);
+    public ApiResponse<MyPortfolioTitleResponseDTO.myPortfolioListDTO> getMyPortfolioTitleList() {
+        MyPortfolioTitleResponseDTO.myPortfolioListDTO response = portfolioService.getMyPortfolioTitleList();
         return ApiResponse.onSuccess(response);
     }
 

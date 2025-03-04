@@ -45,15 +45,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     @Transactional(readOnly = true)
-    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId) {
+    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList() {
 
         // 유저 ID를 임시로 1L로 설정
-        String userId = "1";
+        String userId = "1L";
 
-        MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
-                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+//        MyPortfolio myPortfolio = myPortfolioRepository.findById()
+//                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
-        List<MyPortfolio> myPortfolioList = myPortfolioRepository.findByUserId(userId);
+        List<MyPortfolio> myPortfolioList = myPortfolioRepository.findAll();
 
         return MyPortfolioTitleResponseDTO.myPortfolioListDTO.toDTO(myPortfolioList);
 

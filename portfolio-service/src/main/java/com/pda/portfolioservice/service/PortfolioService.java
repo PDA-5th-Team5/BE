@@ -9,7 +9,7 @@ public interface PortfolioService {
     public PortfolioSummaryResponseDTO getPortfolioSummary(Long myPortfolioId);
 
     // 나의 포트폴리오 제목 리스트 조회
-    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId);
+    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList();
 
     // 나의 포트폴리오 공유
     public ShareMyPortfolioResponseDTO shareMyPortfolio(Long sharePortfolioId);
