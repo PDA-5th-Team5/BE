@@ -20,8 +20,13 @@ public interface PortfolioService {
     // 공유 포트폴리오 리스트 조회
     public SharePortfolioListResponseDTO getSharePortfolios(String sort, int page, int size);
 
+    // 공유 포트폴리오 가져오기 (저장)
+
     // 공유 포트폴리오 요약 조회
     public SharePortfolioSummaryResponseDTO getSharePortfolioSummary(Long sharePortfolioId);
+
+    // 공유 포트폴리오 스노우 플래이크 조회
+//    public SharePortfolioSnowflakePResponseDTO getSharePortfolioSnowflakeP(Long sharePortfolioId);
 
     // 공유 포트폴리오 댓글 작성
     public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO);

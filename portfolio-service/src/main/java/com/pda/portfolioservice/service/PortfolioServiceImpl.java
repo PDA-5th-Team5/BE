@@ -48,7 +48,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId) {
 
         // 유저 ID를 임시로 1L로 설정
-        String userId = "프디아";
+        String userId = "1";
 
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
@@ -117,6 +117,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO) {
+
         SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
@@ -131,7 +132,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     @Transactional(readOnly = true)
     public SharePortfolioCommentResponseDTO getComments(Long sharePortfolioId) {
-        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId);
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findAll();
 
         if (comments.isEmpty()) {
             return SharePortfolioCommentResponseDTO.builder()
@@ -154,6 +155,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         }
 
         comment.setContent(requestDTO.getContent());
+        sharePortfolioCommentRepository.save(comment);
     }
 
     @Override
