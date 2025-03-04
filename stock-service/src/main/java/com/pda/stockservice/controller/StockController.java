@@ -48,8 +48,8 @@ public class StockController {
 
     //관심종목 추가
     @PostMapping("/{stockId}/watchlist")
-    public ApiResponse<SuccessStatus> addFavoriteStock(@PathVariable("stockId") Short stockId){
-        stockService.addFavoriteStock(stockId);
+    public ApiResponse<SuccessStatus> addFavoriteStock(@PathVariable("stockId") Short stockId, @RequestHeader(value = "Authorization", required = false) String token){
+        stockService.addFavoriteStock(stockId, token);
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 
@@ -65,6 +65,11 @@ public class StockController {
         CandleResponseDTO candleResponseDTO = stockService.getCandle(stockId);
         return ApiResponse.onSuccess(candleResponseDTO);
     }
+    //댓글
+//    @GetMapping("/api/stocks/{stockId}/comments")
+//    public ApiResponse<CommentResponseDTO> getComments(
+//            @PathVariable
+//            )
 
     //경쟁사 정보조회
     @GetMapping("/{stockId}/competitors")
@@ -74,6 +79,10 @@ public class StockController {
         CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId, sector);
         return ApiResponse.onSuccess(competitorsResponseDTO);
     }
+
+
+
+
 
     // openfeign 테스트
     @GetMapping("/openfeign")

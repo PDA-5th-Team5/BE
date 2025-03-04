@@ -32,21 +32,13 @@ public class UserController {
     }
 
     @PostMapping("/join")
-    public ResponseEntity<String> join(JoinDTO joinDTO) {
+    public ApiResponse<Void> join(JoinDTO joinDTO) {
 
-        System.out.println("UserController.join");
-
-        boolean result = userService.join(joinDTO);
-
-        if (!result) {
-            return new ResponseEntity<>("아이디가 이미 존재합니다.", CONFLICT);
-        }
-
-        return new ResponseEntity<>("회원가입 성공", HttpStatus.OK);
+        return userService.join(joinDTO);
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ApiResponse<Void> reissue(HttpServletRequest request, HttpServletResponse response) {
         return userService.handleReissue(request, response);
     }
 

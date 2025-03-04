@@ -2,6 +2,7 @@ package com.pda.stockservice.service;
 
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.CandleResponseDTO;
+import com.pda.stockservice.dto.response.CommentResponseDTO;
 import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 import com.pda.stockservice.dto.response.StockResponseDTO;
@@ -15,10 +16,12 @@ import com.pda.stockservice.repository.FavoriteStockRepository;
 import com.pda.stockservice.repository.StockPriceDayRepository;
 import com.pda.stockservice.repository.StockRepository;
 import com.pda.stockservice.repository.StockStatRepository;
+import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -39,7 +43,8 @@ public class StockServiceImpl implements StockService {
     private final StockStatRepository stockStatRepository;
     private final StockMapper stockMapper;
     private final RedisService redisService;
-
+    private final StockCommentRepository stockCommentRepository;
+    private final Environment environment;
     @Override
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters) {
         List<Market> markets = new ArrayList<>();
@@ -104,6 +109,7 @@ public class StockServiceImpl implements StockService {
         return stocks;
     }
 
+
     // 개별 종목 정보 조회
     @Transactional(readOnly = true)
     public StockInfoResponseDTO getStocks(Short stockId){
@@ -155,9 +161,12 @@ public class StockServiceImpl implements StockService {
 
     // 관심종목추가
     @Transactional
-    public void addFavoriteStock(Short stockId) {
-        //userId 하드코딩
-        String userId = "1";
+    public void addFavoriteStock(Short stockId, String token) {
+
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+
+        String userId = jwtUtil.getBearerUserId(token);
+
         // 이미 추가된 관심종목인지 확인
         if (favoriteStockRepository.existsByUserIdAndStock_StockId(userId, stockId)) {
             return;
@@ -185,5 +194,22 @@ public class StockServiceImpl implements StockService {
 
         favoriteStockRepository.delete(favoriteStock);
     }
+
+    //댓글조회
+//    @Transactional(readOnly = true)
+//    @Override
+//    public CommentResponseDTO getComments(Short stockId) {
+//        // 해당 주식이 존재하는지 확인
+//        if (!stockRepository.existsById(stockId)) {
+//            throw new StockHandler(ErrorStatus.STOCK_NOT_FOUND);
+//        }
+//
+//        // 해당 주식에 대한 댓글 목록 조회
+//        List<StockComment> comments = StockCommentRepository.findByStock_StockIdOrderByCreatedAtDesc(stockId);
+//
+//        // 한 번에 DTO로 변환
+//        return CommenResponseDTO.from(comments, userServiceClient);
+//    }
+
 
 }
