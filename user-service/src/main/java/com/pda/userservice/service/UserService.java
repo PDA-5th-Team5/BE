@@ -22,7 +22,7 @@ public interface UserService {
      * @param response HTTP 응답 객체 (새로운 Access Token 설정)
      * @return 재발급 결과에 대한 ResponseEntity
      */
-    ResponseEntity<?> handleReissue(HttpServletRequest request, HttpServletResponse response);
+    ApiResponse<Void> handleReissue(HttpServletRequest request, HttpServletResponse response);
 
     NicknameResponseDTO getNicknameByUserId(String userId);
 }

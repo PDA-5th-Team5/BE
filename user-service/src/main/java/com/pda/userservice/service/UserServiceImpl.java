@@ -51,24 +51,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> handleReissue(HttpServletRequest request, HttpServletResponse response) {
+    public ApiResponse<Void> handleReissue(HttpServletRequest request, HttpServletResponse response) {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
 
         String refresh = extractRefreshToken(request);
 
         // Refresh 토큰이 헤더에 있는지 확인
         if (refresh == null) {
-            return new ResponseEntity<>("refresh token null", HttpStatus.UNAUTHORIZED);
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "토큰 재발급 실패(토큰 없음)");
         }
 
         // Refresh 토큰 만료 여부 확인
         if (isTokenExpired(refresh)) {
-            return new ResponseEntity<>("refresh token expired", HttpStatus.UNAUTHORIZED);
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "토큰 재발급 실패(토큰 만료)");
         }
 
         // Refresh 토큰이 맞는지 확인
         if (!isRefreshTokenValid(refresh)) {
-            return new ResponseEntity<>("invalid refresh token", HttpStatus.UNAUTHORIZED);
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "토큰 재발급 실패(refresh 토큰이 아님");
         }
 
         String username = jwtUtil.getUsername(refresh);
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
 
         // DB에 토큰 존재 여부 확인
         if (!isTokenStoredInDB(refresh, username)) {
-            return new ResponseEntity<>("invalid refresh token(DB)", HttpStatus.UNAUTHORIZED);
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "토큰 재발급 실패(DB에 없음)");
         }
 
         // userId 조회
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
         String newAccess = jwtUtil.createJwt("access", userId, username, role, 600000L); // 10분 유효기간
         response.setHeader("access", newAccess);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "토큰 재발급 성공");
     }
 
     @Override

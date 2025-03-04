@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ApiResponse<Void> reissue(HttpServletRequest request, HttpServletResponse response) {
         return userService.handleReissue(request, response);
     }
 

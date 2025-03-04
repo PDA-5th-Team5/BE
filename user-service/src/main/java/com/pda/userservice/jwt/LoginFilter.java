@@ -109,8 +109,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);// 최종 응답 DTO 생성
-        ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_UNAUTHORIZED, "로그인 실패");
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
+        ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그인 실패");
         new ObjectMapper().writeValue(response.getWriter(), responseDTO);
     }
 
