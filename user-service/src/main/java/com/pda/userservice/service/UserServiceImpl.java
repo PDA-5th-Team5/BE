@@ -1,6 +1,7 @@
 package com.pda.userservice.service;
 
 import com.pda.userservice.dto.request.JoinDTO;
+import com.pda.userservice.dto.request.ProfileRequestDTO;
 import com.pda.userservice.dto.response.NicknameResponseDTO;
 import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.entity.User;
@@ -93,6 +94,27 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
         return NicknameResponseDTO.toDTO(user);
+    }
+
+    @Override
+    public ApiResponse<Void> profile(ProfileRequestDTO profileRequestDTO, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUserId("userId"));
+
+        if (optionalUser.isEmpty()) {
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "사용자를 찾을 수 없습니다.");
+        }
+
+        User user = optionalUser.get();
+
+        // DTO의 toUpdatedUser() 메서드를 이용해 새로운 User 객체 생성
+        User updatedUser = profileRequestDTO.toUserEntity(user);
+
+        // 변경된 객체를 저장 (JPA save() 필요)
+        userRepository.save(updatedUser);
+
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "프로필 업데이트 성공");
     }
 
     private String extractRefreshToken(HttpServletRequest request) {
