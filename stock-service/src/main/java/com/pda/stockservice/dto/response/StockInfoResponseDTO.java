@@ -1,7 +1,6 @@
 package com.pda.stockservice.dto.response;
 
 import com.pda.stockservice.enums.Market;
-import com.pda.stockservice.enums.Sectors;
 import com.pda.stockservice.entity.Stock;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,11 +16,11 @@ public class StockInfoResponseDTO {
     public static class StockInfoDTO {
         private Short stockId;
         private String companyName;
-        private Market market;
+        private Market marketType;
         private Integer currentPrice;
         private Integer OneWeekProfitRate;
         private Integer OneYearProfitRate;
-        private Sectors sectors;
+        private String sector;
         private String companyOverview;
 
         private Double eps;
@@ -46,11 +45,11 @@ public class StockInfoResponseDTO {
                 .stockInfo(StockInfoDTO.builder()
                         .stockId(stock.getStockId())
                         .companyName(stock.getCompanyName())
-                        .market(stock.getMarket())
+                        .marketType(stock.getMarketType())
 //                        .currentPrice(stock.getCurrentPrice())
 //                        .OneWeekProfitRate(stock.getOneWeekProfitRate())
 //                        .OneYearProfitRate(stock.getOneYearProfitRate())
-                        .sectors(stock.getSectors())
+                        .sector(stock.getSector())
                         .companyOverview(stock.getCompanyOverview())
                         .eps(stock.getEps())
                         .bps(stock.getBps())
