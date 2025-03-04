@@ -7,6 +7,7 @@ import com.pda.userservice.entity.User;
 import com.pda.userservice.repository.UserRepository;
 import com.pda.userservice.repository.RefreshRepository;
 import com.pda.utilservice.jwt.JWTUtil;
+import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.UserHandler;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -34,20 +35,19 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public boolean join(JoinDTO joinDTO) {
+    public ApiResponse<Void> join(JoinDTO joinDTO) {
         String username = joinDTO.getUsername();
         String password = joinDTO.getPassword();
 
         // 아이디 중복 확인
         if (userRepository.existsByUsername(username)) {
-            System.out.println("중복된 아이디입니다.");  // 로그 기록
-            return false;  // 중복 시 실패 반환
+            return ApiResponse.onSuccess(HttpStatus.CONFLICT.value(), "중복된 아이디 입니다.");
         }
 
         // 사용자 정보 생성 및 저장
         User user = joinDTO.toUserEntity(bCryptPasswordEncoder.encode(password));
         userRepository.save(user);  // DB에 저장
-        return true;  // 성공 시 true 반환
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "회원가입 성공");
     }
 
     @Override

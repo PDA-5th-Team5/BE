@@ -2,6 +2,7 @@ package com.pda.userservice.service;
 
 import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.dto.response.NicknameResponseDTO;
+import com.pda.utilservice.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ public interface UserService {
      * @param joinDTO 회원가입 요청 데이터
      * @return 가입 성공 여부
      */
-    boolean join(JoinDTO joinDTO);
+    ApiResponse<Void> join(JoinDTO joinDTO);
 
     /**
      * Refresh Token을 사용하여 Access Token 재발급 처리

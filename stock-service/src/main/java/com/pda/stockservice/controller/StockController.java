@@ -1,7 +1,6 @@
 package com.pda.stockservice.controller;
 
 import com.pda.stockservice.dto.response.CandleResponseDTO;
-import com.pda.stockservice.dto.response.CommentResponseDTO;
 import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 
