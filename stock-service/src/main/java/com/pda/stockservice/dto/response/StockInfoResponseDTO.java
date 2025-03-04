@@ -1,7 +1,6 @@
 package com.pda.stockservice.dto.response;
 
 import com.pda.stockservice.enums.Market;
-import com.pda.stockservice.enums.Sectors;
 import com.pda.stockservice.entity.Stock;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +20,7 @@ public class StockInfoResponseDTO {
         private Integer currentPrice;
         private Integer OneWeekProfitRate;
         private Integer OneYearProfitRate;
-        private Sectors sectors;
+        private String sectors;
         private String companyOverview;
 
         private Double eps;

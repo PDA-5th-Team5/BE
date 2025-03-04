@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pda.stockservice.mapper.StockMapper">
+
+    <select id="searchStockStatIds" resultType="java.lang.Integer">
+        SELECT s.stock_id
+        FROM stock_stat s
+        WHERE s.market_type = #{market}
+        AND s.sector IN
+        <foreach item="sector" collection="sectors" open="(" separator="," close=")">
+            #{sector}
+        </foreach>
+        <if test="filters.marketCap != null">
+            AND s.market_cap BETWEEN #{filters.marketCap.min} AND #{filters.marketCap.max}
+        </if>
+        <if test="filters.per != null">
+            AND s.per BETWEEN #{filters.per.min} AND #{filters.per.max}
+        </if>
+        <if test="filters.eps != null">
+            AND s.eps BETWEEN #{filters.eps.min} AND #{filters.eps.max}
+        </if>
+        <if test="filters.bps != null">
+            AND s.bps BETWEEN #{filters.bps.min} AND #{filters.bps.max}
+        </if>
+        <if test="filters.pbr != null">
+            AND s.pbr BETWEEN #{filters.pbr.min} AND #{filters.pbr.max}
+        </if>
+        <if test="filters.dividendYield != null">
+            AND s.dividend_yield BETWEEN #{filters.dividendYield.min} AND #{filters.dividendYield.max}
+        </if>
+        <if test="filters.foreignerRatio != null">
+            AND s.foreigner_ratio BETWEEN #{filters.foreignerRatio.min} AND #{filters.foreignerRatio.max}
+        </if>
+        <if test="filters.sps != null">
+            AND s.sps BETWEEN #{filters.sps.min} AND #{filters.sps.max}
+        </if>
+        <if test="filters.saleAccount != null">
+            AND s.sale_account BETWEEN #{filters.saleAccount.min} AND #{filters.saleAccount.max}
+        </if>
+        <if test="filters.crntRate != null">
+            AND s.crnt_rate BETWEEN #{filters.crntRate.min} AND #{filters.crntRate.max}
+        </if>
+        <if test="filters.lbltRate != null">
+            AND s.lblt_rate BETWEEN #{filters.lbltRate.min} AND #{filters.lbltRate.max}
+        </if>
+        <if test="filters.ntinInrt != null">
+            AND s.ntin_inrt BETWEEN #{filters.ntinInrt.min} AND #{filters.ntinInrt.max}
+        </if>
+        <if test="filters.bsopPrfiInrt != null">
+            AND s.bsop_prfi_inrt BETWEEN #{filters.bsopPrfiInrt.min} AND #{filters.bsopPrfiInrt.max}
+        </if>
+        <if test="filters.grs != null">
+            AND s.grs BETWEEN #{filters.grs.min} AND #{filters.grs.max}
+        </if>
+        <if test="filters.roeVal != null">
+            AND s.roe_val BETWEEN #{filters.roeVal.min} AND #{filters.roeVal.max}
+        </if>
+        <if test="filters.bsopPrti != null">
+            AND s.bsop_prti BETWEEN #{filters.bsopPrti.min} AND #{filters.bsopPrti.max}
+        </if>
+        <if test="filters.thtrNtin != null">
+            AND s.thtr_ntin BETWEEN #{filters.thtrNtin.min} AND #{filters.thtrNtin.max}
+        </if>
+    </select>
+
+    <select id="findStocksByIds" resultType="com.pda.stockservice.dto.response.StockResponseDTO">
+        SELECT *
+        FROM stock
+        WHERE stock_id IN
+        <foreach item="stockId" collection="stockIds" open="(" separator="," close=")">
+            #{stockId}
+        </foreach>
+    </select>
+</mapper>
+

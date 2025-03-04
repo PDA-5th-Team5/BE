@@ -1,12 +1,15 @@
 package com.pda.stockservice.service;
 
+import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.CandleResponseDTO;
 import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
+import com.pda.stockservice.dto.response.StockResponseDTO;
 import com.pda.stockservice.entity.FavoriteStock;
 import com.pda.stockservice.entity.Stock;
 import com.pda.stockservice.entity.StockPriceDay;
 import com.pda.stockservice.entity.StockStat;
+import com.pda.stockservice.mapper.StockMapper;
 import com.pda.stockservice.repository.FavoriteStockRepository;
 import com.pda.stockservice.repository.StockPriceDayRepository;
 import com.pda.stockservice.repository.StockRepository;
@@ -18,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -30,6 +35,17 @@ public class StockServiceImpl implements StockService {
     private final FavoriteStockRepository favoriteStockRepository;
     private final StockPriceDayRepository stockPriceDayRepository;
     private final StockStatRepository stockStatRepository;
+    private final StockMapper stockMapper;
+
+    @Override
+    public List<StockResponseDTO> searchStockInfos(String market, List<String> sectors, StockFilter filters) {
+        List<Integer> stockIds = stockMapper.searchStockStatIds(market, sectors, filters);
+        if (stockIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return stockMapper.findStocksByIds(stockIds);
+    }
+
     // 개별 종목 정보 조회
     @Transactional(readOnly = true)
     public StockInfoResponseDTO getStocks(Short stockId){
