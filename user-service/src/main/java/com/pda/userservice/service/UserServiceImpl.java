@@ -7,6 +7,7 @@ import com.pda.userservice.entity.User;
 import com.pda.userservice.repository.UserRepository;
 import com.pda.userservice.repository.RefreshRepository;
 import com.pda.utilservice.jwt.JWTUtil;
+import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.UserHandler;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -34,41 +35,40 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public boolean join(JoinDTO joinDTO) {
+    public ApiResponse<Void> join(JoinDTO joinDTO) {
         String username = joinDTO.getUsername();
         String password = joinDTO.getPassword();
 
         // 아이디 중복 확인
         if (userRepository.existsByUsername(username)) {
-            System.out.println("중복된 아이디입니다.");  // 로그 기록
-            return false;  // 중복 시 실패 반환
+            return ApiResponse.onSuccess(HttpStatus.CONFLICT.value(), "중복된 아이디 입니다.");
         }
 
         // 사용자 정보 생성 및 저장
         User user = joinDTO.toUserEntity(bCryptPasswordEncoder.encode(password));
         userRepository.save(user);  // DB에 저장
-        return true;  // 성공 시 true 반환
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "회원가입 성공");
     }
 
     @Override
-    public ResponseEntity<?> handleReissue(HttpServletRequest request, HttpServletResponse response) {
+    public ApiResponse<Void> handleReissue(HttpServletRequest request, HttpServletResponse response) {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
 
         String refresh = extractRefreshToken(request);
 
         // Refresh 토큰이 헤더에 있는지 확인
         if (refresh == null) {
-            return new ResponseEntity<>("refresh token null", HttpStatus.UNAUTHORIZED);
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "토큰 재발급 실패(토큰 없음)");
         }
 
         // Refresh 토큰 만료 여부 확인
         if (isTokenExpired(refresh)) {
-            return new ResponseEntity<>("refresh token expired", HttpStatus.UNAUTHORIZED);
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "토큰 재발급 실패(토큰 만료)");
         }
 
         // Refresh 토큰이 맞는지 확인
         if (!isRefreshTokenValid(refresh)) {
-            return new ResponseEntity<>("invalid refresh token", HttpStatus.UNAUTHORIZED);
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "토큰 재발급 실패(refresh 토큰이 아님");
         }
 
         String username = jwtUtil.getUsername(refresh);
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
 
         // DB에 토큰 존재 여부 확인
         if (!isTokenStoredInDB(refresh, username)) {
-            return new ResponseEntity<>("invalid refresh token(DB)", HttpStatus.UNAUTHORIZED);
+            return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "토큰 재발급 실패(DB에 없음)");
         }
 
         // userId 조회
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
         String newAccess = jwtUtil.createJwt("access", userId, username, role, 600000L); // 10분 유효기간
         response.setHeader("access", newAccess);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "토큰 재발급 성공");
     }
 
     @Override

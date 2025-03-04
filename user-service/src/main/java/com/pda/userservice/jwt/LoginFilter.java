@@ -1,9 +1,13 @@
 package com.pda.userservice.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pda.userservice.dto.response.LoginResponseDTO;
 import com.pda.userservice.entity.Refresh;
+import com.pda.userservice.entity.User;
 import com.pda.userservice.repository.RefreshRepository;
 import com.pda.userservice.repository.UserRepository;
 import com.pda.utilservice.jwt.JWTUtil;
+import com.pda.utilservice.response.ApiResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +22,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -45,7 +50,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
 
         //유저 정보
         String username = authentication.getName();
@@ -55,8 +60,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        // userId 조회
-        String userId = userRepository.findByUsername(username).getUserId();
+        // user 조회
+        User user = userRepository.findByUsername(username);
+
+        String userId = user.getUserId();
 
         //토큰 생성
         String access = jwtUtil.createJwt("access", userId, username, role, 600000L);
@@ -66,11 +73,22 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 //        addRefreshEntity(username, refresh, 86400000L); // mysql
         addRefreshEntity(username, refresh); // redis
 
-        //응답 설정
+        // 로그인 응답 DTO 변환
+        LoginResponseDTO loginResponse = LoginResponseDTO.toDTO(user);
+
+        // 최종 응답 DTO 생성
+        ApiResponse<LoginResponseDTO> responseDTO = ApiResponse.onSuccess(loginResponse);
+
+
+        // JSON 응답 설정
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         response.setHeader("access", access);
 //        response.setHeader("Authorization", "Bearer " + access);
         response.addCookie(createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());
+
+        new ObjectMapper().writeValue(response.getWriter(), responseDTO);
     }
 
     // TODO to redis
@@ -87,9 +105,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
+        ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그인 실패");
+        new ObjectMapper().writeValue(response.getWriter(), responseDTO);
     }
 
     private Cookie createCookie(String key, String value) {
