@@ -63,8 +63,6 @@ public class StockController {
         return ApiResponse.onSuccess(competitorsResponseDTO);
     }
 
-    }
-
     // openfeign 테스트
     @GetMapping("/openfeign")
     public String test() {
@@ -74,6 +72,7 @@ public class StockController {
         System.out.println(userServiceClient.getNickname("42b57999-e5ac-4869-a090-ca247852ba6c"));
 
         return "test";
+
     }
 
 }
