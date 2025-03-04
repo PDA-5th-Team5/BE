@@ -14,8 +14,9 @@ public interface StockService {
     CompetitorsResponseDTO getCompetitors(Short stockId, String sector);
 
 
-    //로그인기능구현 후 useId추가 예정
+
     void addFavoriteStock(Short stockId, String token);
+    //로그인기능구현 후 useId추가 예정
     void deleteFavoriteStock(Short stockId);
 
     //댓글
