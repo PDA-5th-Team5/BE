@@ -1,6 +1,7 @@
 package com.pda.portfolioservice.service;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
+import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
@@ -12,6 +13,7 @@ import com.pda.portfolioservice.repository.SharePortfolioCommentRepository;
 import com.pda.portfolioservice.repository.SharePortfolioRepository;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.PortfolioHandler;
+import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -117,6 +119,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         sharePortfolioCommentRepository.deleteById(commentId);
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyCommentsResponseDTO getCommentsByUserId(String userId) {
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findByUserId(userId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
+        return MyCommentsResponseDTO.toDTO(comments);
     }
 
 

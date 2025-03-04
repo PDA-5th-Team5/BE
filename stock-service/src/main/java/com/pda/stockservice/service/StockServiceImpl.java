@@ -101,7 +101,6 @@ public class StockServiceImpl implements StockService {
     public MyCommentsResponseDTO getCommentsByUserId(String userId) {
         List<StockComment> comments = stockCommentRepository.findByUserId(userId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
-        System.out.println(comments.toString());
         return MyCommentsResponseDTO.toDTO(comments);
     }
 

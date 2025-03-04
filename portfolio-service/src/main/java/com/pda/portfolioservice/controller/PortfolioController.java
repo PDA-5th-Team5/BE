@@ -1,6 +1,7 @@
 package com.pda.portfolioservice.controller;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
+import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
@@ -71,5 +72,12 @@ public class PortfolioController {
     public ApiResponse<SuccessStatus> deleteComment(Long sharePortfolioId, Long commentId) {
         portfolioService.deleteComment(sharePortfolioId, commentId);
         return ApiResponse.onSuccess(SuccessStatus.OK);
+    }
+
+    // userId로 공유 포트폴리오 댓글 조회
+    @GetMapping("/{userId}/my/comments")
+    public ApiResponse<MyCommentsResponseDTO> getNickname(@PathVariable String userId) {
+        MyCommentsResponseDTO commentsResponseDTO = portfolioService.getCommentsByUserId(userId);
+        return ApiResponse.onSuccess(commentsResponseDTO);
     }
 }
