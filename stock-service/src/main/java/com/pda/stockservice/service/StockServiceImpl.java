@@ -1,21 +1,12 @@
 package com.pda.stockservice.service;
 
 import com.pda.stockservice.dto.request.StockFilter;
-import com.pda.stockservice.dto.response.CandleResponseDTO;
-import com.pda.stockservice.dto.response.CommentResponseDTO;
-import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
-import com.pda.stockservice.dto.response.StockInfoResponseDTO;
-import com.pda.stockservice.dto.response.StockResponseDTO;
-import com.pda.stockservice.entity.FavoriteStock;
-import com.pda.stockservice.entity.Stock;
-import com.pda.stockservice.entity.StockPriceDay;
-import com.pda.stockservice.entity.StockStat;
+import com.pda.stockservice.dto.response.*;
+//import com.pda.stockservice.dto.response.CommentResponseDTO;
+import com.pda.stockservice.entity.*;
 import com.pda.stockservice.enums.Market;
 import com.pda.stockservice.mapper.StockMapper;
-import com.pda.stockservice.repository.FavoriteStockRepository;
-import com.pda.stockservice.repository.StockPriceDayRepository;
-import com.pda.stockservice.repository.StockRepository;
-import com.pda.stockservice.repository.StockStatRepository;
+import com.pda.stockservice.repository.*;
 import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
@@ -25,11 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -107,6 +94,15 @@ public class StockServiceImpl implements StockService {
         }
 
         return stocks;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyCommentsResponseDTO getCommentsByUserId(String userId) {
+        List<StockComment> comments = stockCommentRepository.findByUserId(userId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
+        System.out.println(comments.toString());
+        return MyCommentsResponseDTO.toDTO(comments);
     }
 
 
