@@ -111,6 +111,7 @@ project(':stock-service') {
         implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
         implementation 'io.github.openfeign:feign-jackson:13.3'
         implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     }
 }

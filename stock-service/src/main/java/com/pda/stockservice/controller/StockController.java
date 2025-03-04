@@ -35,7 +35,7 @@ public class StockController {
     @PostMapping("/filter")
     public ApiResponse<List<StockResponseDTO>> searchStockStatIds(
             @RequestBody StockFilterRequest request) {
-        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarket(), request.getSectors(), request.getFilters());
+        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters());
         return ApiResponse.onSuccess(stocks);
     }
 

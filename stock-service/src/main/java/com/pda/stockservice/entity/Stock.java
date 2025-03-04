@@ -21,9 +21,7 @@ public class Stock {
     private String ticker;
 
     @Enumerated(EnumType.STRING)
-    private Market market;
-
-    private String sectors;
+    private Market marketType;
     private String companyName;
     private String sector;
     private String companyOverview;

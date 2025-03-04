@@ -8,9 +8,12 @@
     <select id="searchStockStatIds" resultType="java.lang.Integer">
         SELECT s.stock_id
         FROM stock_stat s
-        WHERE s.market_type = #{market}
+        WHERE s.market_type IN
+        <foreach item="marketType" collection="marketType" open="(" separator="," close=")">
+            #{marketType}
+        </foreach>
         AND s.sector IN
-        <foreach item="sector" collection="sectors" open="(" separator="," close=")">
+        <foreach item="sector" collection="sector" open="(" separator="," close=")">
             #{sector}
         </foreach>
         <if test="filters.marketCap != null">

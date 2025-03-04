@@ -22,7 +22,7 @@ class StockServiceApplicationTests {
 	public void testSearchStockStatIds() {
 		// Given (테스트 데이터 삽입)
 		String market = "KOSPI";
-		List<String> sectors = List.of("자동차");
+		List<String> sector = List.of("자동차");
 
 		// StockFilter 객체 생성 및 필터 값 설정
 		StockFilter stockFilter = new StockFilter();
@@ -42,13 +42,12 @@ class StockServiceApplicationTests {
 		perRange.setMax(20.0);
 		stockFilter.setPer(perRange);
 
-		// When (서비스 호출)
-		List<StockResponseDTO> stockIds = stockService.searchStockInfos(market, sectors, stockFilter);
-
-		System.out.println(stockIds);
-
 		// Then (검증)
-		assertNotNull(stockIds);
-		assertFalse(stockIds.isEmpty());
+		// When (서비스 호출)
+		List<StockResponseDTO> stocks = stockService.searchStockInfos(market, sector, stockFilter);
+
+		System.out.println(stocks.toString());
+		assertNotNull(stocks);
+		assertFalse(stocks.isEmpty());
 	}
 }
