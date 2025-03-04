@@ -34,8 +34,6 @@ public class UserController {
     @PostMapping("/join")
     public ResponseEntity<String> join(JoinDTO joinDTO) {
 
-        System.out.println("UserController.join");
-
         boolean result = userService.join(joinDTO);
 
         if (!result) {
