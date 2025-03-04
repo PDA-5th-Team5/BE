@@ -6,7 +6,7 @@ import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.entity.User;
 import com.pda.userservice.repository.UserRepository;
 import com.pda.userservice.repository.RefreshRepository;
-import com.pda.userservice.jwt.JWTUtil;
+import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.UserHandler;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -14,11 +14,13 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -28,7 +30,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RefreshRepository refreshRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final JWTUtil jwtUtil;
+    private final Environment environment;
+
 
     @Override
     public boolean join(JoinDTO joinDTO) {
@@ -49,6 +52,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<?> handleReissue(HttpServletRequest request, HttpServletResponse response) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+
         String refresh = extractRefreshToken(request);
 
         // Refresh 토큰이 헤더에 있는지 확인
@@ -74,7 +79,10 @@ public class UserServiceImpl implements UserService {
             return new ResponseEntity<>("invalid refresh token(DB)", HttpStatus.UNAUTHORIZED);
         }
 
-        String newAccess = jwtUtil.createJwt("access", username, role, 600000L); // 10분 유효기간
+        // userId 조회
+        String userId = userRepository.findByUsername(username).getUserId();
+
+        String newAccess = jwtUtil.createJwt("access", userId, username, role, 600000L); // 10분 유효기간
         response.setHeader("access", newAccess);
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -101,6 +109,7 @@ public class UserServiceImpl implements UserService {
 
     private boolean isTokenExpired(String token) {
         try {
+            JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
             jwtUtil.isExpired(token);
             return false;
         } catch (ExpiredJwtException e) {
@@ -109,6 +118,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean isRefreshTokenValid(String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
         return "refresh".equals(jwtUtil.getCategory(token));
     }
 

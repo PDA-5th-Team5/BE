@@ -1,6 +1,7 @@
 package com.pda.stockservice.controller;
 
 import com.pda.stockservice.dto.response.CandleResponseDTO;
+import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 
 import com.pda.stockservice.enums.Market;
@@ -55,6 +56,16 @@ public class StockController {
         return ApiResponse.onSuccess(candleResponseDTO);
     }
 
+    //경쟁사 정보조회
+    @GetMapping("/{stockId}/competitors")
+    public ApiResponse<CompetitorsResponseDTO> getCompetitors(
+            @PathVariable("stockId") Short stockId,
+            @RequestParam(value = "sector", required = false) String sector) {
+        CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId, sector);
+        return ApiResponse.onSuccess(competitorsResponseDTO);
+    }
+
+    // openfeign 테스트
     @GetMapping("/openfeign")
     public String test() {
 
@@ -63,6 +74,7 @@ public class StockController {
         System.out.println(userServiceClient.getNickname("42b57999-e5ac-4869-a090-ca247852ba6c"));
 
         return "test";
+
     }
 
     // 시장 (KOSPI, KOSDAQ, ALL) 조회 OpenFeign 통신 코드

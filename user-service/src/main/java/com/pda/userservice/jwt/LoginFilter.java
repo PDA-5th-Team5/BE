@@ -2,6 +2,8 @@ package com.pda.userservice.jwt;
 
 import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.repository.RefreshRepository;
+import com.pda.userservice.repository.UserRepository;
+import com.pda.utilservice.jwt.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +27,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final UserRepository userRepository;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -52,9 +55,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
+        // userId 조회
+        String userId = userRepository.findByUsername(username).getUserId();
+
         //토큰 생성
-        String access = jwtUtil.createJwt("access", username, role, 600000L);
-        String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+        String access = jwtUtil.createJwt("access", userId, username, role, 600000L);
+        String refresh = jwtUtil.createJwt("refresh", userId, username, role, 86400000L);
 
         // Refresh 토큰 DB에 저장
 //        addRefreshEntity(username, refresh, 86400000L); // mysql

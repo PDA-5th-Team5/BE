@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CandleResponseDTO {
-    private List<CandleDTO> candles;
+    private List<CandleDTO> candleDTOList;
 
     @Getter
     @Builder
@@ -44,7 +44,7 @@ public class CandleResponseDTO {
 
 
         return CandleResponseDTO.builder()
-                .candles(candles)
+                .candleDTOList(candles)
                 .build();
 
     }
