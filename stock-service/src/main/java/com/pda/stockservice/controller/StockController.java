@@ -1,15 +1,19 @@
 package com.pda.stockservice.controller;
 
+import com.pda.stockservice.dto.request.StockFilter;
+import com.pda.stockservice.dto.request.StockFilterRequest;
 import com.pda.stockservice.dto.response.CandleResponseDTO;
 import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 
-import com.pda.stockservice.enums.Market;
-import com.pda.stockservice.enums.Sectors;
+import com.pda.stockservice.dto.response.StockResponseDTO;
+import com.pda.stockservice.entity.Stock;
 import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.stockservice.service.StockService;
+import com.pda.stockservice.service.StockServiceImpl;
 import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
+import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +31,13 @@ public class StockController {
     public String test2() {
         return "stock test";
     }
-
+    // 특정 조건으로 주식 종목 검색
+    @PostMapping("/filter")
+    public ApiResponse<List<StockResponseDTO>> searchStockStatIds(
+            @RequestBody StockFilterRequest request) {
+        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters());
+        return ApiResponse.onSuccess(stocks);
+    }
 
     //개별종목 정보조회
     @GetMapping("/{stockId}")
@@ -84,18 +94,6 @@ public class StockController {
 
         return "test";
 
-    }
-
-    // 시장 (KOSPI, KOSDAQ, ALL) 조회 OpenFeign 통신 코드
-    @GetMapping("/markets")
-    public List<Market> getMarkets(@RequestParam(required = false) Market market) {
-        return Market.getMarkets(market);
-    }
-
-    // 섹터 조회 OpenFeign 통신 코드
-    @GetMapping("/sectors")
-    public List<Sectors> getSectors(@RequestParam(required = false) String sectors) {
-        return Sectors.fromString(sectors);
     }
 
 }

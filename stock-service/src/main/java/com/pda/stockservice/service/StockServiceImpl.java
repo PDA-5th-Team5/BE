@@ -1,11 +1,20 @@
 package com.pda.stockservice.service;
 
+import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.CandleResponseDTO;
-import com.pda.stockservice.dto.response.CommentResponseDTO;
 import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
-import com.pda.stockservice.entity.*;
-import com.pda.stockservice.repository.*;
+import com.pda.stockservice.dto.response.StockResponseDTO;
+import com.pda.stockservice.entity.FavoriteStock;
+import com.pda.stockservice.entity.Stock;
+import com.pda.stockservice.entity.StockPriceDay;
+import com.pda.stockservice.entity.StockStat;
+import com.pda.stockservice.enums.Market;
+import com.pda.stockservice.mapper.StockMapper;
+import com.pda.stockservice.repository.FavoriteStockRepository;
+import com.pda.stockservice.repository.StockPriceDayRepository;
+import com.pda.stockservice.repository.StockRepository;
+import com.pda.stockservice.repository.StockStatRepository;
 import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
@@ -15,7 +24,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -28,8 +40,74 @@ public class StockServiceImpl implements StockService {
     private final FavoriteStockRepository favoriteStockRepository;
     private final StockPriceDayRepository stockPriceDayRepository;
     private final StockStatRepository stockStatRepository;
-    private final StockCommentRepository stockCommentRepository;
+    private final StockMapper stockMapper;
+    private final RedisService redisService;
+
     private final Environment environment;
+    @Override
+    public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters) {
+        List<Market> markets = new ArrayList<>();
+        if (market.equals("ALL")){
+            markets.add(Market.KOSPI);
+            markets.add(Market.KOSDAQ);
+        }
+        else {
+            markets.add(Market.valueOf(market)); // 문자열을 enum으로 변환하여 추가
+        }
+
+        List<Integer> stockIds = stockMapper.searchStockStatIds(markets, sector, filters);
+        if (stockIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<StockResponseDTO> stocks = stockMapper.findStocksByIds(stockIds);
+
+        // stock_id 리스트 가져오기
+        List<String> stockIdStrings = stocks.stream()
+                .map(stock -> String.valueOf(stock.getStockId()))
+                .collect(Collectors.toList());
+
+        // 한 번에 Redis에서 수익률 데이터 가져오기
+        Map<String, Map<Object, Object>> stockReturns = redisService.getStockReturnsByIds(stockIdStrings);
+
+        // 한 번에 Redis에서 현재가 및 변동률 데이터 가져오기 (티커 기준 조회)
+        List<String> tickers = stocks.stream()
+                .map(StockResponseDTO::getTicker)  // 티커 리스트 추출
+                .collect(Collectors.toList());
+
+        Map<String, Map<Object, Object>> stockPrices = redisService.getStockCurrentPricesByTickers(tickers);
+
+        for (StockResponseDTO stock : stocks) {
+            String stockId = String.valueOf(stock.getStockId());
+            String ticker = stock.getTicker();
+
+            // 주식 수익률 데이터 반영
+            Map<Object, Object> periodChangeRate = stockReturns.get(stockId);
+            if (periodChangeRate != null) {
+                if (periodChangeRate.containsKey("week_rate_change")) {
+                    stock.setWeekRateChange(Double.parseDouble(periodChangeRate.get("week_rate_change").toString()));
+                }
+                if (periodChangeRate.containsKey("year_rate_change")) {
+                    stock.setYearRateChange(Double.parseDouble(periodChangeRate.get("year_rate_change").toString()));
+                }
+            }
+
+            // 현재가 및 변동률 데이터 반영
+            Map<Object, Object> priceData = stockPrices.get(ticker);
+
+            if (priceData != null) {
+                if (priceData.containsKey("currentPrice")) {
+                    stock.setCurrentPrice((int) Double.parseDouble(priceData.get("currentPrice").toString()));
+                }
+                if (priceData.containsKey("changeRate")) {
+                    stock.setChangeRate(Double.parseDouble(priceData.get("changeRate").toString()));
+                }
+            }
+        }
+
+        return stocks;
+    }
+
 
     // 개별 종목 정보 조회
     @Transactional(readOnly = true)
