@@ -1,8 +1,10 @@
 package com.pda.userservice.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.repository.RefreshRepository;
 import com.pda.utilservice.jwt.JWTUtil;
+import com.pda.utilservice.response.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -56,10 +58,15 @@ public class CustomLogoutFilter extends GenericFilterBean {
             }
         }
 
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
         //refresh null check
         if (refresh == null) {
 
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
+            ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그아웃 실패");
+            new ObjectMapper().writeValue(response.getWriter(), responseDTO);
             return;
         }
 
@@ -68,8 +75,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
             jwtUtil.isExpired(refresh);
         } catch (ExpiredJwtException e) {
 
-            //response status code
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
+            ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그아웃 실패");
+            new ObjectMapper().writeValue(response.getWriter(), responseDTO);
             return;
         }
 
@@ -77,8 +85,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String category = jwtUtil.getCategory(refresh);
         if (!category.equals("refresh")) {
 
-            //response status code
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
+            ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그아웃 실패");
+            new ObjectMapper().writeValue(response.getWriter(), responseDTO);
             return;
         }
 
@@ -87,15 +96,17 @@ public class CustomLogoutFilter extends GenericFilterBean {
         // DB에 저장되어 있는지 확인
         Optional<Refresh> byId = refreshRepository.findById(username);
         if (byId.isEmpty()) {
-            //response status code
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
+            ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그아웃 실패");
+            new ObjectMapper().writeValue(response.getWriter(), responseDTO);
             return;
         }
 
         Refresh refreshEntity = byId.get();
         if (!refreshEntity.getRefresh().equals(refresh)) {
-            //response status code
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
+            ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그아웃 실패");
+            new ObjectMapper().writeValue(response.getWriter(), responseDTO);
             return;
         }
 
@@ -110,5 +121,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         response.addCookie(cookie);
         response.setStatus(HttpServletResponse.SC_OK);
+        ApiResponse<Void> responseDTO = ApiResponse.onSuccess(HttpServletResponse.SC_OK, "로그아웃 성공");
+        new ObjectMapper().writeValue(response.getWriter(), responseDTO);
     }
 }
