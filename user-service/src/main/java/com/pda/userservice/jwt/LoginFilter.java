@@ -64,8 +64,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         User user = userRepository.findByUsername(username);
 
         String userId = user.getUserId();
-        String nickname = user.getNickname();
-        String email = user.getEmail();
 
         //토큰 생성
         String access = jwtUtil.createJwt("access", userId, username, role, 600000L);
@@ -107,9 +105,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);// 최종 응답 DTO 생성
+        ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_UNAUTHORIZED, "로그인 실패");
+        new ObjectMapper().writeValue(response.getWriter(), responseDTO);
     }
 
     private Cookie createCookie(String key, String value) {
