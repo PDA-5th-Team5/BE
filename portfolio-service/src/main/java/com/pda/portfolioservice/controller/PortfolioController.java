@@ -1,9 +1,12 @@
 package com.pda.portfolioservice.controller;
 
+import com.pda.portfolioservice.dto.request.PortfolioRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
+import com.pda.portfolioservice.dto.response.PortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
+import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.service.PortfolioService;
 import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
@@ -22,6 +25,32 @@ public class PortfolioController {
         return "Portfolio test";
     }
 
+    // 포트폴리오 저장 (POST)
+    @PostMapping("/save")
+    public ApiResponse<PortfolioResponseDTO> savePortfolio(@RequestBody PortfolioRequestDTO requestDTO) {
+        Portfolio portfolio = portfolioService.savePortfolio(requestDTO.toEntity());
+        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
+    }
+
+    // 특정 포트폴리오 조회 (GET)
+    @GetMapping("/{category}/{portfolioId}")
+    public ApiResponse<PortfolioResponseDTO> getPortfolio(
+            @PathVariable String category,
+            @PathVariable Long portfolioId
+    ) {
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
+    }
+
+    // 포트폴리오 삭제 (DELETE)
+    @DeleteMapping("/{category}/{portfolioId}")
+    public ApiResponse<SuccessStatus> deletePortfolio(
+            @PathVariable String category,
+            @PathVariable Long portfolioId
+    ) {
+        portfolioService.deletePortfolio(category, portfolioId);
+        return ApiResponse.onSuccess(SuccessStatus.OK);
+    }
 
     // 나의 포트폴리오 제목 리스트 조회
     @GetMapping("/my")
@@ -37,12 +66,12 @@ public class PortfolioController {
         return ApiResponse.onSuccess(response);
     }
 
-    // 나의 포트폴리오 삭제
-    @DeleteMapping("/my/{myPortfolioId}")
-    public ApiResponse<SuccessStatus> deleteMyPortfolio(@PathVariable Long myPortfolioId) {
-        portfolioService.deleteMyPortfolio(myPortfolioId);
-        return ApiResponse.onSuccess(SuccessStatus.OK);
-    }
+//    // 나의 포트폴리오 삭제
+//    @DeleteMapping("/my/{myPortfolioId}")
+//    public ApiResponse<SuccessStatus> deleteMyPortfolio(@PathVariable Long myPortfolioId) {
+//        portfolioService.deleteMyPortfolio(myPortfolioId);
+//        return ApiResponse.onSuccess(SuccessStatus.OK);
+//    }
 
 
     // 공유 포트폴리오 댓글 작성
