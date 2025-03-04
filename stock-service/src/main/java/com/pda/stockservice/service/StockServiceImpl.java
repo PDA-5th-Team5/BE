@@ -86,7 +86,6 @@ public class StockServiceImpl implements StockService {
 
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
 
-        //userId 하드코딩
         String userId = jwtUtil.getBearerUserId(token);
 
         // 이미 추가된 관심종목인지 확인
