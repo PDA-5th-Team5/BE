@@ -21,6 +21,7 @@ public interface PortfolioService {
     public SharePortfolioListResponseDTO getSharePortfolios(String sort, int page, int size);
 
     // 공유 포트폴리오 가져오기 (저장)
+    public ImportSharePortfolioResponseDTO getSharePortfolio(Long sharePortfolioId);
 
     // 공유 포트폴리오 요약 조회
     public SharePortfolioSummaryResponseDTO getSharePortfolioSummary(Long sharePortfolioId);

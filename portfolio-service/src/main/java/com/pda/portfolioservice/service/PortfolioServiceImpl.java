@@ -66,12 +66,13 @@ public class PortfolioServiceImpl implements PortfolioService {
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
-        SharePortfolio sharePortfolio = new SharePortfolio();
-        sharePortfolio.setTitle(myPortfolio.getTitle());
-        sharePortfolio.setDescription(myPortfolio.getDescription());
-        sharePortfolio.setUserId(myPortfolio.getUserId());
-        sharePortfolio.setCreatedAt(LocalDateTime.now());
-        sharePortfolio.setLoadCount(0);
+        SharePortfolio sharePortfolio = SharePortfolio.builder()
+                .title(myPortfolio.getTitle())
+                .description(myPortfolio.getDescription())
+                .userId(myPortfolio.getUserId())
+                .createdAt(LocalDateTime.now())
+                .loadCount(0)
+                .build();
 
         SharePortfolio savedSharePortfolio = sharePortfolioRepository.save(sharePortfolio);
         return new ShareMyPortfolioResponseDTO(savedSharePortfolio.getSharePortfolioId());
@@ -104,6 +105,22 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .sharePortfoliosCnt(sharePortfolioDTOList.size())
                 .sharePortfolios(sharePortfolioDTOList)
                 .build();
+    }
+
+    @Override
+    public ImportSharePortfolioResponseDTO getSharePortfolio(Long sharePortfolioId) {
+        SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+
+        MyPortfolio myPortfolio = MyPortfolio.builder()
+                .title(sharePortfolio.getTitle())
+                .description(sharePortfolio.getDescription())
+                .userId(sharePortfolio.getUserId())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        MyPortfolio savedMyPortfolio = myPortfolioRepository.save(myPortfolio);
+        return new ImportSharePortfolioResponseDTO(savedMyPortfolio.getMyPortfolioId());
     }
 
     @Override

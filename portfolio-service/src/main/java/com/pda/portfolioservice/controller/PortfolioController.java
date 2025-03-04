@@ -59,6 +59,13 @@ public class PortfolioController {
         return ApiResponse.onSuccess(response);
     }
 
+    // 공유 포트폴리오 가져오기 (저장)
+    @PostMapping("/share/{sharePortfolioId}")
+    public ApiResponse<ImportSharePortfolioResponseDTO> getSharePortfolio(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId) {
+        ImportSharePortfolioResponseDTO response = portfolioService.getSharePortfolio(sharePortfolioId);
+        return ApiResponse.onSuccess(response);
+    }
+
     // 공유 포트폴리오 요약 조회
     @GetMapping("/share/{sharePortfolioId}/summary")
     public ApiResponse<SharePortfolioSummaryResponseDTO> getSharePortfolioSummary(@PathVariable Long sharePortfolioId) {
