@@ -79,7 +79,10 @@ public class UserServiceImpl implements UserService {
             return new ResponseEntity<>("invalid refresh token(DB)", HttpStatus.UNAUTHORIZED);
         }
 
-        String newAccess = jwtUtil.createJwt("access", username, role, 600000L); // 10분 유효기간
+        // userId 조회
+        String userId = userRepository.findByUsername(username).getUserId();
+
+        String newAccess = jwtUtil.createJwt("access", userId, username, role, 600000L); // 10분 유효기간
         response.setHeader("access", newAccess);
 
         return new ResponseEntity<>(HttpStatus.OK);

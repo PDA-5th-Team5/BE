@@ -54,7 +54,6 @@ public class StockController {
         return ApiResponse.onSuccess(candleResponseDTO);
     }
 
-
     //경쟁사 정보조회
     @GetMapping("/{stockId}/competitors")
     public ApiResponse<CompetitorsResponseDTO> getCompetitors(
