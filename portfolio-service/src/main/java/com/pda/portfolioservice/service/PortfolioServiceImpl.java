@@ -7,7 +7,9 @@ import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
 import com.pda.portfolioservice.entity.MyPortfolio;
 import com.pda.portfolioservice.entity.SharePortfolio;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
+import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.repository.MyPortfolioRepository;
+import com.pda.portfolioservice.repository.PortfolioRepository;
 import com.pda.portfolioservice.repository.SharePortfolioCommentRepository;
 import com.pda.portfolioservice.repository.SharePortfolioRepository;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,34 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final MyPortfolioRepository myPortfolioRepository;
     private final SharePortfolioRepository sharePortfolioRepository;
     private final SharePortfolioCommentRepository sharePortfolioCommentRepository;
+    private final PortfolioRepository portfolioRepository;
+
+    // 포트폴리오 저장 (중복 검사 후 저장)
+    @Override
+    public Portfolio savePortfolio(Portfolio portfolio) {
+        // 중복 확인 (category + portfolioId 조합이 이미 존재하는지 검사)
+        Optional<Portfolio> existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId(portfolio.getCategory(), portfolio.getPortfolioId());
+
+        if (existingPortfolio.isPresent()) {
+            throw new PortfolioHandler(ErrorStatus.DUPLICATE_PORTFOLIO);
+        }
+
+        return portfolioRepository.save(portfolio);
+    }
+
+    // 특정 포트폴리오 조회
+    @Override
+    public Portfolio getPortfolio(String category, Long portfolioId) {
+        return portfolioRepository.findByCategoryAndPortfolioId(category, portfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+    }
+
+    //특정 포트폴리오 삭제
+    @Override
+    public void deletePortfolio(String category, Long portfolioId) {
+        Portfolio portfolio = getPortfolio(category, portfolioId);
+        portfolioRepository.delete(portfolio);
+    }
 
     @Override
     @Transactional(readOnly = true)
