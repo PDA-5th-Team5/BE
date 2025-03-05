@@ -24,6 +24,6 @@ public interface StockService {
     //로그인기능구현 후 useId추가 예정
     void deleteFavoriteStock(Short stockId);
   
-    List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters);
+    List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page);
 
 }
