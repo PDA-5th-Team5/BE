@@ -2,11 +2,8 @@ package com.pda.stockservice.controller;
 
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.request.StockFilterRequest;
-import com.pda.stockservice.dto.response.CandleResponseDTO;
-import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
-import com.pda.stockservice.dto.response.StockInfoResponseDTO;
+import com.pda.stockservice.dto.response.*;
 
-import com.pda.stockservice.dto.response.StockResponseDTO;
 import com.pda.stockservice.entity.Stock;
 import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.stockservice.service.StockService;
@@ -15,6 +12,7 @@ import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
 import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,9 +46,10 @@ public class StockController {
 
     //관심종목 추가
     @PostMapping("/{stockId}/watchlist")
-    public ApiResponse<SuccessStatus> addFavoriteStock(@PathVariable("stockId") Short stockId, @RequestHeader(value = "Authorization", required = false) String token){
+    public ApiResponse<Void> addFavoriteStock(@PathVariable("stockId") Short stockId, @RequestHeader(value = "Authorization", required = false) String token){
         stockService.addFavoriteStock(stockId, token);
-        return ApiResponse.onSuccess(SuccessStatus.OK);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "성공입니다.");
+
     }
 
     //관심종목 삭제
@@ -65,11 +64,6 @@ public class StockController {
         CandleResponseDTO candleResponseDTO = stockService.getCandle(stockId);
         return ApiResponse.onSuccess(candleResponseDTO);
     }
-    //댓글
-//    @GetMapping("/api/stocks/{stockId}/comments")
-//    public ApiResponse<CommentResponseDTO> getComments(
-//            @PathVariable
-//            )
 
     //경쟁사 정보조회
     @GetMapping("/{stockId}/competitors")
@@ -80,8 +74,24 @@ public class StockController {
         return ApiResponse.onSuccess(competitorsResponseDTO);
     }
 
+    //댓글조회
+    @GetMapping("/{stockId}/comments")
+    public ApiResponse<CommentResponseDTO> getComments(
+            @PathVariable("stockId") Short stockId,
+            @RequestParam(value = "page", required = false) String page) {
+        CommentResponseDTO commentResponseDTO = stockService.getComments(stockId);
+        return ApiResponse.onSuccess(commentResponseDTO);
+    }
 
 
+    // 댓글 작성
+    @PostMapping("/{stockId}/comments")
+    public ApiResponse<Void> addComments(
+            @PathVariable("stockId") Short stockId,
+            @RequestBody String content, @RequestHeader(value = "Authorization", required = false) String token) {
+        stockService.addComments(stockId, content, token);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(),"성공입니다.");
+    }
 
 
     // openfeign 테스트
