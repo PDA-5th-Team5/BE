@@ -2,11 +2,8 @@ package com.pda.stockservice.service;
 
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
-import com.pda.stockservice.entity.Stock;
 
 import java.util.List;
-import java.util.Map;
-import com.pda.stockservice.repository.StockCommentRepository;
 
 public interface StockService {
     StockInfoResponseDTO getStocks(Short stockId);

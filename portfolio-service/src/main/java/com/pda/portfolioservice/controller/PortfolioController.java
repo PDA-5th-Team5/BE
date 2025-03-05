@@ -78,8 +78,8 @@ public class PortfolioController {
 
     // 공유 포트폴리오 댓글 작성
     @PostMapping("/share/{sharePortfolioId}/comments")
-    public ApiResponse<SuccessStatus> addComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @RequestBody SharePortfolioCommentRequestDTO requestDTO) {
-        portfolioService.addComment(sharePortfolioId, requestDTO);
+    public ApiResponse<SuccessStatus> addComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @RequestBody SharePortfolioCommentRequestDTO requestDTO, @RequestHeader(value = "Authorization", required = false) String token) {
+        portfolioService.addComment(sharePortfolioId, requestDTO, token);
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 
@@ -92,15 +92,17 @@ public class PortfolioController {
 
     // 공유 포트폴리오 댓글 수정
     @PatchMapping("/share/{sharePortfolioId}/comments/{commentId}")
-    public ApiResponse<SuccessStatus> updateComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @PathVariable(value = "commentId") Long commentId, @RequestBody SharePortfolioCommentRequestDTO request) {
-        portfolioService.updateComment(sharePortfolioId, commentId, request);
+    public ApiResponse<SuccessStatus> updateComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @PathVariable(value = "commentId") Long commentId,
+                                                    @RequestBody SharePortfolioCommentRequestDTO request, @RequestHeader(value = "Authorization", required = false) String token) {
+        portfolioService.updateComment(sharePortfolioId, commentId, request, token);
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 
     // 공유 포트폴리오 댓글 삭제
     @DeleteMapping("/share/{sharePortfolioId}/comments/{commentId}")
-    public ApiResponse<SuccessStatus> deleteComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @PathVariable(value = "commentId") Long commentId) {
-        portfolioService.deleteComment(sharePortfolioId, commentId);
+    public ApiResponse<SuccessStatus> deleteComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @PathVariable(value = "commentId") Long commentId,
+                                                    @RequestHeader(value = "Authorization", required = false) String token) {
+        portfolioService.deleteComment(sharePortfolioId, commentId, token);
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 

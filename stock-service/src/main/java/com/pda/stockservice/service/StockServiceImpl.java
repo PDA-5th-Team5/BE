@@ -12,8 +12,6 @@ import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -39,6 +37,7 @@ public class StockServiceImpl implements StockService {
     private final StockMapper stockMapper;
     private final RedisService redisService;
     private final UserServiceClient userServiceClient;
+
     private final Environment environment;
     @Override
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page) {
