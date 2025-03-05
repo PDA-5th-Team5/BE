@@ -1,5 +1,6 @@
 package com.pda.userservice.feign;
 
+import com.pda.userservice.dto.response.MyStockCommentsResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,6 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface StockServiceClient {
 
     @GetMapping("api/stocks/{userId}/my/comments")
-    String getMyStockComments(@PathVariable("userId") String userId);
+    MyStockCommentsResponseDTO getMyStockComments(@PathVariable("userId") String userId);
 
 }

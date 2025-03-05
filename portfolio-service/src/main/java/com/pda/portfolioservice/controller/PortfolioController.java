@@ -2,7 +2,7 @@ package com.pda.portfolioservice.controller;
 
 import com.pda.portfolioservice.dto.request.PortfolioRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
-import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
+import com.pda.portfolioservice.dto.response.MyPortfolioCommentsResponseDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
 import com.pda.portfolioservice.dto.response.PortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
@@ -11,7 +11,6 @@ import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.service.PortfolioService;
 import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
-import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -106,8 +105,7 @@ public class PortfolioController {
 
     // userId로 공유 포트폴리오 댓글 조회
     @GetMapping("/{userId}/my/comments")
-    public ApiResponse<MyCommentsResponseDTO> getNickname(@PathVariable String userId) {
-        MyCommentsResponseDTO commentsResponseDTO = portfolioService.getCommentsByUserId(userId);
-        return ApiResponse.onSuccess(commentsResponseDTO);
+    public MyPortfolioCommentsResponseDTO getNickname(@PathVariable String userId) {
+        return portfolioService.getCommentsByUserId(userId);
     }
 }

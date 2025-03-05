@@ -10,3 +10,4 @@ public interface StockCommentRepository extends JpaRepository<StockComment, Long
 //    List<StockComment> findByUserId(String userId);  // userId로 댓글 조회
     Optional<List<StockComment>> findByUserId(String userId);  // userId로 댓글 조회
 }
+

@@ -1,7 +1,7 @@
 package com.pda.portfolioservice.service;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
-import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
+import com.pda.portfolioservice.dto.response.MyPortfolioCommentsResponseDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
@@ -37,6 +37,6 @@ public interface PortfolioService {
     public void deleteComment(Long sharePortfolioId, Long commentId);
 
     // userId로 공유 포트폴리오 댓글 조회
-    public MyCommentsResponseDTO getCommentsByUserId(String userId);
+    public MyPortfolioCommentsResponseDTO getCommentsByUserId(String userId);
 
 }

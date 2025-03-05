@@ -3,6 +3,8 @@ package com.pda.userservice.service;
 import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.dto.request.ProfileRequestDTO;
 import com.pda.userservice.dto.response.CommentsResponseDTO;
+import com.pda.userservice.dto.response.MyPortfolioCommentsResponseDTO;
+import com.pda.userservice.dto.response.MyStockCommentsResponseDTO;
 import com.pda.userservice.dto.response.NicknameResponseDTO;
 import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.entity.User;
@@ -127,12 +129,24 @@ public class UserServiceImpl implements UserService {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
         String userId = jwtUtil.getBearerUserId(token);
 
-        String myStockComments = stockServiceClient.getMyStockComments(userId);
-        String myPortfolioComments = portfolioServiceClient.getMyPortfolioComments(userId);
+        MyStockCommentsResponseDTO myStockComments = stockServiceClient.getMyStockComments(userId);
+        MyPortfolioCommentsResponseDTO myPortfolioComments = portfolioServiceClient.getMyPortfolioComments(userId);
+
+//        // test
+//        MyStockCommentsResponseDTO myStockComments = stockServiceClient.getMyStockComments("bd703313-cbc6-4aef-8363-e632efcc793a");
+//        MyPortfolioCommentsResponseDTO myPortfolioComments = portfolioServiceClient.getMyPortfolioComments("bd703313-cbc6-4aef-8363-e632efcc793a");
+
+        System.out.println(myStockComments.getCommentsS().size());
+
+        // CommentsResponseDTO 생성
+        CommentsResponseDTO commentsResponseDTO = CommentsResponseDTO.builder()
+                .commentsS(myStockComments.getCommentsS()) // List<StockCommentResponseDTO>가 직접 들어가도록 수정
+                .commentsP(myPortfolioComments.getCommentsP()) // List<PortfolioCommentResponseDTO>가 직접 들어가도록 수정
+                .build();
 
 
 
-        return null;
+        return ApiResponse.onSuccess(commentsResponseDTO);
     }
 
     private String extractRefreshToken(HttpServletRequest request) {

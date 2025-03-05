@@ -7,11 +7,8 @@ import com.pda.stockservice.dto.response.CandleResponseDTO;
 import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
 import com.pda.stockservice.dto.response.StockInfoResponseDTO;
 import com.pda.stockservice.dto.response.StockResponseDTO;
-import com.pda.stockservice.entity.Stock;
 
 import java.util.List;
-import java.util.Map;
-import com.pda.stockservice.repository.StockCommentRepository;
 
 public interface StockService {
     StockInfoResponseDTO getStocks(Short stockId);
@@ -28,5 +25,5 @@ public interface StockService {
   
     List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page);
 
-    MyCommentsResponseDTO getCommentsByUserId(String userId);
+    MyStockCommentsResponseDTO getCommentsByUserId(String userId);
 }

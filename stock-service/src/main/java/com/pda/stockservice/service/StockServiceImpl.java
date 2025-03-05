@@ -97,10 +97,10 @@ public class StockServiceImpl implements StockService {
 
     @Override
     @Transactional(readOnly = true)
-    public MyCommentsResponseDTO getCommentsByUserId(String userId) {
+    public MyStockCommentsResponseDTO getCommentsByUserId(String userId) {
         List<StockComment> comments = stockCommentRepository.findByUserId(userId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
-        return MyCommentsResponseDTO.toDTO(comments);
+        return MyStockCommentsResponseDTO.toDTO(comments);
     }
 
 

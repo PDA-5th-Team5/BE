@@ -10,12 +10,12 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
-public class MyCommentsResponseDTO {
+public class MyPortfolioCommentsResponseDTO {
     private List<PortfolioCommentResponseDTO> commentsP;
 
     // StockComment 리스트를 받아 MyCommentsResponseDTO 변환 메서드
-    public static MyCommentsResponseDTO toDTO(List<SharePortfolioComment> comments) {
-        return MyCommentsResponseDTO.builder()
+    public static MyPortfolioCommentsResponseDTO toDTO(List<SharePortfolioComment> comments) {
+        return MyPortfolioCommentsResponseDTO.builder()
                 .commentsP(comments.stream()
                         .map(PortfolioCommentResponseDTO::fromEntity)
                         .collect(Collectors.toList()))
