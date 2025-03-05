@@ -93,6 +93,18 @@ public class StockServiceImpl implements StockService {
                 }
             }
 
+            // 현재가 및 변동률 데이터 반영
+            Map<Object, Object> priceData = stockPrices.get(ticker);
+
+            if (priceData != null) {
+                if (priceData.containsKey("currentPrice")) {
+                    stock.setCurrentPrice((int) Double.parseDouble(priceData.get("currentPrice").toString()));
+                }
+                if (priceData.containsKey("changeRate")) {
+                    stock.setChangeRate(Double.parseDouble(priceData.get("changeRate").toString()));
+                }
+            }
+
             filteredStockResponses.add(StockResponseDTO.filterStockResponse(stock, filters));
         }
 
