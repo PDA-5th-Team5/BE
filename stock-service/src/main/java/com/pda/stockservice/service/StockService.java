@@ -15,10 +15,9 @@ public interface StockService {
     CommentResponseDTO getComments(Short stockId);
     void addComments(Short stockId, String content, String token);
     void deleteComments(Long commentId, String token);
-
+    void updateComments(Long commentId, String content, String token);
 
     void addFavoriteStock(Short stockId, String token);
-    //로그인기능구현 후 useId추가 예정
     void deleteFavoriteStock(Short stockId, String token);
 
     List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page);

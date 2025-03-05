@@ -104,7 +104,18 @@ public class StockController {
         stockService.deleteComments(commentId, token);
         return ApiResponse.onSuccess(HttpStatus.OK.value(), "성공입니다.");
     }
-  
+
+    //댓글 수정
+    @PatchMapping("/{stockId}/comments/{commentId}")
+    public ApiResponse<Void> updateComments(
+            @PathVariable("stockId") Short stockId,
+            @PathVariable("commentId") Long commentId,
+            @RequestBody String content,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        stockService.updateComments(commentId, content, token);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "성공입니다.");
+    }
+
     // userId로 종목 댓글 조회
     @GetMapping("/{userId}/my/comments")
     public ApiResponse<MyCommentsResponseDTO> getNickname(@PathVariable String userId) {

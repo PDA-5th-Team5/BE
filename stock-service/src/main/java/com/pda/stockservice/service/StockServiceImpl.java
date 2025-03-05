@@ -121,6 +121,7 @@ public class StockServiceImpl implements StockService {
 
 
     // 개별 종목 정보 조회
+    @Override
     @Transactional(readOnly = true)
     public StockInfoResponseDTO getStocks(Short stockId){
         Stock stock = stockRepository.findById(stockId)
@@ -129,6 +130,7 @@ public class StockServiceImpl implements StockService {
     }
 
     //캔들 차트 데이터 조회
+    @Override
     @Transactional(readOnly = true)
     public CandleResponseDTO getCandle(Short stockId) {
         //주식이 존재하는 지 확인
@@ -166,6 +168,7 @@ public class StockServiceImpl implements StockService {
     }
 
     // 관심종목추가
+    @Override
     @Transactional
     public void addFavoriteStock(Short stockId, String token) {
 
@@ -191,6 +194,7 @@ public class StockServiceImpl implements StockService {
     }
 
     //관심종목 삭제
+    @Override
     @Transactional
     public void deleteFavoriteStock(Short stockId, String token) {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
@@ -204,45 +208,42 @@ public class StockServiceImpl implements StockService {
     }
 
     //댓글조회
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true)
     public CommentResponseDTO getComments(Short stockId) {
         if (!stockRepository.existsById(stockId)){
             throw new StockHandler(ErrorStatus.STOCK_NOT_FOUND);
         }
 
-        List<StockComment> comments = stockCommentRepository.findByStock_StockIdOrderByCreatedAtDesc(stockId);
+        List<StockComment> comments = stockCommentRepository.findCommentsByStockId(stockId);
 
 
         return CommentResponseDTO.toDTO(comments, userServiceClient);
     }
 
     // 댓글 작성
-    @Transactional
     @Override
+    @Transactional
     public void addComments(Short stockId, String content, String token) {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
 
         String userId = jwtUtil.getBearerUserId(token);
 
-        // 해당 주식이 존재하는지 확인
         Stock stock = stockRepository.findById(stockId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.STOCK_NOT_FOUND));
 
-        // 댓글 생성
         StockComment comment = StockComment.builder()
                 .content(content)
                 .stock(stock)
                 .userId(userId)
                 .build();
 
-        // 댓글 저장
         stockCommentRepository.save(comment);
     }
 
     //댓글삭제
-    @Transactional
     @Override
+    @Transactional
     public void deleteComments(Long commentId, String token) {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
 
@@ -257,5 +258,26 @@ public class StockServiceImpl implements StockService {
 
         stockCommentRepository.delete(stockComment);
     }
+
+    //댓글수정
+    @Override
+    @Transactional
+    public void updateComments(Long commentId, String content, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+
+        String userId = jwtUtil.getBearerUserId(token);
+
+        StockComment stockComment = stockCommentRepository.findById(commentId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.COMMENT_NOT_FOUND));
+
+        if (!stockComment.getUserId().equals(userId)) {
+            throw new StockHandler(ErrorStatus.NOT_AUTHORIZED);
+        }
+
+        stockComment.updateContent(content);
+        stockCommentRepository.save(stockComment);
+    }
+
+
 
 }
