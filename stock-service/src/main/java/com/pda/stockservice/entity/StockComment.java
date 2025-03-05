@@ -36,4 +36,7 @@ public class StockComment {
     private Stock stock;
     private String userId;
 
+    public void updateContent(String content){
+        this.content = content;
+    }
 }
