@@ -19,7 +19,7 @@ public interface StockService {
 
     void addFavoriteStock(Short stockId, String token);
     //로그인기능구현 후 useId추가 예정
-    void deleteFavoriteStock(Short stockId);
+    void deleteFavoriteStock(Short stockId, String token);
 
     List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page);
 

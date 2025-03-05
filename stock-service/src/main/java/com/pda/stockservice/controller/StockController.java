@@ -55,10 +55,11 @@ public class StockController {
 
     //관심종목 삭제
     @DeleteMapping("/{stockId}/watchlist")
-    public  ApiResponse<SuccessStatus> deleteFavoriteStock(@PathVariable("stockId") Short stockId){
-        stockService.deleteFavoriteStock(stockId);
+    public  ApiResponse<SuccessStatus> deleteFavoriteStock(@PathVariable("stockId") Short stockId, @RequestHeader(value = "Authorization", required = false) String token){
+        stockService.deleteFavoriteStock(stockId, token);
         return ApiResponse.onSuccess(null);
     }
+
     //캔들차트 데이터조회
     @GetMapping("/{stockId}/candle")
     public ApiResponse<CandleResponseDTO> getCandle(@PathVariable("stockId") Short stockId) {
