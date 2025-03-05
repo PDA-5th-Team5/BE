@@ -1,13 +1,17 @@
 package com.pda.portfolioservice.controller;
 
+import com.pda.portfolioservice.dto.request.PortfolioRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
+import com.pda.portfolioservice.dto.response.PortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
+import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.service.PortfolioService;
 import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
+import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,53 +27,79 @@ public class PortfolioController {
         return "Portfolio test";
     }
 
+    // 포트폴리오 저장 (POST)
+    @PostMapping("/save")
+    public ApiResponse<PortfolioResponseDTO> savePortfolio(@RequestBody PortfolioRequestDTO requestDTO) {
+        Portfolio portfolio = portfolioService.savePortfolio(requestDTO.toEntity());
+        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
+    }
+
+    // 특정 포트폴리오 조회 (GET)
+    @GetMapping("/{category}/{portfolioId}")
+    public ApiResponse<PortfolioResponseDTO> getPortfolio(
+            @PathVariable(value = "category") String category,
+            @PathVariable(value = "portfolioId") Long portfolioId
+    ) {
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
+    }
+
+    // 포트폴리오 삭제 (DELETE)
+    @DeleteMapping("/{category}/{portfolioId}")
+    public ApiResponse<SuccessStatus> deletePortfolio(
+            @PathVariable(value = "category") String category,
+            @PathVariable(value = "portfolioId") Long portfolioId
+    ) {
+        portfolioService.deletePortfolio(category, portfolioId);
+        return ApiResponse.onSuccess(SuccessStatus.OK);
+    }
 
     // 나의 포트폴리오 제목 리스트 조회
     @GetMapping("/my")
-    public ApiResponse<MyPortfolioTitleResponseDTO.myPortfolioListDTO> getMyPortfolioTitleList(@PathVariable Long myPortfolioId) {
+    public ApiResponse<MyPortfolioTitleResponseDTO.myPortfolioListDTO> getMyPortfolioTitleList(@PathVariable(value = "myPortfolioId") Long myPortfolioId) {
         MyPortfolioTitleResponseDTO.myPortfolioListDTO response = portfolioService.getMyPortfolioTitleList(myPortfolioId);
         return ApiResponse.onSuccess(response);
     }
 
     // 나의 포트폴리오 공유
     @PostMapping("/my/{myPortfolioId}")
-    public ApiResponse<ShareMyPortfolioResponseDTO> shareMyPortfolio(@PathVariable Long myPortfolioId) {
+    public ApiResponse<ShareMyPortfolioResponseDTO> shareMyPortfolio(@PathVariable(value = "myPortfolioId") Long myPortfolioId) {
         ShareMyPortfolioResponseDTO response = portfolioService.shareMyPortfolio(myPortfolioId);
         return ApiResponse.onSuccess(response);
     }
 
-    // 나의 포트폴리오 삭제
-    @DeleteMapping("/my/{myPortfolioId}")
-    public ApiResponse<SuccessStatus> deleteMyPortfolio(@PathVariable Long myPortfolioId) {
-        portfolioService.deleteMyPortfolio(myPortfolioId);
-        return ApiResponse.onSuccess(SuccessStatus.OK);
-    }
+//    // 나의 포트폴리오 삭제
+//    @DeleteMapping("/my/{myPortfolioId}")
+//    public ApiResponse<SuccessStatus> deleteMyPortfolio(@PathVariable Long myPortfolioId) {
+//        portfolioService.deleteMyPortfolio(myPortfolioId);
+//        return ApiResponse.onSuccess(SuccessStatus.OK);
+//    }
 
 
     // 공유 포트폴리오 댓글 작성
     @PostMapping("/share/{sharePortfolioId}/comments")
-    public ApiResponse<SuccessStatus> addComment(@PathVariable Long sharePortfolioId, @RequestBody SharePortfolioCommentRequestDTO requestDTO) {
+    public ApiResponse<SuccessStatus> addComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @RequestBody SharePortfolioCommentRequestDTO requestDTO) {
         portfolioService.addComment(sharePortfolioId, requestDTO);
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 
     // 공유 포트폴리오 댓글 조회
     @GetMapping("/share/{sharePortfolioId}/comments")
-    public ApiResponse<SharePortfolioCommentResponseDTO> getComments(@PathVariable Long sharePortfolioId) {
+    public ApiResponse<SharePortfolioCommentResponseDTO> getComments(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId) {
         SharePortfolioCommentResponseDTO response = portfolioService.getComments(sharePortfolioId);
         return ApiResponse.onSuccess(response);
     }
 
     // 공유 포트폴리오 댓글 수정
     @PatchMapping("/share/{sharePortfolioId}/comments/{commentId}")
-    public ApiResponse<SuccessStatus> updateComment(Long sharePortfolioId, Long commentId, @RequestBody SharePortfolioCommentRequestDTO request) {
+    public ApiResponse<SuccessStatus> updateComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @PathVariable(value = "commentId") Long commentId, @RequestBody SharePortfolioCommentRequestDTO request) {
         portfolioService.updateComment(sharePortfolioId, commentId, request);
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 
     // 공유 포트폴리오 댓글 삭제
     @DeleteMapping("/share/{sharePortfolioId}/comments/{commentId}")
-    public ApiResponse<SuccessStatus> deleteComment(Long sharePortfolioId, Long commentId) {
+    public ApiResponse<SuccessStatus> deleteComment(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, @PathVariable(value = "commentId") Long commentId) {
         portfolioService.deleteComment(sharePortfolioId, commentId);
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
