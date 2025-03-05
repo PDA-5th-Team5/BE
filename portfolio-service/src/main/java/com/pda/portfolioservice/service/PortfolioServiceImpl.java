@@ -99,43 +99,67 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     @Transactional(readOnly = true)
-    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId , String userId) {
+    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(String token) {
 
-        // 유저 ID를 임시로 1L로 설정
-
-        MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
-                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
 
         List<MyPortfolio> myPortfolioList = myPortfolioRepository.findByUserId(userId);
 
         return MyPortfolioTitleResponseDTO.myPortfolioListDTO.toDTO(myPortfolioList);
-
-
     }
 
 
     @Override
-    public ShareMyPortfolioResponseDTO shareMyPortfolio(Long myPortfolioId) {
+    public ShareMyPortfolioResponseDTO shareMyPortfolio(Long myPortfolioId, String token) {
+
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
-        SharePortfolio sharePortfolio = new SharePortfolio();
-        sharePortfolio.setTitle(myPortfolio.getTitle());
-        sharePortfolio.setDescription(myPortfolio.getDescription());
-        sharePortfolio.setUserId(myPortfolio.getUserId());
-        sharePortfolio.setCreatedAt(LocalDateTime.now());
-        sharePortfolio.setLoadCount(0);
+        if (!myPortfolio.getUserId().equals(userId)) {
+            throw new PortfolioHandler(ErrorStatus.UNAUTHORIZED);
+        }
+
+        Portfolio existingPortfolio = portfolioRepository.findByPortfolioId(myPortfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+
+        String category = existingPortfolio.getCategory();
+
+        SharePortfolio sharePortfolio = SharePortfolio.builder()
+                .title(myPortfolio.getTitle())
+                .description(myPortfolio.getDescription())
+                .userId(userId)
+                .createdAt(LocalDateTime.now())
+                .loadCount(0)
+                .build();
 
         SharePortfolio savedSharePortfolio = sharePortfolioRepository.save(sharePortfolio);
+
         return new ShareMyPortfolioResponseDTO(savedSharePortfolio.getSharePortfolioId());
     }
 
     @Override
-    public void deleteMyPortfolio( Long myPortfolioId) {
+    public void deleteMyPortfolio(Long myPortfolioId, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
-        myPortfolioRepository.deleteById(myPortfolio.getMyPortfolioId());
+        if (!myPortfolio.getUserId().equals(userId)) {
+            throw new PortfolioHandler(ErrorStatus.UNAUTHORIZED);
+        }
+
+        Optional<Portfolio> existingPortfolio = portfolioRepository.findByPortfolioId(myPortfolioId);
+
+        if (existingPortfolio.isEmpty()) {
+            throw new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND);
+        }
+
+        portfolioRepository.deleteByPortfolioId(myPortfolioId);
     }
 
     @Override
