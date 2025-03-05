@@ -1,17 +1,20 @@
 package com.pda.portfolioservice.service;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
-import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
-import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
-import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
-import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
+import com.pda.portfolioservice.dto.response.*;
 import com.pda.portfolioservice.model.Portfolio;
+import com.pda.utilservice.response.ApiResponse;
+
+import java.util.List;
 
 public interface PortfolioService {
     // 포트폴리오 저장
     public Portfolio saveMyPortfolio(Portfolio portfolio, String userId);
 
     public Portfolio getPortfolio(String category, Long portfolioId);
+
+    //포트폴리오 종목 리스트 조회
+    List<StockResponseDTO> getPortfolioStock(Portfolio portfolio, int page);
 
     void deletePortfolio(String category, Long portfolioId);
 

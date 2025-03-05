@@ -1,18 +1,18 @@
 package com.pda.portfolioservice.service;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
-import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
-import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
-import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
-import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
+import com.pda.portfolioservice.dto.request.StockFilterRequest;
+import com.pda.portfolioservice.dto.response.*;
 import com.pda.portfolioservice.entity.MyPortfolio;
 import com.pda.portfolioservice.entity.SharePortfolio;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
+import com.pda.portfolioservice.feign.StockServiceClient;
 import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.repository.MyPortfolioRepository;
 import com.pda.portfolioservice.repository.PortfolioRepository;
 import com.pda.portfolioservice.repository.SharePortfolioCommentRepository;
 import com.pda.portfolioservice.repository.SharePortfolioRepository;
+import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import com.pda.utilservice.response.exception.handler.StockHandler;
@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +32,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final SharePortfolioRepository sharePortfolioRepository;
     private final SharePortfolioCommentRepository sharePortfolioCommentRepository;
     private final PortfolioRepository portfolioRepository;
-
+    private final StockServiceClient stockServiceClient;
     @Override
     public Portfolio saveMyPortfolio(Portfolio portfolio, String userId) {
         // 1. MySQL에 먼저 저장 (ID 자동 생성)
@@ -67,6 +66,19 @@ public class PortfolioServiceImpl implements PortfolioService {
     public Portfolio getPortfolio(String category, Long portfolioId) {
         return portfolioRepository.findByCategoryAndPortfolioId(category, portfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+    }
+
+    //포트폴리오 종목 리스트 조회
+    @Override
+    public List<StockResponseDTO> getPortfolioStock(Portfolio portfolio, int page) {
+
+        StockFilterRequest stockFilterRequest = new StockFilterRequest();
+        stockFilterRequest.setFilters(portfolio.toStockFilter());
+        stockFilterRequest.setMarketType(portfolio.getMarket());
+        stockFilterRequest.setSector(portfolio.getSector());
+        ApiResponse<List<StockResponseDTO>> stocks = stockServiceClient.searchStockStatIds(stockFilterRequest,page);
+
+        return stocks.getData();
     }
 
     //특정 포트폴리오 삭제

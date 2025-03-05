@@ -2,11 +2,9 @@ package com.pda.portfolioservice.controller;
 
 import com.pda.portfolioservice.dto.request.PortfolioRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
-import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
-import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
-import com.pda.portfolioservice.dto.response.PortfolioResponseDTO;
-import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
-import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
+import com.pda.portfolioservice.dto.request.StockFilter;
+import com.pda.portfolioservice.dto.request.StockFilterRequest;
+import com.pda.portfolioservice.dto.response.*;
 import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.service.PortfolioService;
 import com.pda.utilservice.jwt.JWTUtil;
@@ -20,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -53,15 +52,41 @@ public class PortfolioController {
         }
     }
 
-    // 특정 포트폴리오 조회 (GET)
-    @GetMapping("/{category}/{portfolioId}")
-    public ApiResponse<PortfolioResponseDTO> getPortfolio(
-            @PathVariable(value = "category") String category,
+    // 나의 포트폴리오 조회 (GET)
+    @GetMapping("/my/{portfolioId}")
+    public ApiResponse<Portfolio> getMyPortfolio(
             @PathVariable(value = "portfolioId") Long portfolioId
     ) {
+        String category = "my";
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
-        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
+        return ApiResponse.onSuccess(portfolio);
     }
+
+    // 나의 포트폴리오 종목 리스트 조회  (GET)
+    @GetMapping("/my/{portfolioId}/stock")
+    public ApiResponse<List<StockResponseDTO>> getMyPortfolioStock(
+            @PathVariable(value = "portfolioId") Long portfolioId,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        String category = "my";
+        // 포트폴리오 id로 조건 찾기
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        // openfeign stock filter에 조건을 보내 포함 종목 가져오기
+        List<StockResponseDTO> stocks = portfolioService.getPortfolioStock(portfolio,page);
+
+        return ApiResponse.onSuccess(stocks);
+    }
+
+//    // 공유 포트폴리오 조회 (GET)
+//    @GetMapping("/share/{portfolioId}")
+//    public ApiResponse<PortfolioResponseDTO> getSharePortfolio(
+//            @PathVariable(value = "portfolioId") Long portfolioId
+//    ) {
+//        String category = "share";
+//        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+//        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
+//    }
+
 
     // 포트폴리오 삭제 (DELETE)
     @DeleteMapping("/{category}/{portfolioId}")

@@ -37,6 +37,7 @@ public class StockServiceImpl implements StockService {
     private final StockCommentRepository stockCommentRepository;
     private final Environment environment;
     @Override
+    @Transactional
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page) {
         List<Market> markets = new ArrayList<>();
         if (market.equals("ALL")) {

@@ -1,5 +1,7 @@
 package com.pda.portfolioservice.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.pda.portfolioservice.dto.request.StockFilter;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,8 +10,13 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 @Document(collection = "portfolios")
 @CompoundIndexes({
@@ -42,10 +49,27 @@ public class Portfolio {
     private Range bsopPrti;
     private Range thtrNtin;
 
-    @Getter
-    @Setter
-    public static class Range {
-        private Double min;
-        private Double max;
+
+
+    public StockFilter toStockFilter() {
+        StockFilter stockFilter = new StockFilter();
+        stockFilter.setMarketCap(this.marketCap);
+        stockFilter.setPer(this.per);
+        stockFilter.setEps(this.eps);
+        stockFilter.setBps(this.bps);
+        stockFilter.setPbr(this.pbr);
+        stockFilter.setDividendYield(this.dividendYield);
+        stockFilter.setForeignerRatio(this.foreignerRatio);
+        stockFilter.setSps(this.sps);
+        stockFilter.setSaleAccount(this.saleAccount);
+        stockFilter.setCrntRate(this.crntRate);
+        stockFilter.setLbltRate(this.lbltRate);
+        stockFilter.setNtinInrt(this.ntinInrt);
+        stockFilter.setBsopPrfiInrt(this.bsopPrfiInrt);
+        stockFilter.setGrs(this.grs);
+        stockFilter.setRoeVal(this.roeVal);
+        stockFilter.setBsopPrti(this.bsopPrti);
+        stockFilter.setThtrNtin(this.thtrNtin);
+        return stockFilter;
     }
 }
