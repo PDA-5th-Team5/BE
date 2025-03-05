@@ -93,4 +93,10 @@ public class StockController {
 
     }
 
+    // userId로 관심 종목 조회
+    @GetMapping("/{userId}/my/watchlist")
+    public List<MyStockWatchlistResponseDTO> getMyWatchlist(@PathVariable String userId) {
+        return stockService.getMyWatchlistByUserId(userId);
+    }
+
 }

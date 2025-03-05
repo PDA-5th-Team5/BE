@@ -26,4 +26,6 @@ public interface StockService {
     List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page);
 
     MyStockCommentsResponseDTO getCommentsByUserId(String userId);
+
+    List<MyStockWatchlistResponseDTO> getMyWatchlistByUserId(String userId);
 }

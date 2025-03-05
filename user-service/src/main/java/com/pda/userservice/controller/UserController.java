@@ -4,6 +4,7 @@ import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.dto.request.ProfileRequestDTO;
 import com.pda.userservice.dto.response.CommentsResponseDTO;
 import com.pda.userservice.dto.response.NicknameResponseDTO;
+import com.pda.userservice.dto.response.StocksResponseDTO;
 import com.pda.userservice.feign.StockServiceClient;
 import com.pda.userservice.service.UserService;
 import com.pda.utilservice.response.ApiResponse;
@@ -60,5 +61,11 @@ public class UserController {
     public ApiResponse<CommentsResponseDTO> comments(@RequestHeader(value = "Authorization", required = false) String token) {
 
         return userService.comments(token);
+    }
+
+    @GetMapping("/stocks")
+    public ApiResponse<StocksResponseDTO> stocks(@RequestHeader(value = "Authorization", required = false) String token) {
+
+        return userService.stocks(token);
     }
 }
