@@ -180,8 +180,10 @@ public class StockServiceImpl implements StockService {
 
     //관심종목 삭제
     @Transactional
-    public void deleteFavoriteStock(Short stockId) {
-        String userId = "1";
+    public void deleteFavoriteStock(Short stockId, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+
+        String userId = jwtUtil.getBearerUserId(token);
         // 해당 사용자의 해당 종목 관심종목 찾기
         FavoriteStock favoriteStock = favoriteStockRepository.findByUserIdAndStock_StockId(userId, stockId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.FAVORITE_STOCK_NOT_FOUND));
