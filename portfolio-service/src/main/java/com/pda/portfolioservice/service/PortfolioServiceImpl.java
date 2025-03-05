@@ -143,7 +143,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public void deleteMyPortfolio(Long myPortfolioId, String token) {
-        JWTUtil jwtUtil = new JWTUtil(environment.getProperty("spring.jwt.secret"));
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
         String userId = jwtUtil.getBearerUserId(token);
 
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
