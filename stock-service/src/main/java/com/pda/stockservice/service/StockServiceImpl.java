@@ -226,4 +226,22 @@ public class StockServiceImpl implements StockService {
         stockCommentRepository.save(comment);
     }
 
+    //댓글삭제
+    @Transactional
+    @Override
+    public void deleteComments(Long commentId, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+
+        String userId = jwtUtil.getBearerUserId(token);
+
+        StockComment stockComment = stockCommentRepository.findById(commentId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.COMMENT_NOT_FOUND));
+
+        if (!stockComment.getUserId().equals(userId)) {
+            throw new StockHandler(ErrorStatus.NOT_AUTHORIZED);
+        }
+
+        stockCommentRepository.delete(stockComment);
+    }
+
 }

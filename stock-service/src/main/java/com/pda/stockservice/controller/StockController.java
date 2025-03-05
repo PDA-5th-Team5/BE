@@ -84,7 +84,6 @@ public class StockController {
         return ApiResponse.onSuccess(commentResponseDTO);
     }
 
-
     // 댓글 작성
     @PostMapping("/{stockId}/comments")
     public ApiResponse<Void> addComments(
@@ -92,6 +91,17 @@ public class StockController {
             @RequestBody String content, @RequestHeader(value = "Authorization", required = false) String token) {
         stockService.addComments(stockId, content, token);
         return ApiResponse.onSuccess(HttpStatus.OK.value(),"성공입니다.");
+    }
+
+
+    // 댓글 삭제
+    @DeleteMapping("/{stockId}/comments/{commentId}")
+    public ApiResponse<Void> deleteComments(
+            @PathVariable("stockId") Short stockId,
+            @PathVariable("commentId") Long commentId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        stockService.deleteComments(commentId, token);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "성공입니다.");
     }
   
     // userId로 종목 댓글 조회
