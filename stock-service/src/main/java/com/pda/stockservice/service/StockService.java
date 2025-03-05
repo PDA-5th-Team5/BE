@@ -11,9 +11,10 @@ public interface StockService {
 
     //개별종목 경쟁사 조회
     CompetitorsResponseDTO getCompetitors(Short stockId, String sector);
+    //댓글
     CommentResponseDTO getComments(Short stockId);
     void addComments(Short stockId, String content, String token);
-
+    void deleteComments(Long commentId, String token);
 
 
     void addFavoriteStock(Short stockId, String token);
