@@ -39,8 +39,6 @@ public class StockServiceImpl implements StockService {
     private final StockMapper stockMapper;
     private final RedisService redisService;
     private final UserServiceClient userServiceClient;
-
-    private final StockCommentRepository stockCommentRepository;
     private final Environment environment;
     @Override
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page) {
