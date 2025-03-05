@@ -7,21 +7,25 @@ import com.pda.portfolioservice.entity.MyPortfolio;
 import com.pda.portfolioservice.entity.SharePortfolio;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
 import com.pda.portfolioservice.feign.StockServiceClient;
+import com.pda.portfolioservice.feign.UserServiceClient;
 import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.repository.MyPortfolioRepository;
 import com.pda.portfolioservice.repository.PortfolioRepository;
 import com.pda.portfolioservice.repository.SharePortfolioCommentRepository;
 import com.pda.portfolioservice.repository.SharePortfolioRepository;
 import com.pda.utilservice.response.ApiResponse;
+import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -33,6 +37,11 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final SharePortfolioCommentRepository sharePortfolioCommentRepository;
     private final PortfolioRepository portfolioRepository;
     private final StockServiceClient stockServiceClient;
+
+    private final UserServiceClient userServiceClient;
+    private final Environment environment;
+
+    // 포트폴리오 저장 (중복 검사 후 저장)
     @Override
     public Portfolio saveMyPortfolio(Portfolio portfolio, String userId) {
         // 1. MySQL에 먼저 저장 (ID 자동 생성)
@@ -122,7 +131,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public void deleteMyPortfolio(Long myPortfolioId) {
+    public void deleteMyPortfolio( Long myPortfolioId) {
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
@@ -130,14 +139,21 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO) {
+    public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO, String token) {
+        System.out.println("token = " + token);
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
+        System.out.println(userId);
+
         SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
         SharePortfolioComment comment = SharePortfolioComment.builder()
                         .sharePortfolio(sharePortfolio)
-                                .content(requestDTO.getContent())
-                                        .build();
+                        .userId(userId)
+                        .content(requestDTO.getContent())
+                        .build();
 
         sharePortfolioCommentRepository.save(comment);
     }
@@ -145,21 +161,20 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     @Transactional(readOnly = true)
     public SharePortfolioCommentResponseDTO getComments(Long sharePortfolioId) {
-        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId);
-
-        if (comments.isEmpty()) {
-            return SharePortfolioCommentResponseDTO.builder()
-                    .commentsCnt(0)
-                    .comments(List.of())
-                    .build();
+        if (!sharePortfolioRepository.existsById(sharePortfolioId)) {
+            throw new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND);
         }
 
-        return SharePortfolioCommentResponseDTO.toDTO(comments);
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId);
 
+        return SharePortfolioCommentResponseDTO.toDTO(comments, userServiceClient);
     }
 
     @Override
-    public void updateComment(Long sharePortfolioId, Long commentId, SharePortfolioCommentRequestDTO requestDTO) {
+    public void updateComment(Long sharePortfolioId, Long commentId, SharePortfolioCommentRequestDTO requestDTO, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
         SharePortfolioComment comment = sharePortfolioCommentRepository.findById(commentId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_COMMENT_NOT_FOUND));
 
@@ -167,16 +182,27 @@ public class PortfolioServiceImpl implements PortfolioService {
             throw new PortfolioHandler(ErrorStatus.PORTFOLIO_COMMENT_NOT_INCLUDED);
         }
 
+        if (!comment.getUserId().equals(userId)) {
+            throw new PortfolioHandler(ErrorStatus.UNAUTHORIZED);
+        }
+
         comment.setContent(requestDTO.getContent());
+        sharePortfolioCommentRepository.save(comment);
     }
 
     @Override
-    public void deleteComment(Long sharePortfolioId, Long commentId) {
+    public void deleteComment(Long sharePortfolioId, Long commentId, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
         SharePortfolioComment comment = sharePortfolioCommentRepository.findById(commentId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_COMMENT_NOT_FOUND));
 
-        sharePortfolioCommentRepository.deleteById(commentId);
+        if (!comment.getUserId().equals(userId)) {
+            throw new PortfolioHandler(ErrorStatus.UNAUTHORIZED);
+        }
 
+        sharePortfolioCommentRepository.deleteById(commentId);
     }
 
     @Override

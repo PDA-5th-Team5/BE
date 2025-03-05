@@ -28,16 +28,17 @@ public interface PortfolioService {
     public void deleteMyPortfolio(Long myPortfolioId);
 
     // 공유 포트폴리오 댓글 작성
-    public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO);
+    public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO, String token);
 
     // 공유 포트폴리오 댓글 조회
     public SharePortfolioCommentResponseDTO getComments(Long sharePortfolioId);
 
     // 공유 포트폴리오 댓글 수정
-    public void updateComment(Long sharePortfolioId, Long commentId, SharePortfolioCommentRequestDTO requestDTO);
+    public void updateComment(Long sharePortfolioId, Long commentId, SharePortfolioCommentRequestDTO requestDTO, String token);
 
     // 공유 포트폴리오 댓글 삭제
-    public void deleteComment(Long sharePortfolioId, Long commentId);
+    public void deleteComment(Long sharePortfolioId, Long commentId, String token);
+//    public void deleteComment(Long sharePortfolioId, Long commentId);
 
     // userId로 공유 포트폴리오 댓글 조회
     public MyCommentsResponseDTO getCommentsByUserId(String userId);
