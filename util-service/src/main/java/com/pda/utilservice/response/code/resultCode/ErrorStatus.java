@@ -17,7 +17,8 @@ public enum ErrorStatus implements BaseErrorCode {
     DUPLICATE_PORTFOLIO(HttpStatus.NOT_FOUND, 404, "이미 존재하는 포트폴리오입니다."),
     // User 관련 에러 응답
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 유저 정보입니다."),
-
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 댓글입니다."),
+    NOT_AUTHORIZED(HttpStatus.NOT_FOUND, 403, "권한이 없는 유저 정보입니다."),
     // Stock 관련 에러 응답
     STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 주식 정보입니다."),
     FAVORITE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "존재하지 않는 관심 종목 주식 정보입니다."),

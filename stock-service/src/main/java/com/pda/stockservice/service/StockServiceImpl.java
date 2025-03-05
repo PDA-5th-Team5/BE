@@ -7,10 +7,11 @@ import com.pda.stockservice.entity.*;
 import com.pda.stockservice.enums.Market;
 import com.pda.stockservice.mapper.StockMapper;
 import com.pda.stockservice.repository.*;
+import com.pda.stockservice.feign.UserServiceClient;
+
 import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -32,11 +33,14 @@ public class StockServiceImpl implements StockService {
     private final FavoriteStockRepository favoriteStockRepository;
     private final StockPriceDayRepository stockPriceDayRepository;
     private final StockStatRepository stockStatRepository;
+    private final StockCommentRepository stockCommentRepository;
     private final StockMapper stockMapper;
     private final RedisService redisService;
-    private final StockCommentRepository stockCommentRepository;
+    private final UserServiceClient userServiceClient;
+
     private final Environment environment;
     @Override
+    @Transactional
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page) {
         List<Market> markets = new ArrayList<>();
         if (market.equals("ALL")) {
@@ -86,6 +90,18 @@ public class StockServiceImpl implements StockService {
                 }
                 if (periodChangeRate.containsKey("year_rate_change")) {
                     stock.setYearRateChange(Double.parseDouble(periodChangeRate.get("year_rate_change").toString()));
+                }
+            }
+
+            // 현재가 및 변동률 데이터 반영
+            Map<Object, Object> priceData = stockPrices.get(ticker);
+
+            if (priceData != null) {
+                if (priceData.containsKey("currentPrice")) {
+                    stock.setCurrentPrice((int) Double.parseDouble(priceData.get("currentPrice").toString()));
+                }
+                if (priceData.containsKey("changeRate")) {
+                    stock.setChangeRate(Double.parseDouble(priceData.get("changeRate").toString()));
                 }
             }
 
@@ -205,17 +221,13 @@ public class StockServiceImpl implements StockService {
 
     //개별종목 경쟁사 조회
     @Override
+    @Transactional(readOnly = true)
     public CompetitorsResponseDTO getCompetitors(Short stockId, String sector) {
         // 1. 섹터 정보 결정
-        String targetSector = sector;
-        if (targetSector == null || targetSector.isEmpty()) {
-            Stock stock = stockRepository.findById(stockId)
-                    .orElseThrow(() -> new EntityNotFoundException("Stock not found"));
-            targetSector = stock.getSector();
-        }
+        String targetSector = CompetitorsResponseDTO.determineSector(stockId, sector, stockRepository);
 
         // 2. 해당 섹터의 시총 상위 5개 종목 가져오기
-        List<Stock> topStocks = stockRepository.findTop6BySectorOrderByMarketCapDesc(targetSector);
+        List<Stock> topStocks = stockRepository.findTopCompetitors(targetSector);
 
         // 3. 종목 ID 리스트 추출
         List<Short> orderedStockIds = topStocks.stream()
@@ -257,8 +269,10 @@ public class StockServiceImpl implements StockService {
 
     //관심종목 삭제
     @Transactional
-    public void deleteFavoriteStock(Short stockId) {
-        String userId = "1";
+    public void deleteFavoriteStock(Short stockId, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+
+        String userId = jwtUtil.getBearerUserId(token);
         // 해당 사용자의 해당 종목 관심종목 찾기
         FavoriteStock favoriteStock = favoriteStockRepository.findByUserIdAndStock_StockId(userId, stockId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.FAVORITE_STOCK_NOT_FOUND));
@@ -267,20 +281,58 @@ public class StockServiceImpl implements StockService {
     }
 
     //댓글조회
-//    @Transactional(readOnly = true)
-//    @Override
-//    public CommentResponseDTO getComments(Short stockId) {
-//        // 해당 주식이 존재하는지 확인
-//        if (!stockRepository.existsById(stockId)) {
-//            throw new StockHandler(ErrorStatus.STOCK_NOT_FOUND);
-//        }
-//
-//        // 해당 주식에 대한 댓글 목록 조회
-//        List<StockComment> comments = StockCommentRepository.findByStock_StockIdOrderByCreatedAtDesc(stockId);
-//
-//        // 한 번에 DTO로 변환
-//        return CommenResponseDTO.from(comments, userServiceClient);
-//    }
+    @Transactional(readOnly = true)
+    @Override
+    public CommentResponseDTO getComments(Short stockId) {
+        if (!stockRepository.existsById(stockId)){
+            throw new StockHandler(ErrorStatus.STOCK_NOT_FOUND);
+        }
 
+        List<StockComment> comments = stockCommentRepository.findByStock_StockIdOrderByCreatedAtDesc(stockId);
+
+
+        return CommentResponseDTO.toDTO(comments, userServiceClient);
+    }
+
+    // 댓글 작성
+    @Transactional
+    @Override
+    public void addComments(Short stockId, String content, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+
+        String userId = jwtUtil.getBearerUserId(token);
+
+        // 해당 주식이 존재하는지 확인
+        Stock stock = stockRepository.findById(stockId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.STOCK_NOT_FOUND));
+
+        // 댓글 생성
+        StockComment comment = StockComment.builder()
+                .content(content)
+                .stock(stock)
+                .userId(userId)
+                .build();
+
+        // 댓글 저장
+        stockCommentRepository.save(comment);
+    }
+
+    //댓글삭제
+    @Transactional
+    @Override
+    public void deleteComments(Long commentId, String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+
+        String userId = jwtUtil.getBearerUserId(token);
+
+        StockComment stockComment = stockCommentRepository.findById(commentId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.COMMENT_NOT_FOUND));
+
+        if (!stockComment.getUserId().equals(userId)) {
+            throw new StockHandler(ErrorStatus.NOT_AUTHORIZED);
+        }
+
+        stockCommentRepository.delete(stockComment);
+    }
 
 }

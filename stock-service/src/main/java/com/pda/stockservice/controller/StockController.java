@@ -8,6 +8,7 @@ import com.pda.stockservice.service.StockService;
 import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,28 +43,25 @@ public class StockController {
 
     //관심종목 추가
     @PostMapping("/{stockId}/watchlist")
-    public ApiResponse<SuccessStatus> addFavoriteStock(@PathVariable("stockId") Short stockId, @RequestHeader(value = "Authorization", required = false) String token){
+    public ApiResponse<Void> addFavoriteStock(@PathVariable("stockId") Short stockId, @RequestHeader(value = "Authorization", required = false) String token){
         stockService.addFavoriteStock(stockId, token);
-        return ApiResponse.onSuccess(SuccessStatus.OK);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "성공입니다.");
+
     }
 
     //관심종목 삭제
     @DeleteMapping("/{stockId}/watchlist")
-    public  ApiResponse<SuccessStatus> deleteFavoriteStock(@PathVariable("stockId") Short stockId){
-        stockService.deleteFavoriteStock(stockId);
+    public  ApiResponse<SuccessStatus> deleteFavoriteStock(@PathVariable("stockId") Short stockId, @RequestHeader(value = "Authorization", required = false) String token){
+        stockService.deleteFavoriteStock(stockId, token);
         return ApiResponse.onSuccess(null);
     }
+
     //캔들차트 데이터조회
     @GetMapping("/{stockId}/candle")
     public ApiResponse<CandleResponseDTO> getCandle(@PathVariable("stockId") Short stockId) {
         CandleResponseDTO candleResponseDTO = stockService.getCandle(stockId);
         return ApiResponse.onSuccess(candleResponseDTO);
     }
-    //댓글
-//    @GetMapping("/api/stocks/{stockId}/comments")
-//    public ApiResponse<CommentResponseDTO> getComments(
-//            @PathVariable
-//            )
 
     //경쟁사 정보조회
     @GetMapping("/{stockId}/competitors")
@@ -74,6 +72,35 @@ public class StockController {
         return ApiResponse.onSuccess(competitorsResponseDTO);
     }
 
+    //댓글조회
+    @GetMapping("/{stockId}/comments")
+    public ApiResponse<CommentResponseDTO> getComments(
+            @PathVariable("stockId") Short stockId,
+            @RequestParam(value = "page", required = false) String page) {
+        CommentResponseDTO commentResponseDTO = stockService.getComments(stockId);
+        return ApiResponse.onSuccess(commentResponseDTO);
+    }
+
+    // 댓글 작성
+    @PostMapping("/{stockId}/comments")
+    public ApiResponse<Void> addComments(
+            @PathVariable("stockId") Short stockId,
+            @RequestBody String content, @RequestHeader(value = "Authorization", required = false) String token) {
+        stockService.addComments(stockId, content, token);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(),"성공입니다.");
+    }
+
+
+    // 댓글 삭제
+    @DeleteMapping("/{stockId}/comments/{commentId}")
+    public ApiResponse<Void> deleteComments(
+            @PathVariable("stockId") Short stockId,
+            @PathVariable("commentId") Long commentId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        stockService.deleteComments(commentId, token);
+        return ApiResponse.onSuccess(HttpStatus.OK.value(), "성공입니다.");
+    }
+  
     // userId로 종목 댓글 조회
     @GetMapping("/{userId}/my/comments")
     public MyStockCommentsResponseDTO getNickname(@PathVariable String userId) {
