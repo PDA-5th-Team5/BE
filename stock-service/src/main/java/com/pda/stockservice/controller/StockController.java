@@ -32,8 +32,9 @@ public class StockController {
     // 특정 조건으로 주식 종목 검색
     @PostMapping("/filter")
     public ApiResponse<List<StockResponseDTO>> searchStockStatIds(
-            @RequestBody StockFilterRequest request) {
-        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters());
+            @RequestBody StockFilterRequest request,
+            @RequestParam(defaultValue = "0") int page) {
+        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page);
         return ApiResponse.onSuccess(stocks);
     }
 
@@ -91,6 +92,13 @@ public class StockController {
             @RequestBody String content, @RequestHeader(value = "Authorization", required = false) String token) {
         stockService.addComments(stockId, content, token);
         return ApiResponse.onSuccess(HttpStatus.OK.value(),"성공입니다.");
+    }
+  
+    // userId로 종목 댓글 조회
+    @GetMapping("/{userId}/my/comments")
+    public ApiResponse<MyCommentsResponseDTO> getNickname(@PathVariable String userId) {
+        MyCommentsResponseDTO commentsResponseDTO = stockService.getCommentsByUserId(userId);
+        return ApiResponse.onSuccess(commentsResponseDTO);
     }
 
 

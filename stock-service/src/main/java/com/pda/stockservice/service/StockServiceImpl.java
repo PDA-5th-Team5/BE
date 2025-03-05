@@ -1,5 +1,6 @@
 package com.pda.stockservice.service;
 
+import com.pda.stockservice.dto.request.SnowflakeDTO;
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
 import com.pda.stockservice.entity.*;
@@ -39,45 +40,51 @@ public class StockServiceImpl implements StockService {
     private final RedisService redisService;
     private final UserServiceClient userServiceClient;
 
+    private final StockCommentRepository stockCommentRepository;
     private final Environment environment;
     @Override
-    public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters) {
+    public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page) {
         List<Market> markets = new ArrayList<>();
-        if (market.equals("ALL")){
+        if (market.equals("ALL")) {
             markets.add(Market.KOSPI);
             markets.add(Market.KOSDAQ);
-        }
-        else {
-            markets.add(Market.valueOf(market)); // 문자열을 enum으로 변환하여 추가
+        } else {
+            markets.add(Market.valueOf(market));
         }
 
-        List<Integer> stockIds = stockMapper.searchStockStatIds(markets, sector, filters);
-        if (stockIds.isEmpty()) {
+        int limit = 24;  // 한 페이지에 24개씩
+        int offset = page * limit;  // 페이지 인덱스 기반 오프셋 계산
+
+        List<SnowflakeDTO> stockStats = stockMapper.searchStockStatIds(markets, sector, filters, offset, limit);
+        if (stockStats.isEmpty()) {
             return Collections.emptyList();
         }
 
+        List<Integer> stockIds = stockStats.stream()
+                .map(SnowflakeDTO::getStockId)
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
+
+        Map<Short, SnowflakeDTO> snowflakeMap = stockStats.stream()
+                .collect(Collectors.toMap(SnowflakeDTO::getStockId, snowflake -> snowflake));
+
         List<StockResponseDTO> stocks = stockMapper.findStocksByIds(stockIds);
 
-        // stock_id 리스트 가져오기
-        List<String> stockIdStrings = stocks.stream()
-                .map(stock -> String.valueOf(stock.getStockId()))
-                .collect(Collectors.toList());
-
-        // 한 번에 Redis에서 수익률 데이터 가져오기
+        List<String> stockIdStrings = stocks.stream().map(s -> String.valueOf(s.getStockId())).toList();
         Map<String, Map<Object, Object>> stockReturns = redisService.getStockReturnsByIds(stockIdStrings);
-
-        // 한 번에 Redis에서 현재가 및 변동률 데이터 가져오기 (티커 기준 조회)
-        List<String> tickers = stocks.stream()
-                .map(StockResponseDTO::getTicker)  // 티커 리스트 추출
-                .collect(Collectors.toList());
-
+        List<String> tickers = stocks.stream().map(StockResponseDTO::getTicker).toList();
         Map<String, Map<Object, Object>> stockPrices = redisService.getStockCurrentPricesByTickers(tickers);
+
+        List<StockResponseDTO> filteredStockResponses = new ArrayList<>();
 
         for (StockResponseDTO stock : stocks) {
             String stockId = String.valueOf(stock.getStockId());
             String ticker = stock.getTicker();
 
-            // 주식 수익률 데이터 반영
+            if (snowflakeMap.containsKey(stock.getStockId())) {
+                stock.setSnowflakeS(SnowflakeDTO.filterSnowflake(snowflakeMap.get(stock.getStockId()), filters));
+            }
+
             Map<Object, Object> periodChangeRate = stockReturns.get(stockId);
             if (periodChangeRate != null) {
                 if (periodChangeRate.containsKey("week_rate_change")) {
@@ -88,20 +95,18 @@ public class StockServiceImpl implements StockService {
                 }
             }
 
-            // 현재가 및 변동률 데이터 반영
-            Map<Object, Object> priceData = stockPrices.get(ticker);
-
-            if (priceData != null) {
-                if (priceData.containsKey("currentPrice")) {
-                    stock.setCurrentPrice((int) Double.parseDouble(priceData.get("currentPrice").toString()));
-                }
-                if (priceData.containsKey("changeRate")) {
-                    stock.setChangeRate(Double.parseDouble(priceData.get("changeRate").toString()));
-                }
-            }
+            filteredStockResponses.add(StockResponseDTO.filterStockResponse(stock, filters));
         }
 
-        return stocks;
+        return filteredStockResponses;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyCommentsResponseDTO getCommentsByUserId(String userId) {
+        List<StockComment> comments = stockCommentRepository.findByUserId(userId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
+        return MyCommentsResponseDTO.toDTO(comments);
     }
 
 

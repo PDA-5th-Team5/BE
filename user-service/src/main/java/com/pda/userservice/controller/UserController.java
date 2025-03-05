@@ -1,7 +1,10 @@
 package com.pda.userservice.controller;
 
 import com.pda.userservice.dto.request.JoinDTO;
+import com.pda.userservice.dto.request.ProfileRequestDTO;
+import com.pda.userservice.dto.response.CommentsResponseDTO;
 import com.pda.userservice.dto.response.NicknameResponseDTO;
+import com.pda.userservice.feign.StockServiceClient;
 import com.pda.userservice.service.UserService;
 import com.pda.utilservice.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,5 +49,16 @@ public class UserController {
     public NicknameResponseDTO getNickname(@PathVariable String userId) {
         System.out.println("UserController.getNickname");
         return userService.getNicknameByUserId(userId);
+    }
+
+    @PatchMapping("/profile")
+    public ApiResponse<Void> profile(@RequestBody ProfileRequestDTO profileDTO, @RequestHeader(value = "Authorization", required = false) String token) {
+        return userService.profile(profileDTO, token);
+    }
+
+    @GetMapping("/comments")
+    public ApiResponse<CommentsResponseDTO> comments(@RequestHeader(value = "Authorization", required = false) String token) {
+
+        return userService.comments(token);
     }
 }
