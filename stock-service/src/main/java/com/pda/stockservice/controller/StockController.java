@@ -2,11 +2,8 @@ package com.pda.stockservice.controller;
 
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.request.StockFilterRequest;
-import com.pda.stockservice.dto.response.CandleResponseDTO;
-import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
-import com.pda.stockservice.dto.response.StockInfoResponseDTO;
+import com.pda.stockservice.dto.response.*;
 
-import com.pda.stockservice.dto.response.StockResponseDTO;
 import com.pda.stockservice.entity.Stock;
 import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.stockservice.service.StockService;
@@ -81,8 +78,12 @@ public class StockController {
         return ApiResponse.onSuccess(competitorsResponseDTO);
     }
 
-
-
+    // userId로 종목 댓글 조회
+    @GetMapping("/{userId}/my/comments")
+    public ApiResponse<MyCommentsResponseDTO> getNickname(@PathVariable String userId) {
+        MyCommentsResponseDTO commentsResponseDTO = stockService.getCommentsByUserId(userId);
+        return ApiResponse.onSuccess(commentsResponseDTO);
+    }
 
 
     // openfeign 테스트

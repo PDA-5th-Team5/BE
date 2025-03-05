@@ -2,14 +2,8 @@ package com.pda.stockservice.service;
 
 import com.pda.stockservice.dto.request.SnowflakeDTO;
 import com.pda.stockservice.dto.request.StockFilter;
-import com.pda.stockservice.dto.response.CandleResponseDTO;
-import com.pda.stockservice.dto.response.CompetitorsResponseDTO;
-import com.pda.stockservice.dto.response.StockInfoResponseDTO;
-import com.pda.stockservice.dto.response.StockResponseDTO;
-import com.pda.stockservice.entity.FavoriteStock;
-import com.pda.stockservice.entity.Stock;
-import com.pda.stockservice.entity.StockPriceDay;
-import com.pda.stockservice.entity.StockStat;
+import com.pda.stockservice.dto.response.*;
+import com.pda.stockservice.entity.*;
 import com.pda.stockservice.enums.Market;
 import com.pda.stockservice.mapper.StockMapper;
 import com.pda.stockservice.repository.*;
@@ -40,7 +34,7 @@ public class StockServiceImpl implements StockService {
     private final StockStatRepository stockStatRepository;
     private final StockMapper stockMapper;
     private final RedisService redisService;
-
+    private final StockCommentRepository stockCommentRepository;
     private final Environment environment;
     @Override
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page) {
@@ -100,6 +94,15 @@ public class StockServiceImpl implements StockService {
 
         return filteredStockResponses;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyCommentsResponseDTO getCommentsByUserId(String userId) {
+        List<StockComment> comments = stockCommentRepository.findByUserId(userId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
+        return MyCommentsResponseDTO.toDTO(comments);
+    }
+
 
     // 개별 종목 정보 조회
     @Transactional(readOnly = true)
