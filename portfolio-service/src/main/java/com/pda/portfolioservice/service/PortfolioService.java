@@ -9,14 +9,14 @@ import com.pda.portfolioservice.model.Portfolio;
 
 public interface PortfolioService {
     // 포트폴리오 저장
-    public Portfolio savePortfolio(Portfolio portfolio);
+    public Portfolio saveMyPortfolio(Portfolio portfolio, String userId);
 
     public Portfolio getPortfolio(String category, Long portfolioId);
 
     void deletePortfolio(String category, Long portfolioId);
 
     // 나의 포트폴리오 제목 리스트 조회
-    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId);
+    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId,String userId);
 
     // 나의 포트폴리오 공유
     public ShareMyPortfolioResponseDTO shareMyPortfolio(Long sharePortfolioId);

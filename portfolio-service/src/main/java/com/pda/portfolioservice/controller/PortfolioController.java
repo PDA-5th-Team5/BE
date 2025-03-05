@@ -9,11 +9,18 @@ import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
 import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.service.PortfolioService;
+import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.ApiResponse;
+import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
+import com.pda.utilservice.response.exception.handler.GeneralHandler;
+import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,17 +28,29 @@ import org.springframework.web.bind.annotation.*;
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
+    private final Environment environment;
 
     @GetMapping("/test")
     public String test2() {
         return "Portfolio test";
     }
 
+
     // 포트폴리오 저장 (POST)
-    @PostMapping("/save")
-    public ApiResponse<PortfolioResponseDTO> savePortfolio(@RequestBody PortfolioRequestDTO requestDTO) {
-        Portfolio portfolio = portfolioService.savePortfolio(requestDTO.toEntity());
-        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
+    @PostMapping("/my/save")
+    public ApiResponse<Void> saveMyPortfolio(@RequestBody PortfolioRequestDTO requestDTO, @RequestHeader(value = "Authorization", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            return ApiResponse.onFailure(401, "인증 토큰이 필요합니다.");
+        }
+
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+        try {
+            portfolioService.saveMyPortfolio(requestDTO.toEntity(), userId);
+            return ApiResponse.onSuccess(201, "나의 포트폴리오 저장 완료");
+        } catch (IllegalStateException e) {
+            return ApiResponse.onFailure(409, e.getMessage());  // 중복 포트폴리오 예외 처리
+        }
     }
 
     // 특정 포트폴리오 조회 (GET)
@@ -56,8 +75,8 @@ public class PortfolioController {
 
     // 나의 포트폴리오 제목 리스트 조회
     @GetMapping("/my")
-    public ApiResponse<MyPortfolioTitleResponseDTO.myPortfolioListDTO> getMyPortfolioTitleList(@PathVariable(value = "myPortfolioId") Long myPortfolioId) {
-        MyPortfolioTitleResponseDTO.myPortfolioListDTO response = portfolioService.getMyPortfolioTitleList(myPortfolioId);
+    public ApiResponse<MyPortfolioTitleResponseDTO.myPortfolioListDTO> getMyPortfolioTitleList(@PathVariable(value = "myPortfolioId") Long myPortfolioId,String userId) {
+        MyPortfolioTitleResponseDTO.myPortfolioListDTO response = portfolioService.getMyPortfolioTitleList(myPortfolioId, userId);
         return ApiResponse.onSuccess(response);
     }
 

@@ -18,6 +18,8 @@ import java.util.List;
 public class Portfolio {
     @Id
     private String id;  // MongoDB 기본 _id (사용하지 않을 수도 있음)
+    private String title;
+    private String description;
     private String category;
     private Long portfolioId;
     private String market;

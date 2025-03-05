@@ -7,8 +7,9 @@ import java.util.List;
 
 @Getter
 public class PortfolioRequestDTO {
+    private String title;
+    private String description;
     private String category;
-    private Long portfolioId;
     private String market;
     private List<String> sector;
     private Portfolio.Range marketCap;
@@ -31,8 +32,9 @@ public class PortfolioRequestDTO {
 
     public Portfolio toEntity() {
         Portfolio portfolio = new Portfolio();
+        portfolio.setTitle(this.title);
+        portfolio.setDescription(this.description);
         portfolio.setCategory(this.category);
-        portfolio.setPortfolioId(this.portfolioId);
         portfolio.setSector(this.sector);
         portfolio.setMarket(this.market);
         portfolio.setMarketCap(this.marketCap);

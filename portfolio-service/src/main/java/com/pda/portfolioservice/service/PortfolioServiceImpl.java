@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,16 +34,31 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final SharePortfolioCommentRepository sharePortfolioCommentRepository;
     private final PortfolioRepository portfolioRepository;
 
-    // 포트폴리오 저장 (중복 검사 후 저장)
     @Override
-    public Portfolio savePortfolio(Portfolio portfolio) {
-        // 중복 확인 (category + portfolioId 조합이 이미 존재하는지 검사)
-        Optional<Portfolio> existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId(portfolio.getCategory(), portfolio.getPortfolioId());
+    public Portfolio saveMyPortfolio(Portfolio portfolio, String userId) {
+        // 1. MySQL에 먼저 저장 (ID 자동 생성)
+        MyPortfolio myPortfolio = MyPortfolio.builder()
+                .title(portfolio.getTitle())
+                .description(portfolio.getDescription())
+                .userId(userId)
+                .build();
+        myPortfolio = myPortfolioRepository.save(myPortfolio); // 저장 후 ID 생성됨
+        Long generatedPortfolioId = myPortfolio.getMyPortfolioId(); // 생성된 ID 가져오기
+
+        // 2. MongoDB 저장할 때 portfolioId 세팅
+        portfolio.setPortfolioId(generatedPortfolioId);
+        portfolio.setCategory("my"); // 기본값 설정 (필요 시 변경 가능)
+
+        // 3. 기존에 동일한 portfolioId와 category가 존재하는지 확인
+        Optional<Portfolio> existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId(
+                portfolio.getCategory(), portfolio.getPortfolioId());
 
         if (existingPortfolio.isPresent()) {
-            throw new PortfolioHandler(ErrorStatus.DUPLICATE_PORTFOLIO);
+            System.out.println("중복된 포트폴리오가 이미 존재합니다: " + portfolio.getPortfolioId());
+            throw new IllegalStateException("이미 존재하는 포트폴리오입니다.");
         }
 
+        // 4. MongoDB에 저장
         return portfolioRepository.save(portfolio);
     }
 
@@ -62,10 +78,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     @Transactional(readOnly = true)
-    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId) {
+    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId , String userId) {
 
         // 유저 ID를 임시로 1L로 설정
-        String userId = "프디아";
 
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
