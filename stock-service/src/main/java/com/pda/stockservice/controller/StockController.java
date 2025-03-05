@@ -31,8 +31,9 @@ public class StockController {
     // 특정 조건으로 주식 종목 검색
     @PostMapping("/filter")
     public ApiResponse<List<StockResponseDTO>> searchStockStatIds(
-            @RequestBody StockFilterRequest request) {
-        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters());
+            @RequestBody StockFilterRequest request,
+            @RequestParam(defaultValue = "0") int page) {
+        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page);
         return ApiResponse.onSuccess(stocks);
     }
 
