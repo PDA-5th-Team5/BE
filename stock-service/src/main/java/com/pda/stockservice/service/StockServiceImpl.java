@@ -39,7 +39,7 @@ public class StockServiceImpl implements StockService {
     private final StockStatRepository stockStatRepository;
     private final StockMapper stockMapper;
     private final RedisService redisService;
-    private final StockCommentRepository stockCommentRepository;
+
     private final Environment environment;
     @Override
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters) {

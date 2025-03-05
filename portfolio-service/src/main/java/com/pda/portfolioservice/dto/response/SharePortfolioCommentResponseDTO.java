@@ -3,6 +3,7 @@ package com.pda.portfolioservice.dto.response;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -38,6 +39,7 @@ public class SharePortfolioCommentResponseDTO {
             return CommentDTO.builder()
                     .commentId(comment.getCommentId())
 //                    .nickname(comment.getContent())
+                    .content(comment.getContent())
                     .date(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                     .build();
         }

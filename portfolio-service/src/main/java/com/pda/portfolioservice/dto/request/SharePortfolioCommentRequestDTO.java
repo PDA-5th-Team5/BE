@@ -1,10 +1,10 @@
 package com.pda.portfolioservice.dto.request;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Builder
 @Getter
+@NoArgsConstructor
 public class SharePortfolioCommentRequestDTO {
     private String content;
 }
