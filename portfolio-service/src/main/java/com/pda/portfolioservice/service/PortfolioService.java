@@ -3,7 +3,6 @@ package com.pda.portfolioservice.service;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.*;
 import com.pda.portfolioservice.model.Portfolio;
-import com.pda.utilservice.response.ApiResponse;
 
 import java.util.List;
 
@@ -19,13 +18,14 @@ public interface PortfolioService {
     void deletePortfolio(String category, Long portfolioId);
 
     // 나의 포트폴리오 제목 리스트 조회
-    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId,String userId);
+//    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId,String userId);
+    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(String token);
 
     // 나의 포트폴리오 공유
-    public ShareMyPortfolioResponseDTO shareMyPortfolio(Long sharePortfolioId);
+    public ShareMyPortfolioResponseDTO shareMyPortfolio(Long sharePortfolioId, String token);
 
     // 나의 포트폴리오 삭제
-    public void deleteMyPortfolio(Long myPortfolioId);
+    public void deleteMyPortfolio(Long myPortfolioId, String token);
 
     // 공유 포트폴리오 댓글 작성
     public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO, String token);
