@@ -100,7 +100,7 @@ public class UserServiceImpl implements UserService {
     public ApiResponse<Void> profile(ProfileRequestDTO profileRequestDTO, String token) {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
         String userId = jwtUtil.getBearerUserId(token);
-        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUserId("userId"));
+        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUserId(userId));
 
         if (optionalUser.isEmpty()) {
             return ApiResponse.onFailure(HttpStatus.BAD_REQUEST.value(), "사용자를 찾을 수 없습니다.");
