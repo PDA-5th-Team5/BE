@@ -2,6 +2,7 @@ package com.pda.portfolioservice.controller;
 
 import com.pda.portfolioservice.dto.request.PortfolioRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
+import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
 import com.pda.portfolioservice.dto.response.PortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
@@ -84,8 +85,8 @@ public class PortfolioController {
 
     // 공유 포트폴리오 댓글 조회
     @GetMapping("/share/{sharePortfolioId}/comments")
-    public ApiResponse<SharePortfolioCommentResponseDTO> getComments(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId, String userId) {
-        SharePortfolioCommentResponseDTO response = portfolioService.getComments(sharePortfolioId, userId);
+    public ApiResponse<SharePortfolioCommentResponseDTO> getComments(@PathVariable(value = "sharePortfolioId") Long sharePortfolioId) {
+        SharePortfolioCommentResponseDTO response = portfolioService.getComments(sharePortfolioId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -103,5 +104,12 @@ public class PortfolioController {
                                                     @RequestHeader(value = "Authorization", required = false) String token) {
         portfolioService.deleteComment(sharePortfolioId, commentId, token);
         return ApiResponse.onSuccess(SuccessStatus.OK);
+    }
+
+    // userId로 공유 포트폴리오 댓글 조회
+    @GetMapping("/{userId}/my/comments")
+    public ApiResponse<MyCommentsResponseDTO> getNickname(@PathVariable String userId) {
+        MyCommentsResponseDTO commentsResponseDTO = portfolioService.getCommentsByUserId(userId);
+        return ApiResponse.onSuccess(commentsResponseDTO);
     }
 }

@@ -1,8 +1,8 @@
 package com.pda.portfolioservice.service;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
+import com.pda.portfolioservice.dto.response.MyCommentsResponseDTO;
 import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
-import com.pda.portfolioservice.dto.response.NicknameResponseDTO;
 import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
 import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
 import com.pda.portfolioservice.entity.MyPortfolio;
@@ -17,6 +17,7 @@ import com.pda.portfolioservice.repository.SharePortfolioRepository;
 import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.PortfolioHandler;
+import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -101,7 +102,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public void deleteMyPortfolio(Long myPortfolioId) {
+    public void deleteMyPortfolio( Long myPortfolioId) {
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
@@ -130,22 +131,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     @Transactional(readOnly = true)
-    public SharePortfolioCommentResponseDTO getComments(Long sharePortfolioId, String userId) {
-        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId);
-
-        if (comments.isEmpty()) {
-            return SharePortfolioCommentResponseDTO.builder()
-                    .commentsCnt(0)
-                    .comments(List.of())
-                    .build();
+    public SharePortfolioCommentResponseDTO getComments(Long sharePortfolioId) {
+        if (!sharePortfolioRepository.existsById(sharePortfolioId)) {
+            throw new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND);
         }
 
-        NicknameResponseDTO nicknameResponseDTO = userServiceClient.getNickname(userId);
-        String nickname = nicknameResponseDTO.getNickname();
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId);
 
-
-        return SharePortfolioCommentResponseDTO.toDTO(comments, nickname);
-
+        return SharePortfolioCommentResponseDTO.toDTO(comments, userServiceClient);
     }
 
     @Override
@@ -182,4 +175,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         sharePortfolioCommentRepository.deleteById(commentId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyCommentsResponseDTO getCommentsByUserId(String userId) {
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findByUserId(userId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
+        return MyCommentsResponseDTO.toDTO(comments);
+    }
+
+
 }
