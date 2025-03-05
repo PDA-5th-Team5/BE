@@ -1,59 +1,74 @@
 package com.pda.portfolioservice.service;
 
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
-import com.pda.portfolioservice.dto.response.*;
+import com.pda.portfolioservice.dto.response.MyPortfolioTitleResponseDTO;
+import com.pda.portfolioservice.dto.response.ShareMyPortfolioResponseDTO;
+import com.pda.portfolioservice.dto.response.SharePortfolioCommentResponseDTO;
 import com.pda.portfolioservice.entity.MyPortfolio;
 import com.pda.portfolioservice.entity.SharePortfolio;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
-import com.pda.portfolioservice.feign.StockServiceClient;
-import com.pda.portfolioservice.feign.UserServiceClient;
+import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.repository.MyPortfolioRepository;
+import com.pda.portfolioservice.repository.PortfolioRepository;
 import com.pda.portfolioservice.repository.SharePortfolioCommentRepository;
 import com.pda.portfolioservice.repository.SharePortfolioRepository;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PortfolioServiceImpl implements PortfolioService {
 
-    private final StockServiceClient stockServiceClient;
-    private final UserServiceClient userServiceClient;
     private final MyPortfolioRepository myPortfolioRepository;
     private final SharePortfolioRepository sharePortfolioRepository;
     private final SharePortfolioCommentRepository sharePortfolioCommentRepository;
+    private final PortfolioRepository portfolioRepository;
 
-
+    // 포트폴리오 저장 (중복 검사 후 저장)
     @Override
-    @Transactional(readOnly = true)
-    public PortfolioSummaryResponseDTO getPortfolioSummary(Long myPortfolioId) {
-        MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
-                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+    public Portfolio savePortfolio(Portfolio portfolio) {
+        // 중복 확인 (category + portfolioId 조합이 이미 존재하는지 검사)
+        Optional<Portfolio> existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId(portfolio.getCategory(), portfolio.getPortfolioId());
 
-        return PortfolioSummaryResponseDTO.toDTO(myPortfolio);
+        if (existingPortfolio.isPresent()) {
+            throw new PortfolioHandler(ErrorStatus.DUPLICATE_PORTFOLIO);
+        }
+
+        return portfolioRepository.save(portfolio);
+    }
+
+    // 특정 포트폴리오 조회
+    @Override
+    public Portfolio getPortfolio(String category, Long portfolioId) {
+        return portfolioRepository.findByCategoryAndPortfolioId(category, portfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+    }
+
+    //특정 포트폴리오 삭제
+    @Override
+    public void deletePortfolio(String category, Long portfolioId) {
+        Portfolio portfolio = getPortfolio(category, portfolioId);
+        portfolioRepository.delete(portfolio);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList() {
+    public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(Long myPortfolioId) {
 
         // 유저 ID를 임시로 1L로 설정
-        String userId = "1L";
+        String userId = "프디아";
 
-//        MyPortfolio myPortfolio = myPortfolioRepository.findById()
-//                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+        MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
-        List<MyPortfolio> myPortfolioList = myPortfolioRepository.findAll();
+        List<MyPortfolio> myPortfolioList = myPortfolioRepository.findByUserId(userId);
 
         return MyPortfolioTitleResponseDTO.myPortfolioListDTO.toDTO(myPortfolioList);
 
@@ -66,13 +81,12 @@ public class PortfolioServiceImpl implements PortfolioService {
         MyPortfolio myPortfolio = myPortfolioRepository.findById(myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
-        SharePortfolio sharePortfolio = SharePortfolio.builder()
-                .title(myPortfolio.getTitle())
-                .description(myPortfolio.getDescription())
-                .userId(myPortfolio.getUserId())
-                .createdAt(LocalDateTime.now())
-                .loadCount(0)
-                .build();
+        SharePortfolio sharePortfolio = new SharePortfolio();
+        sharePortfolio.setTitle(myPortfolio.getTitle());
+        sharePortfolio.setDescription(myPortfolio.getDescription());
+        sharePortfolio.setUserId(myPortfolio.getUserId());
+        sharePortfolio.setCreatedAt(LocalDateTime.now());
+        sharePortfolio.setLoadCount(0);
 
         SharePortfolio savedSharePortfolio = sharePortfolioRepository.save(sharePortfolio);
         return new ShareMyPortfolioResponseDTO(savedSharePortfolio.getSharePortfolioId());
@@ -87,54 +101,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public SharePortfolioListResponseDTO getSharePortfolios(String sort, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        Page<SharePortfolio> sharePortfolios = sharePortfolioRepository.findAll(pageRequest);
-
-        List<SharePortfolioListResponseDTO.SharePortfolioDTO> sharePortfolioDTOList = sharePortfolios.stream()
-                .map(sharePortfolio -> SharePortfolioListResponseDTO.SharePortfolioDTO.builder()
-                        .sharePortfolioId(sharePortfolio.getSharePortfolioId())
-                        .sharePortfolioTitle(sharePortfolio.getTitle())
-                        .sharePortfolioDescription(sharePortfolio.getDescription())
-                        .sharePortfolioImportCnt(sharePortfolio.getLoadCount())
-                        .build()
-                ).collect(Collectors.toList());
-
-        return SharePortfolioListResponseDTO.builder()
-                .sharePortfoliosCnt(sharePortfolioDTOList.size())
-                .sharePortfolios(sharePortfolioDTOList)
-                .build();
-    }
-
-    @Override
-    public ImportSharePortfolioResponseDTO getSharePortfolio(Long sharePortfolioId) {
-        SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
-                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
-
-        MyPortfolio myPortfolio = MyPortfolio.builder()
-                .title(sharePortfolio.getTitle())
-                .description(sharePortfolio.getDescription())
-                .userId(sharePortfolio.getUserId())
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        MyPortfolio savedMyPortfolio = myPortfolioRepository.save(myPortfolio);
-        return new ImportSharePortfolioResponseDTO(savedMyPortfolio.getMyPortfolioId());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public SharePortfolioSummaryResponseDTO getSharePortfolioSummary(Long sharePortfolioId) {
-        SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
-                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
-
-        return SharePortfolioSummaryResponseDTO.toDTO(sharePortfolio);
-    }
-
-    @Override
     public void addComment(Long sharePortfolioId, SharePortfolioCommentRequestDTO requestDTO) {
-
         SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
@@ -149,7 +116,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     @Transactional(readOnly = true)
     public SharePortfolioCommentResponseDTO getComments(Long sharePortfolioId) {
-        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findAll();
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId);
 
         if (comments.isEmpty()) {
             return SharePortfolioCommentResponseDTO.builder()
@@ -172,7 +139,6 @@ public class PortfolioServiceImpl implements PortfolioService {
         }
 
         comment.setContent(requestDTO.getContent());
-        sharePortfolioCommentRepository.save(comment);
     }
 
     @Override
