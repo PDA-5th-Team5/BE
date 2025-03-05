@@ -1,11 +1,13 @@
 package com.pda.stockservice.dto.response;
 
 import com.pda.stockservice.entity.StockStat;
+import com.pda.stockservice.repository.StockRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import com.pda.stockservice.entity.Stock;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -69,5 +71,16 @@ public class CompetitorsResponseDTO {
         return CompetitorsResponseDTO.builder()
                 .competitors(orderedDtoList)
                 .build();
+    }
+
+    public static String determineSector(Short stockId, String sector, StockRepository stockRepository) {
+        // 1. 섹터 정보 결정
+        String targetSector = sector;
+        if (targetSector == null || targetSector.isEmpty()) {
+            Stock stock = stockRepository.findById(stockId)
+                    .orElseThrow(() -> new EntityNotFoundException("Stock not found"));
+            targetSector = stock.getSector();
+        }
+        return targetSector;
     }
 }
