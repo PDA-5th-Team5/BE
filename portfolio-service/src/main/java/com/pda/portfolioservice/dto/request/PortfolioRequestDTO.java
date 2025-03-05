@@ -1,38 +1,41 @@
 package com.pda.portfolioservice.dto.request;
 
 import com.pda.portfolioservice.model.Portfolio;
+import com.pda.portfolioservice.model.Range;
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
 public class PortfolioRequestDTO {
+    private String title;
+    private String description;
     private String category;
-    private Long portfolioId;
     private String market;
     private List<String> sector;
-    private Portfolio.Range marketCap;
-    private Portfolio.Range per;
-    private Portfolio.Range eps;
-    private Portfolio.Range bps;
-    private Portfolio.Range pbr;
-    private Portfolio.Range dividendYield;
-    private Portfolio.Range foreignerRatio;
-    private Portfolio.Range sps;
-    private Portfolio.Range saleAccount;
-    private Portfolio.Range crntRate;
-    private Portfolio.Range lbltRate;
-    private Portfolio.Range ntinInrt;
-    private Portfolio.Range bsopPrfiInrt;
-    private Portfolio.Range grs;
-    private Portfolio.Range roeVal;
-    private Portfolio.Range bsopPrti;
-    private Portfolio.Range thtrNtin;
+    private Range marketCap;
+    private Range per;
+    private Range eps;
+    private Range bps;
+    private Range pbr;
+    private Range dividendYield;
+    private Range foreignerRatio;
+    private Range sps;
+    private Range saleAccount;
+    private Range crntRate;
+    private Range lbltRate;
+    private Range ntinInrt;
+    private Range bsopPrfiInrt;
+    private Range grs;
+    private Range roeVal;
+    private Range bsopPrti;
+    private Range thtrNtin;
 
     public Portfolio toEntity() {
         Portfolio portfolio = new Portfolio();
+        portfolio.setTitle(this.title);
+        portfolio.setDescription(this.description);
         portfolio.setCategory(this.category);
-        portfolio.setPortfolioId(this.portfolioId);
         portfolio.setSector(this.sector);
         portfolio.setMarket(this.market);
         portfolio.setMarketCap(this.marketCap);
