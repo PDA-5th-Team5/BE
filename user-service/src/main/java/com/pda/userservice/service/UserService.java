@@ -2,6 +2,7 @@ package com.pda.userservice.service;
 
 import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.dto.request.ProfileRequestDTO;
+import com.pda.userservice.dto.response.CommentsResponseDTO;
 import com.pda.userservice.dto.response.NicknameResponseDTO;
 import com.pda.utilservice.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,4 +29,6 @@ public interface UserService {
     NicknameResponseDTO getNicknameByUserId(String userId);
 
     ApiResponse<Void> profile(ProfileRequestDTO profileRequestDTO, String token);
+
+    ApiResponse<CommentsResponseDTO> comments(String token);
 }

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface UserServiceClient {
 
     // openfeign 테스트용
-    @GetMapping("/user/username")
+    @GetMapping("/{userId}/nickname")
     String getNickname(@PathVariable("userId") String userId);
 
     @GetMapping("/user/{id}")

@@ -2,9 +2,12 @@ package com.pda.userservice.service;
 
 import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.dto.request.ProfileRequestDTO;
+import com.pda.userservice.dto.response.CommentsResponseDTO;
 import com.pda.userservice.dto.response.NicknameResponseDTO;
 import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.entity.User;
+import com.pda.userservice.feign.PortfolioServiceClient;
+import com.pda.userservice.feign.StockServiceClient;
 import com.pda.userservice.repository.UserRepository;
 import com.pda.userservice.repository.RefreshRepository;
 import com.pda.utilservice.jwt.JWTUtil;
@@ -33,6 +36,8 @@ public class UserServiceImpl implements UserService {
     private final RefreshRepository refreshRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final Environment environment;
+    private final StockServiceClient stockServiceClient;
+    private final PortfolioServiceClient portfolioServiceClient;
 
 
     @Override
@@ -115,6 +120,19 @@ public class UserServiceImpl implements UserService {
         userRepository.save(updatedUser);
 
         return ApiResponse.onSuccess(HttpStatus.OK.value(), "프로필 업데이트 성공");
+    }
+
+    @Override
+    public ApiResponse<CommentsResponseDTO> comments(String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
+        String myStockComments = stockServiceClient.getMyStockComments(userId);
+        String myPortfolioComments = portfolioServiceClient.getMyPortfolioComments(userId);
+
+
+
+        return null;
     }
 
     private String extractRefreshToken(HttpServletRequest request) {
