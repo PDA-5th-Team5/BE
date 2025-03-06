@@ -97,6 +97,7 @@ public class StockServiceImpl implements StockService {
                 stock.setSnowflakeS(SnowflakeDTO.filterSnowflake(snowflakeMap.get(stock.getStockId()), filters));
             }
 
+            //1주, 1년 수익률
             Map<Object, Object> periodChangeRate = stockReturns.get(stockId);
             if (periodChangeRate != null) {
                 if (periodChangeRate.containsKey("week_rate_change")) {
@@ -249,12 +250,30 @@ public class StockServiceImpl implements StockService {
             int currentPrice = (int) Double.parseDouble(priceData.get("currentPrice").toString());
             responseDTO.getStockInfo().setCurrentPrice(currentPrice);
         }
-        //변동률
-        if (priceData.containsKey("changeRate")){
-            Double changeRate = Double.parseDouble(priceData.get("changeRate").toString());
-            responseDTO.getStockInfo().setChangeRate(changeRate);
+            //변동률
+            if (priceData.containsKey("changeRate")){
+                Double changeRate = Double.parseDouble(priceData.get("changeRate").toString());
+                responseDTO.getStockInfo().setChangeRate(changeRate);
+                }
+        }
+
+        List<String> stockIdList = Collections.singletonList(stockId.toString());
+        Map<String, Map<Object, Object>> periodChangeRate = redisService.getStockReturnsByIds(stockIdList);
+        if (periodChangeRate != null){
+            Map<Object, Object> stockRateData = periodChangeRate.get(stockId.toString());
+
+            //1주
+            if (stockRateData.containsKey("week_rate_change")){
+                Double weekRate = Double.parseDouble(stockRateData.get("week_rate_change").toString());
+                responseDTO.getStockInfo().setWeekRateChange(weekRate);
+            }
+            //1년
+            if (stockRateData.containsKey("year_rate_change")){
+                Double yearRate = Double.parseDouble(stockRateData.get("year_rate_change").toString());
+                responseDTO.getStockInfo().setYearRateChange(yearRate);
             }
         }
+
         return responseDTO;
     }
 
