@@ -174,7 +174,7 @@ public class PortfolioController {
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 
-    // userId로 공유 포트폴리오 댓글 조회
+    // userId로 공유 포트폴리오 댓글 조회 (GET)
     @GetMapping("/{userId}/my/comments")
     public MyPortfolioCommentsResponseDTO getNickname(@PathVariable String userId) {
         return portfolioService.getCommentsByUserId(userId);
@@ -187,6 +187,31 @@ public class PortfolioController {
         SaveSharePortfolioResponseDTO response = portfolioService.saveSharePortfolio(sharePortfolioId);
         return ApiResponse.onSuccess(response);
     }
+    // 나의 포트폴리오 평균값 조회  (GET)
+    @GetMapping("/my/{portfolioId}/summary")
+    public ApiResponse<PortfolioSummaryResponseDTO> getMyPortfolioSummary(@PathVariable(value = "portfolioId") Long portfolioId) {
+        System.out.println("portfolioId = " + portfolioId);
 
+        String category = "my";
+        // 포트폴리오 id로 조건 찾기
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        // openfeign stock filter에 조건을 보내 포함 종목의 4가지 요소 평균값 가져오기
+        PortfolioSummaryResponseDTO summary = portfolioService.getPortfolioSummary(portfolio);
 
+        return ApiResponse.onSuccess(summary);
+    }
+
+    // 공유 포트폴리오 평균값 조회  (GET)
+    @GetMapping("/share/{portfolioId}/summary")
+    public ApiResponse<PortfolioSummaryResponseDTO> getSharePortfolioSummary(@PathVariable(value = "portfolioId") Long portfolioId) {
+        System.out.println("portfolioId = " + portfolioId);
+
+        String category = "share";
+        // 포트폴리오 id로 조건 찾기
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        // openfeign stock filter에 조건을 보내 포함 종목의 4가지 요소 평균값 가져오기
+        PortfolioSummaryResponseDTO summary = portfolioService.getPortfolioSummary(portfolio);
+
+        return ApiResponse.onSuccess(summary);
+    }
 }

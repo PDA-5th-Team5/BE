@@ -26,6 +26,8 @@ public interface StockService {
 
     List<MyStockWatchlistResponseDTO> getMyWatchlistByUserId(String userId);
 
+    PortfolioSummaryResponseDTO getStocksSummary(String marketType, List<String> sector, StockFilter filters, String token);
+
     List<StockAutoCompleteResponseDTO> searchStocks(String keyword);
 
 }

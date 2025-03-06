@@ -1,6 +1,7 @@
 package com.pda.portfolioservice.feign;
 
 import com.pda.portfolioservice.dto.request.StockFilterRequest;
+import com.pda.portfolioservice.dto.response.PortfolioSummaryResponseDTO;
 import com.pda.portfolioservice.dto.response.StockResponseDTO;
 import com.pda.utilservice.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -24,4 +25,7 @@ public interface StockServiceClient {
     public ApiResponse<List<StockResponseDTO>> searchStockStatIds(
             @RequestBody StockFilterRequest request,
             @RequestParam(defaultValue = "0") int page);
+
+    @PostMapping("/api/stocks/summary")
+    public PortfolioSummaryResponseDTO getStocksSummary(@RequestBody StockFilterRequest request);
 }
