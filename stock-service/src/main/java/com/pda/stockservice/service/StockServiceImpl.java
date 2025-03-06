@@ -232,7 +232,7 @@ public class StockServiceImpl implements StockService {
     // 개별 종목 정보 조회
     @Override
     @Transactional(readOnly = true)
-    public StockInfoResponseDTO getStocks(Short stockId){
+    public StockInfoResponseDTO getStocks(Short stockId, String token){
         Stock stock = stockRepository.findById(stockId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.STOCK_NOT_FOUND));
         StockStat stockStat = stockStatRepository.findById(stockId)
@@ -261,18 +261,39 @@ public class StockServiceImpl implements StockService {
         Map<String, Map<Object, Object>> periodChangeRate = redisService.getStockReturnsByIds(stockIdList);
         if (periodChangeRate != null){
             Map<Object, Object> stockRateData = periodChangeRate.get(stockId.toString());
-
-            //1주
-            if (stockRateData.containsKey("week_rate_change")){
-                Double weekRate = Double.parseDouble(stockRateData.get("week_rate_change").toString());
-                responseDTO.getStockInfo().setWeekRateChange(weekRate);
-            }
-            //1년
-            if (stockRateData.containsKey("year_rate_change")){
-                Double yearRate = Double.parseDouble(stockRateData.get("year_rate_change").toString());
-                responseDTO.getStockInfo().setYearRateChange(yearRate);
+            if (stockRateData != null) {
+                //1주
+                if (stockRateData.containsKey("week_rate_change")){
+                    Double weekRate = Double.parseDouble(stockRateData.get("week_rate_change").toString());
+                    responseDTO.getStockInfo().setWeekRateChange(weekRate);
+                }
+                //1년
+                if (stockRateData.containsKey("year_rate_change")){
+                    Double yearRate = Double.parseDouble(stockRateData.get("year_rate_change").toString());
+                    responseDTO.getStockInfo().setYearRateChange(yearRate);
+                }
             }
         }
+
+        responseDTO.getStockInfo().setFav(false);
+
+        // 토큰이 있는 경우만 북마크 확인
+        if (token != null) {
+            try {
+                JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+                String userId = jwtUtil.getBearerUserId(token);
+
+                boolean exists = false;
+
+                exists = favoriteStockRepository.existsByUserIdAndStock_StockId(userId, stockId);
+
+                responseDTO.getStockInfo().setFav(exists);
+            } catch (Exception e) {
+                // 오류 발생 시 기본값 false 유지
+            }
+        }
+
+
 
         return responseDTO;
     }

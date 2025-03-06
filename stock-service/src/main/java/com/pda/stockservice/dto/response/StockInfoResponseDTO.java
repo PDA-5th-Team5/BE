@@ -28,6 +28,7 @@ public class StockInfoResponseDTO {
         private Double yearRateChange;
         private String sector;
         private String companyOverview;
+        private Boolean fav;
 
 
         private Double eps;
@@ -54,6 +55,7 @@ public class StockInfoResponseDTO {
                         .companyName(stock.getCompanyName())
                         .marketType(stock.getMarketType())
                         .ticker(stock.getTicker())
+
 //                        .currentPrice(stock.getCurrentPrice())
 //                        .OneWeekProfitRate(stock.getOneWeekProfitRate())
 //                        .OneYearProfitRate(stock.getOneYearProfitRate())

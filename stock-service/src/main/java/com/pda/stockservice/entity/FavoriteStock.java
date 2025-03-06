@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class FavoriteStock {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long favoriteStockId;
 
     @ManyToOne(fetch = FetchType.LAZY)
