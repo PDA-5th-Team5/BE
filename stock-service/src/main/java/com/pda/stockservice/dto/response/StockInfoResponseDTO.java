@@ -19,6 +19,7 @@ public class StockInfoResponseDTO {
     @Setter
     public static class StockInfoDTO {
         private Short stockId;
+        private String ticker;
         private String companyName;
         private Market marketType;
         private Integer currentPrice;
@@ -27,6 +28,7 @@ public class StockInfoResponseDTO {
         private Double yearRateChange;
         private String sector;
         private String companyOverview;
+
 
         private Double eps;
         private Double bps;
@@ -51,6 +53,7 @@ public class StockInfoResponseDTO {
                         .stockId(stock.getStockId())
                         .companyName(stock.getCompanyName())
                         .marketType(stock.getMarketType())
+                        .ticker(stock.getTicker())
 //                        .currentPrice(stock.getCurrentPrice())
 //                        .OneWeekProfitRate(stock.getOneWeekProfitRate())
 //                        .OneYearProfitRate(stock.getOneYearProfitRate())
