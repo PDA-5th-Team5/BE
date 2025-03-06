@@ -25,4 +25,7 @@ public interface StockService {
     MyStockCommentsResponseDTO getCommentsByUserId(String userId);
 
     List<MyStockWatchlistResponseDTO> getMyWatchlistByUserId(String userId);
+
+    List<StockAutoCompleteResponseDTO> searchStocks(String keyword);
+
 }

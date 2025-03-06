@@ -138,4 +138,10 @@ public class StockController {
         return stockService.getMyWatchlistByUserId(userId);
     }
 
+    @GetMapping("/search")
+    public ApiResponse<List<StockAutoCompleteResponseDTO>> searchStocks(@RequestParam String keyword) {
+        List<StockAutoCompleteResponseDTO> response = stockService.searchStocks(keyword);
+
+        return ApiResponse.onSuccess(response);
+    }
 }

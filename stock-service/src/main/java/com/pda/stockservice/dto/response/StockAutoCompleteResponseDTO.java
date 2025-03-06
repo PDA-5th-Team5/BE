@@ -12,12 +12,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StockAutoCompleteResponseDTO {
 
-    private Short stockId;
-    private String companyName;
+    private Short id;
     private String ticker;
+    private String companyName;
 
-    public static StockAutoCompleteResponseDTO toDTO (Stock stock) {
-        return StockAutoCompleteResponseDTO.builder().build()
+    public static StockAutoCompleteResponseDTO toDTO(Stock stock) {
+        return new StockAutoCompleteResponseDTO(
+                stock.getStockId(),
+                stock.getTicker(),
+                stock.getCompanyName()
+        );
     }
 
 }

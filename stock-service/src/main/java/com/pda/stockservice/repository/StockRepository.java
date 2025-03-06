@@ -14,11 +14,10 @@ public interface StockRepository extends JpaRepository<Stock, Short> {
     @Query("SELECT s FROM Stock s WHERE s.sector = :sector ORDER BY s.marketCap DESC LIMIT 6")
     List<Stock> findTopCompetitors(@Param("sector") String sector);
 
-    Optional<Stock> findByTicker(String ticker);
 
-    @Query("SELECT s FROM stock s WHERE s.companyName LIKE CONCAT('%', :keyword, '%') OR s.ticker LIKE CONCAT('%', :keyword, '%')")
-    List<Stock> searchByKeyword(@Param("keyword") String keyword);
 
-    List<Stock> findAllByTicken(List<String> tickers);
-    List<Stock> findAllByCompanyName(List<String> companyNames);
+    //Optional<Stock> findByTicker(String ticker);
+    List<Stock> findByTickerContainingOrCompanyNameContaining(String ticker, String companyName);
+
+;
 }
