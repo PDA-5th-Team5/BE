@@ -22,8 +22,9 @@ public class StockInfoResponseDTO {
         private String companyName;
         private Market marketType;
         private Integer currentPrice;
-        private Integer OneWeekProfitRate;
-        private Integer OneYearProfitRate;
+        private Double changeRate;
+        private Double weekRateChange;
+        private Double yearRateChange;
         private String sector;
         private String companyOverview;
 

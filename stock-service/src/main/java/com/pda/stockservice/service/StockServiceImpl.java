@@ -243,11 +243,18 @@ public class StockServiceImpl implements StockService {
         Map<String, Map<Object, Object>> stockPrices = redisService.getStockCurrentPricesByTickers(tickerList);
 
         Map<Object, Object> priceData = stockPrices.get(ticker);
-        if (priceData != null && priceData.containsKey("currentPrice")) {
+        if (priceData != null){
+            //현재가
+            if (priceData.containsKey("changeRate")) {
             int currentPrice = (int) Double.parseDouble(priceData.get("currentPrice").toString());
             responseDTO.getStockInfo().setCurrentPrice(currentPrice);
         }
-
+        //변동률
+        if (priceData.containsKey("changeRate")){
+            Double changeRate = Double.parseDouble(priceData.get("changeRate").toString());
+            responseDTO.getStockInfo().setChangeRate(changeRate);
+            }
+        }
         return responseDTO;
     }
 
