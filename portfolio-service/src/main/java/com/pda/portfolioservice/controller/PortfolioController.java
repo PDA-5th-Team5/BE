@@ -71,15 +71,32 @@ public class PortfolioController {
         return ApiResponse.onSuccess(stocks);
     }
 
-//    // 공유 포트폴리오 조회 (GET)
-//    @GetMapping("/share/{portfolioId}")
-//    public ApiResponse<PortfolioResponseDTO> getSharePortfolio(
-//            @PathVariable(value = "portfolioId") Long portfolioId
-//    ) {
-//        String category = "share";
-//        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
-//        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
-//    }
+
+    // 공유 포트폴리오 조회 (GET)
+    @GetMapping("/share/{portfolioId}")
+    public ApiResponse<Portfolio> getSharePortfolio(
+            @PathVariable(value = "portfolioId") Long portfolioId
+    ) {
+        String category = "share";
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        return ApiResponse.onSuccess(portfolio);
+    }
+
+    // 공유 포트폴리오 종목 리스트 조회  (GET)
+    @GetMapping("/share/{portfolioId}/stock")
+    public ApiResponse<List<StockResponseDTO>> getSharePortfolioStock(
+            @PathVariable(value = "portfolioId") Long portfolioId,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        String category = "share";
+        // 포트폴리오 id로 조건 찾기
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        // openfeign stock filter에 조건을 보내 포함 종목 가져오기
+        List<StockResponseDTO> stocks = portfolioService.getPortfolioStock(portfolio,page);
+
+        return ApiResponse.onSuccess(stocks);
+    }
+
 
 
     // 포트폴리오 삭제 (DELETE)
@@ -164,5 +181,6 @@ public class PortfolioController {
         SaveSharePortfolioResponseDTO response = portfolioService.saveSharePortfolio(sharePortfolioId);
         return ApiResponse.onSuccess(response);
     }
+
 
 }
