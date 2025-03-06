@@ -30,4 +30,5 @@ public interface StockService {
 
     List<StockAutoCompleteResponseDTO> searchStocks(String keyword);
 
+    List<String> getSectors();
 }

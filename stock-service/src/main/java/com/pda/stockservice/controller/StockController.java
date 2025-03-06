@@ -152,4 +152,11 @@ public class StockController {
             @RequestHeader(value = "Authorization", required = false) String token) {
         return stockService.getStocksSummary(request.getMarketType(), request.getSector(), request.getFilters(), token);
     }
+
+    // sector 전체 조회
+    @GetMapping("/sectors")
+    public ApiResponse<List<String>> getSectors() {
+        List<String> response = stockService.getSectors();
+        return ApiResponse.onSuccess(response);
+    }
 }

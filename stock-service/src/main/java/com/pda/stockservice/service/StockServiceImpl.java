@@ -13,6 +13,7 @@ import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,8 @@ public class StockServiceImpl implements StockService {
     private final UserServiceClient userServiceClient;
 
     private final Environment environment;
+    private final EurekaDiscoveryClient discoveryClient;
+
     @Override
     @Transactional
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token) {
@@ -492,5 +495,11 @@ public class StockServiceImpl implements StockService {
         return stocks.stream()
                 .map(StockAutoCompleteResponseDTO::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getSectors() {
+        List<String> distinctSectors = stockRepository.findDistinctSectors();
+        return distinctSectors;
     }
 }
