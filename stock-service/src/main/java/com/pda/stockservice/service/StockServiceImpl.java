@@ -234,7 +234,21 @@ public class StockServiceImpl implements StockService {
     public StockInfoResponseDTO getStocks(Short stockId){
         Stock stock = stockRepository.findById(stockId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.STOCK_NOT_FOUND));
-        return StockInfoResponseDTO.toDTO(stock);
+        StockStat stockStat = stockStatRepository.findById(stockId)
+                .orElseThrow(() -> new StockHandler(ErrorStatus.STOCK_NOT_FOUND));
+        StockInfoResponseDTO responseDTO = StockInfoResponseDTO.toDTO(stock, stockStat);
+
+        String ticker = stock.getTicker();
+        List<String> tickerList = Collections.singletonList(ticker);
+        Map<String, Map<Object, Object>> stockPrices = redisService.getStockCurrentPricesByTickers(tickerList);
+
+        Map<Object, Object> priceData = stockPrices.get(ticker);
+        if (priceData != null && priceData.containsKey("currentPrice")) {
+            int currentPrice = (int) Double.parseDouble(priceData.get("currentPrice").toString());
+            responseDTO.getStockInfo().setCurrentPrice(currentPrice);
+        }
+
+        return responseDTO;
     }
 
     //캔들 차트 데이터 조회
@@ -256,22 +270,18 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional(readOnly = true)
     public CompetitorsResponseDTO getCompetitors(Short stockId, String sector) {
-        // 1. 섹터 정보 결정
+
         String targetSector = CompetitorsResponseDTO.determineSector(stockId, sector, stockRepository);
 
-        // 2. 해당 섹터의 시총 상위 5개 종목 가져오기
         List<Stock> topStocks = stockRepository.findTopCompetitors(targetSector);
 
-        // 3. 종목 ID 리스트 추출
         List<Short> orderedStockIds = topStocks.stream()
                 .filter(stock -> !stock.getStockId().equals(stockId))
                 .map(Stock::getStockId)
                 .collect(Collectors.toList());
 
-        // 4. 해당 종목들의 StockStat 정보 가져오기
         List<StockStat> stockStats = stockStatRepository.findByStockIdIn(orderedStockIds);
 
-        // 5. DTO로 변환하여 반환 (변환 로직은 DTO 클래스에서)
         return CompetitorsResponseDTO.toDTO(stockStats, orderedStockIds);
     }
 
