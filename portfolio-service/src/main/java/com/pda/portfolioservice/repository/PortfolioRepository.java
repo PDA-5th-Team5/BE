@@ -9,4 +9,5 @@ public interface PortfolioRepository extends MongoRepository<Portfolio, String> 
     Optional<Portfolio> findByPortfolioId(Long portfolioId);
 
     void deleteByPortfolioId(Long portfolioId);
+    void deleteByCategoryAndPortfolioId(String category, Long portfolioId);
 }

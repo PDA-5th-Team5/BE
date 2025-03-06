@@ -123,10 +123,12 @@ public class PortfolioServiceImpl implements PortfolioService {
             throw new PortfolioHandler(ErrorStatus.UNAUTHORIZED);
         }
 
-        Portfolio existingPortfolio = portfolioRepository.findByPortfolioId(myPortfolioId)
+        Portfolio existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId("my", myPortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
-        String category = existingPortfolio.getCategory();
+        if (portfolioRepository.findByCategoryAndPortfolioId("share", myPortfolioId).isPresent()) {
+            throw new PortfolioHandler(ErrorStatus.DUPLICATE_PORTFOLIO);
+        }
 
         SharePortfolio sharePortfolio = SharePortfolio.builder()
                 .title(myPortfolio.getTitle())
@@ -136,9 +138,15 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .loadCount(0)
                 .build();
 
-        SharePortfolio savedSharePortfolio = sharePortfolioRepository.save(sharePortfolio);
 
-        return new ShareMyPortfolioResponseDTO(savedSharePortfolio.getSharePortfolioId());
+        sharePortfolio = sharePortfolioRepository.save(sharePortfolio);
+        Long generatedPortfolioId = sharePortfolio.getSharePortfolioId();
+        existingPortfolio.setCategory("share");
+        existingPortfolio.setPortfolioId(generatedPortfolioId);
+        existingPortfolio.setId(null);
+        portfolioRepository.save(existingPortfolio);
+
+        return new ShareMyPortfolioResponseDTO(generatedPortfolioId);
     }
 
     @Override
@@ -153,13 +161,14 @@ public class PortfolioServiceImpl implements PortfolioService {
             throw new PortfolioHandler(ErrorStatus.UNAUTHORIZED);
         }
 
-        Optional<Portfolio> existingPortfolio = portfolioRepository.findByPortfolioId(myPortfolioId);
+        Optional<Portfolio> existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId("my", myPortfolioId);
 
         if (existingPortfolio.isEmpty()) {
             throw new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND);
         }
 
-        portfolioRepository.deleteByPortfolioId(myPortfolioId);
+        portfolioRepository.deleteByCategoryAndPortfolioId("my", myPortfolioId);
+        myPortfolioRepository.deleteById(myPortfolioId);
     }
 
     @Override
