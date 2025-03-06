@@ -4,6 +4,7 @@ import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.dto.request.ProfileRequestDTO;
 import com.pda.userservice.dto.response.CommentsResponseDTO;
 import com.pda.userservice.dto.response.NicknameResponseDTO;
+import com.pda.userservice.dto.response.StocksResponseDTO;
 import com.pda.utilservice.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,4 +32,6 @@ public interface UserService {
     ApiResponse<Void> profile(ProfileRequestDTO profileRequestDTO, String token);
 
     ApiResponse<CommentsResponseDTO> comments(String token);
+
+    ApiResponse<StocksResponseDTO> stocks(String token);
 }

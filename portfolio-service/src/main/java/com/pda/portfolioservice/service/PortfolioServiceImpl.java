@@ -231,10 +231,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     @Transactional(readOnly = true)
-    public MyCommentsResponseDTO getCommentsByUserId(String userId) {
+    public MyPortfolioCommentsResponseDTO getCommentsByUserId(String userId) {
         List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findByUserId(userId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
-        return MyCommentsResponseDTO.toDTO(comments);
+        return MyPortfolioCommentsResponseDTO.toDTO(comments);
     }
 
 

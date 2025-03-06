@@ -113,11 +113,105 @@ public class StockServiceImpl implements StockService {
 
     @Override
     @Transactional(readOnly = true)
-    public MyCommentsResponseDTO getCommentsByUserId(String userId) {
+    public MyStockCommentsResponseDTO getCommentsByUserId(String userId) {
         List<StockComment> comments = stockCommentRepository.findByUserId(userId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
-        return MyCommentsResponseDTO.toDTO(comments);
+        return MyStockCommentsResponseDTO.toDTO(comments);
     }
+
+    @Override
+    public List<MyStockWatchlistResponseDTO> getMyWatchlistByUserId(String userId) {
+        // 1. 사용자의 관심 주식(FavoriteStock) 목록 가져오기 (JPA 조회)
+        List<FavoriteStock> favoriteStocks = favoriteStockRepository.findByUserId(userId);
+        if (favoriteStocks.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 2. 관심 주식의 Stock 엔티티 목록 추출
+        List<Stock> stocks = favoriteStocks.stream()
+                .map(FavoriteStock::getStock)
+                .collect(Collectors.toList());
+
+        // 3. 관심 주식 ID 리스트 추출
+        List<Short> stockIds = stocks.stream()
+                .map(Stock::getStockId)
+                .collect(Collectors.toList());
+
+        // 4. StockStat 엔티티에서 snowflakeS 데이터 가져오기
+        List<StockStat> stockStats = stockStatRepository.findByStockIdIn(stockIds);
+        Map<Short, StockStat> stockStatMap = stockStats.stream()
+                .collect(Collectors.toMap(StockStat::getStockId, stockStat -> stockStat));
+
+        // 5. Redis에서 수익률 정보 가져오기
+        List<String> stockIdStrings = stockIds.stream().map(String::valueOf).collect(Collectors.toList());
+        Map<String, Map<Object, Object>> stockReturns = redisService.getStockReturnsByIds(stockIdStrings);
+
+        // 5-2. Redis에서 현재가 정보 가져오기
+        List<String> tickers = stocks.stream().map(Stock::getTicker).toList();
+        Map<String, Map<Object, Object>> stockPrices = redisService.getStockCurrentPricesByTickers(tickers);
+
+        // 6. 데이터 매핑 후 응답 객체 생성
+        List<MyStockWatchlistResponseDTO> watchlistResponses = new ArrayList<>();
+
+        for (Stock stock : stocks) {
+            String stockId = String.valueOf(stock.getStockId());
+            String ticker = stock.getTicker();
+
+            // 7. StockStat에서 snowflakeS 데이터 가져오기 (기본값 null 설정)
+            StockStat stockStat = stockStatMap.get(stock.getStockId());
+            FixedStockSnowflakeResponseDTO fixedStockSnowflakeResponseDTO = FixedStockSnowflakeResponseDTO.builder()
+                    .per(stockStat != null ? stockStat.getPer() : null)
+                    .lbltRate(stockStat != null ? stockStat.getLbltRate() : null)
+                    .marketCap(stockStat != null ? stockStat.getMarketCap() : null)
+                    .divYield(stockStat != null ? stockStat.getDividendYield() : null)
+                    .foreignerRatio(stockStat != null ? stockStat.getForeignerRatio() : null)
+                    .build();
+
+
+            // 8. 기본 주식 정보 설정
+            MyStockWatchlistResponseDTO responseDTO = MyStockWatchlistResponseDTO.builder()
+                    .snowflakeS(fixedStockSnowflakeResponseDTO) // snowflakeS 데이터 추가
+                    .stockId(stock.getStockId())
+                    .ticker(stock.getTicker())
+                    .marketType(stock.getMarketType().name())
+                    .companyName(stock.getCompanyName())
+                    .sector(stock.getSector())
+                    .companyOverview(stock.getCompanyOverview())
+                    .marketCap(stock.getMarketCap())
+                    .bsopPrti(stock.getBsopPrti())
+                    .per(stock.getPer())
+                    .bps(stock.getBps())
+                    .build();
+
+            // 9. Redis에서 수익률 정보 매핑
+            Map<Object, Object> periodChangeRate = stockReturns.get(stockId);
+            if (periodChangeRate != null) {
+                if (periodChangeRate.containsKey("week_rate_change")) {
+                    responseDTO.setWeekRateChange(Double.parseDouble(periodChangeRate.get("week_rate_change").toString()));
+                }
+                if (periodChangeRate.containsKey("year_rate_change")) {
+                    responseDTO.setYearRateChange(Double.parseDouble(periodChangeRate.get("year_rate_change").toString()));
+                }
+            }
+
+            // 현재가 및 변동률 데이터 반영
+            Map<Object, Object> priceData = stockPrices.get(ticker);
+
+            if (priceData != null) {
+                if (priceData.containsKey("currentPrice")) {
+                    responseDTO.setCurrentPrice((int) Double.parseDouble(priceData.get("currentPrice").toString()));
+                }
+                if (priceData.containsKey("changeRate")) {
+                    responseDTO.setChangeRate(Double.parseDouble(priceData.get("changeRate").toString()));
+                }
+            }
+
+            watchlistResponses.add(responseDTO);
+        }
+
+        return watchlistResponses;
+    }
+
 
 
     // 개별 종목 정보 조회

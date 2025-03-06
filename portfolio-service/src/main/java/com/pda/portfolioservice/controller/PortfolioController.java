@@ -153,8 +153,7 @@ public class PortfolioController {
 
     // userId로 공유 포트폴리오 댓글 조회
     @GetMapping("/{userId}/my/comments")
-    public ApiResponse<MyCommentsResponseDTO> getNickname(@PathVariable String userId) {
-        MyCommentsResponseDTO commentsResponseDTO = portfolioService.getCommentsByUserId(userId);
-        return ApiResponse.onSuccess(commentsResponseDTO);
+    public MyPortfolioCommentsResponseDTO getNickname(@PathVariable String userId) {
+        return portfolioService.getCommentsByUserId(userId);
     }
 }
