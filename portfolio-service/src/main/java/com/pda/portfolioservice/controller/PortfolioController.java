@@ -171,7 +171,7 @@ public class PortfolioController {
         return ApiResponse.onSuccess(summary);
     }
 
-    // 나의 포트폴리오 평균값 조회  (GET)
+    // 공유 포트폴리오 평균값 조회  (GET)
     @GetMapping("/share/{portfolioId}/summary")
     public ApiResponse<PortfolioSummaryResponseDTO> getSharePortfolioSummary(@PathVariable(value = "portfolioId") Long portfolioId) {
         System.out.println("portfolioId = " + portfolioId);
