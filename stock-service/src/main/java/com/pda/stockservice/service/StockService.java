@@ -6,7 +6,7 @@ import com.pda.stockservice.dto.response.*;
 import java.util.List;
 
 public interface StockService {
-    StockInfoResponseDTO getStocks(Short stockId);
+    StockInfoResponseDTO getStocks(Short stockId, String token);
     CandleResponseDTO getCandle(Short stockId);
 
     //개별종목 경쟁사 조회
