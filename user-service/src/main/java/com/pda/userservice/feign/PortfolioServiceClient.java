@@ -1,5 +1,6 @@
 package com.pda.userservice.feign;
 
+import com.pda.userservice.dto.response.MyPortfolioCommentsResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,6 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface PortfolioServiceClient {
 
     @GetMapping("api/portfolio/{userId}/my/comments")
-    String getMyPortfolioComments(@PathVariable("userId") String userId);
+    MyPortfolioCommentsResponseDTO getMyPortfolioComments(@PathVariable("userId") String userId);
 
 }

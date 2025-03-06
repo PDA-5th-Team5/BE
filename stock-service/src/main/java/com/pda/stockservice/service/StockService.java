@@ -25,4 +25,7 @@ public interface StockService {
 
     MyCommentsResponseDTO getCommentsByUserId(String userId);
 
+    MyStockCommentsResponseDTO getCommentsByUserId(String userId);
+
+    List<MyStockWatchlistResponseDTO> getMyWatchlistByUserId(String userId);
 }

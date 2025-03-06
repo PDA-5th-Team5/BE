@@ -1,16 +1,12 @@
 package com.pda.stockservice.controller;
 
-import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.request.StockFilterRequest;
 import com.pda.stockservice.dto.response.*;
 
-import com.pda.stockservice.entity.Stock;
 import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.stockservice.service.StockService;
-import com.pda.stockservice.service.StockServiceImpl;
 import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.response.code.resultCode.SuccessStatus;
-import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -119,9 +115,8 @@ public class StockController {
 
     // userId로 종목 댓글 조회
     @GetMapping("/{userId}/my/comments")
-    public ApiResponse<MyCommentsResponseDTO> getNickname(@PathVariable String userId) {
-        MyCommentsResponseDTO commentsResponseDTO = stockService.getCommentsByUserId(userId);
-        return ApiResponse.onSuccess(commentsResponseDTO);
+    public MyStockCommentsResponseDTO getNickname(@PathVariable String userId) {
+        return stockService.getCommentsByUserId(userId);
     }
 
 
@@ -135,6 +130,12 @@ public class StockController {
 
         return "test";
 
+    }
+
+    // userId로 관심 종목 조회
+    @GetMapping("/{userId}/my/watchlist")
+    public List<MyStockWatchlistResponseDTO> getMyWatchlist(@PathVariable String userId) {
+        return stockService.getMyWatchlistByUserId(userId);
     }
 
 }

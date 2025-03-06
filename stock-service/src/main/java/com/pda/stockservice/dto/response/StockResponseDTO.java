@@ -75,4 +75,6 @@ public class StockResponseDTO {
                 .fav(stock.getFav())
                 .build();
     }
+
+
 }
