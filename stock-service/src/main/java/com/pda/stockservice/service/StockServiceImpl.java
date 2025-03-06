@@ -41,7 +41,7 @@ public class StockServiceImpl implements StockService {
     private final Environment environment;
     @Override
     @Transactional
-    public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page) {
+    public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token) {
         List<Market> markets = new ArrayList<>();
         if (market.equals("ALL")) {
             markets.add(Market.KOSPI);
@@ -49,6 +49,13 @@ public class StockServiceImpl implements StockService {
         } else {
             markets.add(Market.valueOf(market));
         }
+        List<Short> favStocks = new ArrayList<>();
+        if (token!=null){
+            JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+            String userId = jwtUtil.getBearerUserId(token);
+            favStocks = favoriteStockRepository.findStockIdsByUserId(userId);
+        }
+
 
         int limit = 24;  // 한 페이지에 24개씩
         int offset = page * limit;  // 페이지 인덱스 기반 오프셋 계산
@@ -78,6 +85,13 @@ public class StockServiceImpl implements StockService {
         for (StockResponseDTO stock : stocks) {
             String stockId = String.valueOf(stock.getStockId());
             String ticker = stock.getTicker();
+
+            if (favStocks.contains(stock.getStockId())){
+                stock.setFav(true);
+            }
+            else{
+                stock.setFav(false);
+            }
 
             if (snowflakeMap.containsKey(stock.getStockId())) {
                 stock.setSnowflakeS(SnowflakeDTO.filterSnowflake(snowflakeMap.get(stock.getStockId()), filters));
@@ -277,7 +291,4 @@ public class StockServiceImpl implements StockService {
         stockComment.updateContent(content);
         stockCommentRepository.save(stockComment);
     }
-
-
-
 }
