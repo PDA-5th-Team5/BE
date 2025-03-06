@@ -97,7 +97,13 @@ public class PortfolioController {
         return ApiResponse.onSuccess(stocks);
     }
 
-
+    // 공유 포트폴리오 리스트 조회  (GET)
+    @GetMapping("/share/board")
+    public ApiResponse<List<SharePortfolioBoardDTO>> getSharePortfolioStockBoard(@RequestParam(defaultValue = "0") int page,
+                                                                                 @RequestParam(defaultValue = "createdAt") String sortBy) {
+        List<SharePortfolioBoardDTO> spb = portfolioService.getSharePortfolios(page,sortBy);
+        return ApiResponse.onSuccess(spb);
+    }
 
     // 포트폴리오 삭제 (DELETE)
     @DeleteMapping("/{category}/{portfolioId}")

@@ -20,10 +20,14 @@ import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -75,6 +79,32 @@ public class PortfolioServiceImpl implements PortfolioService {
     public Portfolio getPortfolio(String category, Long portfolioId) {
         return portfolioRepository.findByCategoryAndPortfolioId(category, portfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+    }
+
+    @Override
+    public List<SharePortfolioBoardDTO> getSharePortfolios(int page, String sortBy) {
+        Pageable pageable = PageRequest.of(page, 24); // 한 페이지당 24개 가져오기
+        Page<SharePortfolio> sharePortfolios;
+
+        List<SharePortfolioBoardDTO> sharePortfolioDTOList = new ArrayList<>();
+        // 정렬 방식 선택
+        if ("loadCount".equalsIgnoreCase(sortBy)) {
+            sharePortfolios = sharePortfolioRepository.findAllByOrderByLoadCountDesc(pageable);
+        } else {
+            sharePortfolios = sharePortfolioRepository.findAllByOrderByCreatedAtDesc(pageable); // 기본 정렬: 최신순
+        }
+
+        for(SharePortfolio sharePortfolio : sharePortfolios.getContent()) {
+
+            SharePortfolioBoardDTO spb = SharePortfolioBoardDTO.builder()
+                    .sharePortfolioId(sharePortfolio.getSharePortfolioId())
+                    .loadCount(sharePortfolio.getLoadCount())
+                    .createdAt(sharePortfolio.getCreatedAt())
+                    .portfolio(getPortfolio("share",sharePortfolio.getSharePortfolioId()))
+                    .build();
+            sharePortfolioDTOList.add(spb);
+        }
+        return sharePortfolioDTOList;
     }
 
     //포트폴리오 종목 리스트 조회
