@@ -2,8 +2,7 @@ package com.pda.userservice.service;
 
 import com.pda.userservice.dto.request.JoinDTO;
 import com.pda.userservice.dto.request.ProfileRequestDTO;
-import com.pda.userservice.dto.response.CommentsResponseDTO;
-import com.pda.userservice.dto.response.NicknameResponseDTO;
+import com.pda.userservice.dto.response.*;
 import com.pda.userservice.entity.Refresh;
 import com.pda.userservice.entity.User;
 import com.pda.userservice.feign.PortfolioServiceClient;
@@ -25,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -39,6 +39,21 @@ public class UserServiceImpl implements UserService {
     private final StockServiceClient stockServiceClient;
     private final PortfolioServiceClient portfolioServiceClient;
 
+    @Override
+    public ApiResponse<StocksResponseDTO> stocks(String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
+        List<MyStockWatchlistResponseDTO> myStockWatchlist = stockServiceClient.getMyStockWatchlist(userId);
+
+        // CommentsResponseDTO 생성
+        StocksResponseDTO commentsResponseDTO = StocksResponseDTO.builder()
+                .stockCnt(myStockWatchlist.size())
+                .stockInfos(myStockWatchlist)
+                .build();
+
+        return ApiResponse.onSuccess(commentsResponseDTO);
+    }
 
     @Override
     public ApiResponse<Void> join(JoinDTO joinDTO) {
@@ -127,12 +142,24 @@ public class UserServiceImpl implements UserService {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
         String userId = jwtUtil.getBearerUserId(token);
 
-        String myStockComments = stockServiceClient.getMyStockComments(userId);
-        String myPortfolioComments = portfolioServiceClient.getMyPortfolioComments(userId);
+        MyStockCommentsResponseDTO myStockComments = stockServiceClient.getMyStockComments(userId);
+        MyPortfolioCommentsResponseDTO myPortfolioComments = portfolioServiceClient.getMyPortfolioComments(userId);
+
+//        // test
+//        MyStockCommentsResponseDTO myStockComments = stockServiceClient.getMyStockComments("bd703313-cbc6-4aef-8363-e632efcc793a");
+//        MyPortfolioCommentsResponseDTO myPortfolioComments = portfolioServiceClient.getMyPortfolioComments("bd703313-cbc6-4aef-8363-e632efcc793a");
+
+        System.out.println(myStockComments.getCommentsS().size());
+
+        // CommentsResponseDTO 생성
+        CommentsResponseDTO commentsResponseDTO = CommentsResponseDTO.builder()
+                .commentsS(myStockComments.getCommentsS()) // List<StockCommentResponseDTO>가 직접 들어가도록 수정
+                .commentsP(myPortfolioComments.getCommentsP()) // List<PortfolioCommentResponseDTO>가 직접 들어가도록 수정
+                .build();
 
 
 
-        return null;
+        return ApiResponse.onSuccess(commentsResponseDTO);
     }
 
     private String extractRefreshToken(HttpServletRequest request) {

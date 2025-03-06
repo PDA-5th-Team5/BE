@@ -2,22 +2,22 @@ package com.pda.portfolioservice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pda.portfolioservice.dto.request.StockFilter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.AbstractMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "portfolios")
 @CompoundIndexes({
         @CompoundIndex(name = "category_portfolio_idx", def = "{'category': 1, 'portfolioId': 1}", unique = true)
