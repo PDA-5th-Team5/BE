@@ -22,7 +22,7 @@ public interface PortfolioService {
     public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(String token);
 
     // 나의 포트폴리오 공유
-    public ShareMyPortfolioResponseDTO shareMyPortfolio(Long sharePortfolioId, String token);
+    public ShareMyPortfolioResponseDTO shareMyPortfolio(Long myPortfolioId, String token);
 
     // 나의 포트폴리오 삭제
     public void deleteMyPortfolio(Long myPortfolioId, String token);
