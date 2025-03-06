@@ -20,8 +20,10 @@ public interface StockService {
     void addFavoriteStock(Short stockId, String token);
     void deleteFavoriteStock(Short stockId, String token);
 
-    List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page);
+    List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token);
 
+
+    MyCommentsResponseDTO getCommentsByUserId(String userId);
 
     MyStockCommentsResponseDTO getCommentsByUserId(String userId);
 

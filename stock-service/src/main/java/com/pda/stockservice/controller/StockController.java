@@ -29,8 +29,9 @@ public class StockController {
     @PostMapping("/filter")
     public ApiResponse<List<StockResponseDTO>> searchStockStatIds(
             @RequestBody StockFilterRequest request,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(defaultValue = "0") int page) {
-        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page);
+        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page,token);
         return ApiResponse.onSuccess(stocks);
     }
 

@@ -40,6 +40,7 @@ public class StockResponseDTO {
     private Double yearRateChange;
     private Integer currentPrice;
     private Double changeRate;
+    private Boolean fav;
 
     public static StockResponseDTO filterStockResponse(StockResponseDTO stock, StockFilter filters) {
         return StockResponseDTO.builder()
@@ -71,6 +72,7 @@ public class StockResponseDTO {
                 .yearRateChange(stock.getYearRateChange())
                 .currentPrice(stock.getCurrentPrice())
                 .changeRate(stock.getChangeRate())
+                .fav(stock.getFav())
                 .build();
     }
 
