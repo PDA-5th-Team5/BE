@@ -43,4 +43,7 @@ public interface PortfolioService {
     // userId로 공유 포트폴리오 댓글 조회
     public MyPortfolioCommentsResponseDTO getCommentsByUserId(String userId);
 
+    // 남의 공유 포트폴리오 가져오기 (저장)
+    public SaveSharePortfolioResponseDTO saveSharePortfolio(Long sharePortfolioId);
+
 }

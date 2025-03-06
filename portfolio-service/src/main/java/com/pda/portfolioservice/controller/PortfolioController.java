@@ -156,4 +156,13 @@ public class PortfolioController {
     public MyPortfolioCommentsResponseDTO getNickname(@PathVariable String userId) {
         return portfolioService.getCommentsByUserId(userId);
     }
+
+    @PostMapping("/share/{sharePortfolioId}")
+    public ApiResponse<SaveSharePortfolioResponseDTO> saveSharePortfolio(
+            @PathVariable(value = "sharePortfolioId") Long sharePortfolioId)
+    {
+        SaveSharePortfolioResponseDTO response = portfolioService.saveSharePortfolio(sharePortfolioId);
+        return ApiResponse.onSuccess(response);
+    }
+
 }
