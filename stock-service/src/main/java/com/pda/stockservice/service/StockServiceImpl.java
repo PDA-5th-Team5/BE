@@ -146,11 +146,16 @@ public class StockServiceImpl implements StockService {
         List<String> stockIdStrings = stockIds.stream().map(String::valueOf).collect(Collectors.toList());
         Map<String, Map<Object, Object>> stockReturns = redisService.getStockReturnsByIds(stockIdStrings);
 
+        // 5-2. Redis에서 현재가 정보 가져오기
+        List<String> tickers = stocks.stream().map(Stock::getTicker).toList();
+        Map<String, Map<Object, Object>> stockPrices = redisService.getStockCurrentPricesByTickers(tickers);
+
         // 6. 데이터 매핑 후 응답 객체 생성
         List<MyStockWatchlistResponseDTO> watchlistResponses = new ArrayList<>();
 
         for (Stock stock : stocks) {
             String stockId = String.valueOf(stock.getStockId());
+            String ticker = stock.getTicker();
 
             // 7. StockStat에서 snowflakeS 데이터 가져오기 (기본값 null 설정)
             StockStat stockStat = stockStatMap.get(stock.getStockId());
@@ -186,6 +191,18 @@ public class StockServiceImpl implements StockService {
                 }
                 if (periodChangeRate.containsKey("year_rate_change")) {
                     responseDTO.setYearRateChange(Double.parseDouble(periodChangeRate.get("year_rate_change").toString()));
+                }
+            }
+
+            // 현재가 및 변동률 데이터 반영
+            Map<Object, Object> priceData = stockPrices.get(ticker);
+
+            if (priceData != null) {
+                if (priceData.containsKey("currentPrice")) {
+                    responseDTO.setCurrentPrice((int) Double.parseDouble(priceData.get("currentPrice").toString()));
+                }
+                if (priceData.containsKey("changeRate")) {
+                    responseDTO.setChangeRate(Double.parseDouble(priceData.get("changeRate").toString()));
                 }
             }
 

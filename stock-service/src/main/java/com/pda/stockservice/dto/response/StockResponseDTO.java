@@ -73,4 +73,6 @@ public class StockResponseDTO {
                 .changeRate(stock.getChangeRate())
                 .build();
     }
+
+
 }

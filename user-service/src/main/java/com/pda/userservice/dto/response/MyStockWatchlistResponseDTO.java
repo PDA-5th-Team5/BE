@@ -19,5 +19,7 @@ public class MyStockWatchlistResponseDTO {
     private double bps;
     private Double weekRateChange;
     private Double yearRateChange;
+    private Integer currentPrice;
+    private Double changeRate;
     private FixedStockSnowflakeResponseDTO snowflakeS; // 추가된 필드
 }
