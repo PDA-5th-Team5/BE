@@ -138,6 +138,13 @@ public class StockController {
         return stockService.getMyWatchlistByUserId(userId);
     }
 
+    @GetMapping("/search")
+    public ApiResponse<List<StockAutoCompleteResponseDTO>> searchStocks(@RequestParam String keyword) {
+        List<StockAutoCompleteResponseDTO> response = stockService.searchStocks(keyword);
+
+        return ApiResponse.onSuccess(response);
+    }
+
     // 포트폴리오 filter값으로 해당 포트폴리오의 평균(4가지)값 조회
     @PostMapping("/summary")
     public PortfolioSummaryResponseDTO searchStockStatIds(

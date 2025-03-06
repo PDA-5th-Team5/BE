@@ -1,25 +1,30 @@
 package com.pda.stockservice.dto.response;
 
+import com.pda.stockservice.entity.StockStat;
 import com.pda.stockservice.enums.Market;
 import com.pda.stockservice.entity.Stock;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Builder
 @Getter
+@Setter
 public class StockInfoResponseDTO {
     private StockInfoDTO stockInfo;
     private SnowflakeSDTO snowflakeS;
 
     @Builder
     @Getter
+    @Setter
     public static class StockInfoDTO {
         private Short stockId;
         private String companyName;
         private Market marketType;
         private Integer currentPrice;
-        private Integer OneWeekProfitRate;
-        private Integer OneYearProfitRate;
+        private Double changeRate;
+        private Double weekRateChange;
+        private Double yearRateChange;
         private String sector;
         private String companyOverview;
 
@@ -31,16 +36,16 @@ public class StockInfoResponseDTO {
     @Builder
     @Getter
     public static class SnowflakeSDTO {
-        private Double per;
-        private Double lbltRate;
-        private Long marketCap;
-        private Double dividendYield;
-        private Double foreignerRatio;
+        private Byte per;
+        private Byte lbltRate;
+        private Byte marketCap;
+        private Byte dividendYield;
+        private Byte foreignerRatio;
     }
 
 
 
-    public static StockInfoResponseDTO toDTO(Stock stock) {
+    public static StockInfoResponseDTO toDTO(Stock stock, StockStat stockStat) {
         return StockInfoResponseDTO.builder()
                 .stockInfo(StockInfoDTO.builder()
                         .stockId(stock.getStockId())
@@ -56,11 +61,11 @@ public class StockInfoResponseDTO {
                         .pbr(stock.getPbr())
                         .build())
                 .snowflakeS(SnowflakeSDTO.builder()
-                        .per(stock.getPer())
-                        .lbltRate(stock.getLbltRate())
-                        .marketCap(stock.getMarketCap())
-                        .dividendYield(stock.getDividendYield())
-                        .foreignerRatio(stock.getForeignerRatio())
+                        .per(stockStat.getPer())
+                        .lbltRate(stockStat.getLbltRate())
+                        .marketCap(stockStat.getMarketCap())
+                        .dividendYield(stockStat.getDividendYield())
+                        .foreignerRatio(stockStat.getForeignerRatio())
                         .build())
                 .build();
     }

@@ -71,16 +71,39 @@ public class PortfolioController {
         return ApiResponse.onSuccess(stocks);
     }
 
-//    // 공유 포트폴리오 조회 (GET)
-//    @GetMapping("/share/{portfolioId}")
-//    public ApiResponse<PortfolioResponseDTO> getSharePortfolio(
-//            @PathVariable(value = "portfolioId") Long portfolioId
-//    ) {
-//        String category = "share";
-//        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
-//        return ApiResponse.onSuccess(PortfolioResponseDTO.fromEntity(portfolio));
-//    }
 
+    // 공유 포트폴리오 조회 (GET)
+    @GetMapping("/share/{portfolioId}")
+    public ApiResponse<Portfolio> getSharePortfolio(
+            @PathVariable(value = "portfolioId") Long portfolioId
+    ) {
+        String category = "share";
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        return ApiResponse.onSuccess(portfolio);
+    }
+
+    // 공유 포트폴리오 종목 리스트 조회  (GET)
+    @GetMapping("/share/{portfolioId}/stock")
+    public ApiResponse<List<StockResponseDTO>> getSharePortfolioStock(
+            @PathVariable(value = "portfolioId") Long portfolioId,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        String category = "share";
+        // 포트폴리오 id로 조건 찾기
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        // openfeign stock filter에 조건을 보내 포함 종목 가져오기
+        List<StockResponseDTO> stocks = portfolioService.getPortfolioStock(portfolio,page);
+
+        return ApiResponse.onSuccess(stocks);
+    }
+
+    // 공유 포트폴리오 리스트 조회  (GET)
+    @GetMapping("/share/board")
+    public ApiResponse<List<SharePortfolioBoardDTO>> getSharePortfolioStockBoard(@RequestParam(defaultValue = "0") int page,
+                                                                                 @RequestParam(defaultValue = "createdAt") String sortBy) {
+        List<SharePortfolioBoardDTO> spb = portfolioService.getSharePortfolios(page,sortBy);
+        return ApiResponse.onSuccess(spb);
+    }
 
     // 포트폴리오 삭제 (DELETE)
     @DeleteMapping("/{category}/{portfolioId}")
@@ -157,11 +180,18 @@ public class PortfolioController {
         return portfolioService.getCommentsByUserId(userId);
     }
 
+    @PostMapping("/share/{sharePortfolioId}")
+    public ApiResponse<SaveSharePortfolioResponseDTO> saveSharePortfolio(
+            @PathVariable(value = "sharePortfolioId") Long sharePortfolioId)
+    {
+        SaveSharePortfolioResponseDTO response = portfolioService.saveSharePortfolio(sharePortfolioId);
+        return ApiResponse.onSuccess(response);
+    }
     // 나의 포트폴리오 평균값 조회  (GET)
     @GetMapping("/my/{portfolioId}/summary")
     public ApiResponse<PortfolioSummaryResponseDTO> getMyPortfolioSummary(@PathVariable(value = "portfolioId") Long portfolioId) {
         System.out.println("portfolioId = " + portfolioId);
-        
+
         String category = "my";
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
