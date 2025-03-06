@@ -43,4 +43,6 @@ public interface PortfolioService {
     // userId로 공유 포트폴리오 댓글 조회
     public MyPortfolioCommentsResponseDTO getCommentsByUserId(String userId);
 
+    // 포트폴리오 평균 조회
+    PortfolioSummaryResponseDTO getPortfolioSummary(Portfolio portfolio);
 }

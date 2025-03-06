@@ -246,5 +246,15 @@ public class PortfolioServiceImpl implements PortfolioService {
         return MyPortfolioCommentsResponseDTO.toDTO(comments);
     }
 
+    @Override
+    public PortfolioSummaryResponseDTO getPortfolioSummary(Portfolio portfolio) {
+        StockFilterRequest stockFilterRequest = new StockFilterRequest();
+        stockFilterRequest.setFilters(portfolio.toStockFilter());
+        stockFilterRequest.setMarketType(portfolio.getMarket());
+        stockFilterRequest.setSector(portfolio.getSector());
+
+        return stockServiceClient.getStocksSummary(stockFilterRequest);
+    }
+
 
 }

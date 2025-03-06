@@ -226,6 +226,65 @@ public class StockServiceImpl implements StockService {
         return watchlistResponses;
     }
 
+    @Override
+    public PortfolioSummaryResponseDTO getStocksSummary(String marketType, List<String> sector, StockFilter filters, String token) {
+        List<Market> markets = new ArrayList<>();
+        if (marketType.equals("ALL")) {
+            markets.add(Market.KOSPI);
+            markets.add(Market.KOSDAQ);
+        } else {
+            markets.add(Market.valueOf(marketType));
+        }
+
+        List<SnowflakeDTO> stockStats = stockMapper.searchStockStatIds(markets, sector, filters, 0, 24);
+        if (stockStats.isEmpty()) {
+            return null;
+        }
+
+        List<Integer> stockIds = stockStats.stream()
+                .map(SnowflakeDTO::getStockId)
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
+
+        List<StockResponseDTO> stocks = stockMapper.findStocksByIds(stockIds);
+
+        // 평균값을 계산할 변수 초기화
+        double totalMarketCap = 0;
+        double totalPer = 0;
+        double totalDividendYield = 0;
+        double totalLbltRate = 0;
+        int countMarketCap = 0;
+        int countPer = 0;
+        int countDividendYield = 0;
+        int countLbltRate = 0;
+
+        for (StockResponseDTO stock : stocks) {
+            if (stock.getMarketCap() != null) {
+                totalMarketCap += stock.getMarketCap();
+                countMarketCap++;
+            }
+            if (stock.getPer() != null) {
+                totalPer += stock.getPer();
+                countPer++;
+            }
+            if (stock.getDividendYield() != null) {
+                totalDividendYield += stock.getDividendYield();
+                countDividendYield++;
+            }
+            if (stock.getLbltRate() != null) {
+                totalLbltRate += stock.getLbltRate();
+                countLbltRate++;
+            }
+        }
+
+        // 평균 계산 (해당 값이 존재하는 경우에만 계산)
+        int avgMarketCap = countMarketCap > 0 ? (int) (totalMarketCap / countMarketCap) : 0;
+        double avgPer = countPer > 0 ? Math.round((totalPer / countPer) * 100.0) / 100.0 : 0;
+        double avgDividend = countDividendYield > 0 ? Math.round((totalDividendYield / countDividendYield) * 100.0) / 100.0 : 0;
+        double avgDebt = countLbltRate > 0 ? Math.round((totalLbltRate / countLbltRate) * 100.0) / 100.0 : 0;
+
+        return new PortfolioSummaryResponseDTO(avgMarketCap, avgPer, avgDebt, avgDividend);
+    }
 
 
     // 개별 종목 정보 조회

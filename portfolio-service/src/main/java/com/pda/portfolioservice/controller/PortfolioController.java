@@ -159,12 +159,14 @@ public class PortfolioController {
 
     // 나의 포트폴리오 평균값 조회  (GET)
     @GetMapping("/my/{portfolioId}/summary")
-    public ApiResponse<MySummaryResponseDTO> getMyPortfolioSummary(@PathVariable(value = "portfolioId") Long portfolioId) {
+    public ApiResponse<PortfolioSummaryResponseDTO> getMyPortfolioSummary(@PathVariable(value = "portfolioId") Long portfolioId) {
+        System.out.println("portfolioId = " + portfolioId);
+        
         String category = "my";
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
-        // openfeign stock filter에 조건을 보내 포함 종목 가져와서 평균값만 가져오기
-        MySummaryResponseDTO summary = portfolioService.getPortfolioSummary(portfolio);
+        // openfeign stock filter에 조건을 보내 포함 종목의 4가지 요소 평균값 가져오기
+        PortfolioSummaryResponseDTO summary = portfolioService.getPortfolioSummary(portfolio);
 
         return ApiResponse.onSuccess(summary);
     }
