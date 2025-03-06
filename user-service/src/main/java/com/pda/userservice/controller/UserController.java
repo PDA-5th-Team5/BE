@@ -46,7 +46,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/nickname")
-    public NicknameResponseDTO getNickname(@PathVariable String userId) {
+    public NicknameResponseDTO getNickname(@PathVariable("userId") String userId) {
         System.out.println("UserController.getNickname");
         return userService.getNicknameByUserId(userId);
     }
