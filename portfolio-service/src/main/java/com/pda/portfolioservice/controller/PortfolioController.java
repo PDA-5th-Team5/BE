@@ -174,10 +174,18 @@ public class PortfolioController {
         return ApiResponse.onSuccess(SuccessStatus.OK);
     }
 
-    // userId로 공유 포트폴리오 댓글 조회 (GET)
+    // userId로 공유 포트폴리오 댓글 조회
     @GetMapping("/{userId}/my/comments")
     public MyPortfolioCommentsResponseDTO getNickname(@PathVariable String userId) {
         return portfolioService.getCommentsByUserId(userId);
+    }
+
+    @PostMapping("/share/{sharePortfolioId}")
+    public ApiResponse<SaveSharePortfolioResponseDTO> saveSharePortfolio(
+            @PathVariable(value = "sharePortfolioId") Long sharePortfolioId)
+    {
+        SaveSharePortfolioResponseDTO response = portfolioService.saveSharePortfolio(sharePortfolioId);
+        return ApiResponse.onSuccess(response);
     }
 
 

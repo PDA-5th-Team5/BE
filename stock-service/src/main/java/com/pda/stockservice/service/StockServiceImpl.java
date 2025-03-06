@@ -395,4 +395,17 @@ public class StockServiceImpl implements StockService {
         stockComment.updateContent(content);
         stockCommentRepository.save(stockComment);
     }
+
+    // 주식 검색 자동완성
+    @Override
+    @Transactional(readOnly = true)
+    public List<StockAutoCompleteResponseDTO> searchStocks(String keyword) {
+        System.out.println(keyword);
+        List<Stock> stocks = stockRepository.findByTickerContainingOrCompanyNameContaining(keyword,keyword);
+        System.out.println(stocks.get(0).toString());
+
+        return stocks.stream()
+                .map(StockAutoCompleteResponseDTO::toDTO)
+                .collect(Collectors.toList());
+    }
 }

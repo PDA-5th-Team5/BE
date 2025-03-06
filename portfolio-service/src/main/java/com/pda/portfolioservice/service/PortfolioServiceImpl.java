@@ -170,10 +170,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 
         sharePortfolio = sharePortfolioRepository.save(sharePortfolio);
+
         Long generatedPortfolioId = sharePortfolio.getSharePortfolioId();
         existingPortfolio.setCategory("share");
         existingPortfolio.setPortfolioId(generatedPortfolioId);
         existingPortfolio.setId(null);
+
         portfolioRepository.save(existingPortfolio);
 
         return new ShareMyPortfolioResponseDTO(generatedPortfolioId);
@@ -274,6 +276,41 @@ public class PortfolioServiceImpl implements PortfolioService {
         List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findByUserId(userId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
         return MyPortfolioCommentsResponseDTO.toDTO(comments);
+    }
+
+    @Override
+    public SaveSharePortfolioResponseDTO saveSharePortfolio(Long sharePortfolioId) {
+
+        SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+
+        Portfolio existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId("share", sharePortfolioId)
+                .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
+
+        if (portfolioRepository.findByCategoryAndPortfolioId("my", sharePortfolioId).isPresent()) {
+            throw new PortfolioHandler(ErrorStatus.DUPLICATE_PORTFOLIO);
+        }
+
+        MyPortfolio myPortfolio = MyPortfolio.builder()
+                .myPortfolioId(existingPortfolio.getPortfolioId())
+                .title(existingPortfolio.getTitle())
+                .description(existingPortfolio.getDescription())
+                .userId(sharePortfolio.getUserId())
+                .build();
+
+        myPortfolio = myPortfolioRepository.save(myPortfolio);
+
+        Long generatedPortfolioId = myPortfolio.getMyPortfolioId();
+        existingPortfolio.setCategory("my");
+        existingPortfolio.setPortfolioId(generatedPortfolioId);
+        existingPortfolio.setId(null);
+
+        portfolioRepository.save(existingPortfolio);
+
+        return new SaveSharePortfolioResponseDTO(generatedPortfolioId);
+
+
+
     }
 
 

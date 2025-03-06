@@ -2,15 +2,15 @@ package com.pda.stockservice.entity;
 
 import com.pda.stockservice.enums.Market;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Builder
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Stock {
 
@@ -40,8 +40,8 @@ public class Stock {
     private Double lbltRate;
     private Double ntinInrt;
     private Double bsopPrfiInrt;
-    private double grs;
-    private double roeVal;
+    private Double grs;
+    private Double roeVal;
 
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
     private List<StockComment> comments = new ArrayList<>();
