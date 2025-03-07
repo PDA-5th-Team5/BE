@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface StockRepository extends JpaRepository<Stock, Short> {
-    @Query("SELECT s FROM Stock s WHERE s.sector = :sector ORDER BY s.marketCap DESC LIMIT 6")
+    @Query("SELECT s FROM Stock s WHERE s.sector = :sector ORDER BY s.marketCap DESC")
     List<Stock> findTopCompetitors(@Param("sector") String sector);
 
 
