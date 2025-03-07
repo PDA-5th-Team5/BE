@@ -38,8 +38,8 @@ public class StockController {
 
     //개별종목 정보조회
     @GetMapping("/{stockId}")
-    public ApiResponse<StockInfoResponseDTO> getStocks(@PathVariable("stockId") Short stockId) {
-        StockInfoResponseDTO stockInfoResponseDTO = stockService.getStocks(stockId);
+    public ApiResponse<StockInfoResponseDTO> getStocks(@PathVariable("stockId") Short stockId, @RequestHeader(value = "Authorization", required = false) String token) {
+        StockInfoResponseDTO stockInfoResponseDTO = stockService.getStocks(stockId,token);
         return ApiResponse.onSuccess(stockInfoResponseDTO);
     }
 

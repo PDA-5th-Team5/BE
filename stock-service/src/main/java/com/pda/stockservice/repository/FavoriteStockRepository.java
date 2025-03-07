@@ -14,7 +14,7 @@ public interface FavoriteStockRepository extends JpaRepository<FavoriteStock, Lo
     // 중복 체크를 위한 메서드 추가
     boolean existsByUserIdAndStock_StockId(String userId, Short stockId);
 
-    @Query("SELECT s.stock.stockId FROM FavoriteStock s WHERE s.userId = :userId")
+    @Query("SELECT fs.stock.stockId FROM FavoriteStock fs WHERE fs.userId = :userId")
     List<Short> findStockIdsByUserId(@Param("userId") String userId);
 
     // 사용자 관심 등록 주식 리스트 조회
