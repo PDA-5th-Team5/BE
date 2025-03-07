@@ -54,4 +54,6 @@ public interface PortfolioService {
     List<TopPortfolioInfoResponseDTO> getTopSharePortfolioIds();
 
     List<SharePortfolioBoardDTO> getTopSharePortfolios(List<TopPortfolioInfoResponseDTO> topPortfoliosIds);
+
+    List<TopPortfolioInfoResponseDTO> getExpertSharePortfolioIds(String expertUserId);
 }

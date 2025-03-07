@@ -354,4 +354,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         return topPortfolios;
     }
+
+    @Override
+    public List<TopPortfolioInfoResponseDTO> getExpertSharePortfolioIds(String expertUserId) {
+        List<SharePortfolio> expertPortfolios = sharePortfolioRepository.findByUserId(expertUserId);
+
+        return expertPortfolios.stream()
+                .map(portfolio -> new TopPortfolioInfoResponseDTO(portfolio.getSharePortfolioId(), portfolio.getLoadCount(), portfolio.getCreatedAt()))
+                .collect(Collectors.toList());
+    }
 }

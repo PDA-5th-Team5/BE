@@ -18,4 +18,7 @@ public interface SharePortfolioRepository extends JpaRepository<SharePortfolio, 
 
     // loadCount 상위 10개 객체
     List<SharePortfolio> findTop10ByOrderByLoadCountDesc();
+
+    // 특정 userId에 해당하는 SharePortfolio 리스트 가져오기
+    List<SharePortfolio> findByUserId(String userId);
 }
