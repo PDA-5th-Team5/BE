@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface SharePortfolioRepository extends JpaRepository<SharePortfolio, Long> {
     // 최신순 정렬 (기본)
@@ -13,4 +15,10 @@ public interface SharePortfolioRepository extends JpaRepository<SharePortfolio, 
 
     // 조회수 높은 순 정렬
     Page<SharePortfolio> findAllByOrderByLoadCountDesc(Pageable pageable);
+
+    // loadCount 상위 10개 객체
+    List<SharePortfolio> findTop10ByOrderByLoadCountDesc();
+
+    // 특정 userId에 해당하는 SharePortfolio 리스트 가져오기
+    List<SharePortfolio> findByUserId(String userId);
 }

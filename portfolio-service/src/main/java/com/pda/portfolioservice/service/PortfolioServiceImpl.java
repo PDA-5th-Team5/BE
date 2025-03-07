@@ -26,11 +26,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sound.sampled.Port;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -323,5 +322,45 @@ public class PortfolioServiceImpl implements PortfolioService {
         return stockServiceClient.getStocksSummary(stockFilterRequest);
     }
 
+    @Override
+    public List<TopPortfolioInfoResponseDTO> getTopSharePortfolioIds() {
+        List<SharePortfolio> top10Portfolios = sharePortfolioRepository.findTop10ByOrderByLoadCountDesc();
 
+        return top10Portfolios.stream()
+                .map(portfolio -> new TopPortfolioInfoResponseDTO(portfolio.getSharePortfolioId(), portfolio.getLoadCount(), portfolio.getCreatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SharePortfolioBoardDTO> getTopSharePortfolios(List<TopPortfolioInfoResponseDTO> topPortfoliosIds) {
+        String category = "share";
+
+        List<SharePortfolioBoardDTO> topPortfolios = new ArrayList<>();
+
+        for (TopPortfolioInfoResponseDTO dto : topPortfoliosIds) {
+            // Portfolio 정보 가져오기
+            Portfolio portfolio = getPortfolio(category, dto.getSharePortfolioId());
+
+            // DTO 변환 후 리스트에 추가
+            SharePortfolioBoardDTO boardDTO = SharePortfolioBoardDTO.builder()
+                    .sharePortfolioId(dto.getSharePortfolioId())
+                    .loadCount(dto.getLoadCount())
+                    .createdAt(dto.getCreatedAt())
+                    .portfolio(portfolio)
+                    .build();
+
+            topPortfolios.add(boardDTO);
+        }
+
+        return topPortfolios;
+    }
+
+    @Override
+    public List<TopPortfolioInfoResponseDTO> getExpertSharePortfolioIds(String expertUserId) {
+        List<SharePortfolio> expertPortfolios = sharePortfolioRepository.findByUserId(expertUserId);
+
+        return expertPortfolios.stream()
+                .map(portfolio -> new TopPortfolioInfoResponseDTO(portfolio.getSharePortfolioId(), portfolio.getLoadCount(), portfolio.getCreatedAt()))
+                .collect(Collectors.toList());
+    }
 }
