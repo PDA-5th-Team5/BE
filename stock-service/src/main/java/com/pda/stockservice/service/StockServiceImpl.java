@@ -499,7 +499,6 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public List<String> getSectors() {
-        List<String> distinctSectors = stockRepository.findDistinctSectors();
-        return distinctSectors;
+        return stockRepository.findDistinctSectors();
     }
 }

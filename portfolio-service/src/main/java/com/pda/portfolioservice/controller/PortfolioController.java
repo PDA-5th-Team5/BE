@@ -214,4 +214,17 @@ public class PortfolioController {
 
         return ApiResponse.onSuccess(summary);
     }
+
+    // 인기 포트폴리오 조회  (GET)
+    @GetMapping("/popular")
+    public ApiResponse<List<SharePortfolioBoardDTO>> getPopularPortfolio() {
+
+        // 공유 포트폴리오에서 Import 수 상위 10개 portfolioId 및 count개수 가져오기
+        List<TopPortfolioInfoResponseDTO> topPortfoliosIds = portfolioService.getTopSharePortfolioIds();
+        
+        // 인기 포트폴리오 10개
+        List<SharePortfolioBoardDTO> topPortfolios = portfolioService.getTopSharePortfolios(topPortfoliosIds);
+
+        return ApiResponse.onSuccess(topPortfolios);
+    }
 }
