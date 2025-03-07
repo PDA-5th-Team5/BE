@@ -4,6 +4,7 @@ import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface StockService {
     StockInfoResponseDTO getStocks(Short stockId);
@@ -31,4 +32,6 @@ public interface StockService {
     List<StockAutoCompleteResponseDTO> searchStocks(String keyword);
 
     List<String> getSectors();
+
+    ThresholdsResponseDTO getAllStockIndicatorThresholds();
 }
