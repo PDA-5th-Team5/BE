@@ -19,11 +19,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,6 +35,7 @@ public class StockServiceImpl implements StockService {
     private final StockStatRepository stockStatRepository;
     private final StockCommentRepository stockCommentRepository;
     private final StockIndicatorThresholdsRepository stockIndicatorThresholdsRepository;
+    private final MarketIndicatorPriceRepository marketIndicatorPriceRepository;
     private final StockMapper stockMapper;
     private final RedisService redisService;
     private final UserServiceClient userServiceClient;
@@ -559,5 +558,66 @@ public class StockServiceImpl implements StockService {
                 .filter(threshold -> threshold.getIndicator().equals(indicator))
                 .map(threshold -> threshold.getMaxValue() != null ? threshold.getMaxValue() : 0.0)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public StockLineGraphResponseDTO getStockLineGraph(Short stockId) {
+        LocalDate startDate = LocalDate.now().minusDays(365);
+        LocalDate endDate = LocalDate.now();
+        List<Market> markets = Arrays.asList(Market.KOSPI, Market.KOSDAQ);
+
+        List<StockLineGraphResponseDTO.MarketIndicatorGraphResponseDTO> marketGraphList = new ArrayList<>(); // ✅ 시장 그래프 리스트
+
+        // ✅ 시장 (KOSPI, KOSDAQ) 변동률 추가
+        for (Market market : markets) {
+            List<MarketIndicatorPrice> priceList = marketIndicatorPriceRepository.findMarketPricesRange(market, startDate, endDate);
+
+            if (priceList.isEmpty()) continue;
+
+            float firstPrice = priceList.get(0).getPrice();
+
+            // ✅ TreeMap을 사용하여 날짜 오름차순 정렬 & "-" 없는 날짜 변환
+            Map<String, Float> priceRatios = new TreeMap<>();
+            priceList.forEach(p -> priceRatios.put(
+                    p.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                    Math.round((p.getPrice() / firstPrice) * 100.0f) / 100.0f
+            ));
+
+            marketGraphList.add(StockLineGraphResponseDTO.MarketIndicatorGraphResponseDTO.builder()
+                    .market(market) // ✅ ENUM 그대로 사용
+                    .price(priceRatios)
+                    .build());
+        }
+
+        // ✅ 개별 주식 변동률 추가
+        StockLineGraphResponseDTO.StockGraphResponseDTO stockGraph = getStockPriceRatio(stockId, startDate, endDate);
+
+        // ✅ 최종 응답 반환 (원래 DTO 구조 유지)
+        return StockLineGraphResponseDTO.builder()
+                .lineGraph(StockLineGraphResponseDTO.LineGraphDTO.builder()
+                        .marketGraph(marketGraphList)
+                        .stockGraph(stockGraph)
+                        .build())
+                .build();
+    }
+
+    private StockLineGraphResponseDTO.StockGraphResponseDTO getStockPriceRatio(Short stockId, LocalDate startDate, LocalDate endDate) {
+        List<StockPriceDay> priceList = stockPriceDayRepository.findStockClosePricesInRange(stockId, startDate, endDate);
+
+        if (priceList.isEmpty()) return null;
+
+        float firstPrice = priceList.get(0).getClosePrice();
+
+        // ✅ TreeMap을 사용하여 날짜 오름차순 정렬 & "-" 없는 날짜 변환
+        Map<String, Float> closePriceRatios = new TreeMap<>();
+        priceList.forEach(p -> closePriceRatios.put(
+                p.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                Math.round((p.getClosePrice() / firstPrice) * 100.0f) / 100.0f
+        ));
+
+        return StockLineGraphResponseDTO.StockGraphResponseDTO.builder()
+                .companyName(priceList.get(0).getStock().getCompanyName())  // ✅ 개별 주식 이름 추가
+                .closePrice(closePriceRatios)
+                .build();
     }
 }

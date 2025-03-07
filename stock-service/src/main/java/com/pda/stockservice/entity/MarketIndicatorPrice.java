@@ -1,9 +1,7 @@
 package com.pda.stockservice.entity;
 
-import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.pda.stockservice.enums.Market;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +14,13 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MarketIndicatorPrice {
 
+
+    @Embeddable
+    @Getter
     public static class MarketIndicatorPriceId implements Serializable {
-        private String Market;
+
+        @Enumerated(EnumType.STRING)
+        private Market market;
         private LocalDate date;
     }
 
