@@ -13,6 +13,7 @@ import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StockServiceImpl implements StockService {
@@ -310,14 +311,14 @@ public class StockServiceImpl implements StockService {
         if (priceData != null){
             //현재가
             if (priceData.containsKey("changeRate")) {
-            int currentPrice = (int) Double.parseDouble(priceData.get("currentPrice").toString());
-            responseDTO.getStockInfo().setCurrentPrice(currentPrice);
-        }
+                int currentPrice = (int) Double.parseDouble(priceData.get("currentPrice").toString());
+                responseDTO.getStockInfo().setCurrentPrice(currentPrice);
+            }
             //변동률
             if (priceData.containsKey("changeRate")){
                 Double changeRate = Double.parseDouble(priceData.get("changeRate").toString());
                 responseDTO.getStockInfo().setChangeRate(changeRate);
-                }
+            }
         }
 
         List<String> stockIdList = Collections.singletonList(stockId.toString());
@@ -380,17 +381,20 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional(readOnly = true)
     public CompetitorsResponseDTO getCompetitors(Short stockId, String sector) {
+        log.info("Fetching competitors for stockId: {}, sector: {}", stockId, sector);
 
         String targetSector = CompetitorsResponseDTO.determineSector(stockId, sector, stockRepository);
-
+        log.info("Found stocks in sector {}", targetSector);
         List<Stock> topStocks = stockRepository.findTopCompetitors(targetSector);
 
         List<Short> orderedStockIds = topStocks.stream()
                 .filter(stock -> !stock.getStockId().equals(stockId))
+                .limit(6)
                 .map(Stock::getStockId)
                 .collect(Collectors.toList());
-
+        log.info("Filtered to {} competitors", orderedStockIds.size());
         List<StockStat> stockStats = stockStatRepository.findByStockIdIn(orderedStockIds);
+        log.info("Retrieved {} stock stats", stockStats.size());
 
         return CompetitorsResponseDTO.toDTO(stockStats, orderedStockIds);
     }
