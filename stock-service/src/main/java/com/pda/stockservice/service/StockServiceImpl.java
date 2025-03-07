@@ -566,9 +566,8 @@ public class StockServiceImpl implements StockService {
         LocalDate endDate = LocalDate.now();
         List<Market> markets = Arrays.asList(Market.KOSPI, Market.KOSDAQ);
 
-        List<StockLineGraphResponseDTO.MarketIndicatorGraphResponseDTO> marketGraphList = new ArrayList<>(); // ✅ 시장 그래프 리스트
+        List<StockLineGraphResponseDTO.MarketIndicatorGraphResponseDTO> marketGraphList = new ArrayList<>();
 
-        // ✅ 시장 (KOSPI, KOSDAQ) 변동률 추가
         for (Market market : markets) {
             List<MarketIndicatorPrice> priceList = marketIndicatorPriceRepository.findMarketPricesRange(market, startDate, endDate);
 
@@ -576,7 +575,6 @@ public class StockServiceImpl implements StockService {
 
             float firstPrice = priceList.get(0).getPrice();
 
-            // ✅ TreeMap을 사용하여 날짜 오름차순 정렬 & "-" 없는 날짜 변환
             Map<String, Float> priceRatios = new TreeMap<>();
             priceList.forEach(p -> priceRatios.put(
                     p.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
@@ -584,15 +582,13 @@ public class StockServiceImpl implements StockService {
             ));
 
             marketGraphList.add(StockLineGraphResponseDTO.MarketIndicatorGraphResponseDTO.builder()
-                    .market(market) // ✅ ENUM 그대로 사용
+                    .market(market)
                     .price(priceRatios)
                     .build());
         }
 
-        // ✅ 개별 주식 변동률 추가
         StockLineGraphResponseDTO.StockGraphResponseDTO stockGraph = getStockPriceRatio(stockId, startDate, endDate);
 
-        // ✅ 최종 응답 반환 (원래 DTO 구조 유지)
         return StockLineGraphResponseDTO.builder()
                 .lineGraph(StockLineGraphResponseDTO.LineGraphDTO.builder()
                         .marketGraph(marketGraphList)
@@ -608,7 +604,6 @@ public class StockServiceImpl implements StockService {
 
         float firstPrice = priceList.get(0).getClosePrice();
 
-        // ✅ TreeMap을 사용하여 날짜 오름차순 정렬 & "-" 없는 날짜 변환
         Map<String, Float> closePriceRatios = new TreeMap<>();
         priceList.forEach(p -> closePriceRatios.put(
                 p.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
@@ -616,7 +611,7 @@ public class StockServiceImpl implements StockService {
         ));
 
         return StockLineGraphResponseDTO.StockGraphResponseDTO.builder()
-                .companyName(priceList.get(0).getStock().getCompanyName())  // ✅ 개별 주식 이름 추가
+                .companyName(priceList.get(0).getStock().getCompanyName())
                 .closePrice(closePriceRatios)
                 .build();
     }
