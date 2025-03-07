@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -151,5 +152,19 @@ public class StockController {
             @RequestBody StockFilterRequest request,
             @RequestHeader(value = "Authorization", required = false) String token) {
         return stockService.getStocksSummary(request.getMarketType(), request.getSector(), request.getFilters(), token);
+    }
+
+    // sector 전체 조회
+    @GetMapping("/sectors")
+    public ApiResponse<List<String>> getSectors() {
+        List<String> response = stockService.getSectors();
+        return ApiResponse.onSuccess(response);
+    }
+
+    // 임계값 전체 조회
+    @GetMapping("/thresholds")
+    public ApiResponse<ThresholdsResponseDTO> getAllStockIndicators() {
+        ThresholdsResponseDTO response = stockService.getAllStockIndicatorThresholds();
+        return ApiResponse.onSuccess(response);
     }
 }

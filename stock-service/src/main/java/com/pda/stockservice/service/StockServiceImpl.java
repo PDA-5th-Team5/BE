@@ -13,6 +13,7 @@ import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,11 +35,14 @@ public class StockServiceImpl implements StockService {
     private final StockPriceDayRepository stockPriceDayRepository;
     private final StockStatRepository stockStatRepository;
     private final StockCommentRepository stockCommentRepository;
+    private final StockIndicatorThresholdsRepository stockIndicatorThresholdsRepository;
     private final StockMapper stockMapper;
     private final RedisService redisService;
     private final UserServiceClient userServiceClient;
 
     private final Environment environment;
+    private final EurekaDiscoveryClient discoveryClient;
+
     @Override
     @Transactional
     public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token) {
@@ -512,6 +516,44 @@ public class StockServiceImpl implements StockService {
 
         return stocks.stream()
                 .map(StockAutoCompleteResponseDTO::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getSectors() {
+        return stockRepository.findDistinctSectors();
+    }
+
+    @Override
+    public ThresholdsResponseDTO getAllStockIndicatorThresholds() {
+        List<StockIndicatorThresholds> thresholds = stockIndicatorThresholdsRepository.findAll();
+
+        ThresholdsResponseDTO responseDTO = new ThresholdsResponseDTO();
+        responseDTO.setPbr(getValues(thresholds, "pbr"));
+        responseDTO.setNtinInrt(getValues(thresholds, "ntin_inrt"));
+        responseDTO.setBps(getValues(thresholds, "bps"));
+        responseDTO.setRoeVal(getValues(thresholds, "roe_val"));
+        responseDTO.setCrntRate(getValues(thresholds, "crnt_rate"));
+        responseDTO.setSaleAccount(getValues(thresholds, "sale_account"));
+        responseDTO.setGrs(getValues(thresholds, "grs"));
+        responseDTO.setEps(getValues(thresholds, "eps"));
+        responseDTO.setBsopPrfiInrt(getValues(thresholds, "bsop_prfi_inrt"));
+        responseDTO.setMarketCap(getValues(thresholds, "market_cap"));
+        responseDTO.setLbltRate(getValues(thresholds, "lblt_rate"));
+        responseDTO.setSps(getValues(thresholds, "sps"));
+        responseDTO.setForeignerRatio(getValues(thresholds, "foreigner_ratio"));
+        responseDTO.setDividendYield(getValues(thresholds, "dividend_yield"));
+        responseDTO.setPer(getValues(thresholds, "per"));
+        responseDTO.setThtrNtin(getValues(thresholds, "thtr_ntin"));
+        responseDTO.setBsopPrti(getValues(thresholds, "bsop_prti"));
+
+        return responseDTO;
+    }
+
+    private List<Double> getValues(List<StockIndicatorThresholds> thresholds, String indicator) {
+        return thresholds.stream()
+                .filter(threshold -> threshold.getIndicator().equals(indicator))
+                .map(threshold -> threshold.getMaxValue() != null ? threshold.getMaxValue() : 0.0)
                 .collect(Collectors.toList());
     }
 }

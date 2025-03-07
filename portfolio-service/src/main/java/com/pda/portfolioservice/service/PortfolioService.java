@@ -50,4 +50,10 @@ public interface PortfolioService {
 
     // 포트폴리오 평균 조회
     PortfolioSummaryResponseDTO getPortfolioSummary(Portfolio portfolio);
+
+    List<TopPortfolioInfoResponseDTO> getTopSharePortfolioIds();
+
+    List<SharePortfolioBoardDTO> getTopSharePortfolios(List<TopPortfolioInfoResponseDTO> topPortfoliosIds);
+
+    List<TopPortfolioInfoResponseDTO> getExpertSharePortfolioIds(String expertUserId);
 }

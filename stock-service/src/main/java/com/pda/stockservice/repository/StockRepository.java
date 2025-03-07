@@ -19,5 +19,7 @@ public interface StockRepository extends JpaRepository<Stock, Short> {
     //Optional<Stock> findByTicker(String ticker);
     List<Stock> findByTickerContainingOrCompanyNameContaining(String ticker, String companyName);
 
-;
+    @Query("SELECT DISTINCT s.sector FROM Stock s WHERE s.sector IS NOT NULL")
+    List<String> findDistinctSectors();
+
 }
