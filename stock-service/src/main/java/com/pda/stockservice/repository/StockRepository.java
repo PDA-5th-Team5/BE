@@ -16,7 +16,7 @@ public interface StockRepository extends JpaRepository<Stock, Short> {
 
     //Optional<Stock> findByTicker(String ticker);
     @Query("SELECT s FROM Stock s WHERE LOWER(s.ticker) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.companyName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Stock> findByTickerContainingOrCompanyNameContaining(String keyword);
+    List<Stock> findByTickerContainingOrCompanyNameContaining(@Param("keyword") String keyword);
 
     @Query("SELECT DISTINCT s.sector FROM Stock s WHERE s.sector IS NOT NULL")
     List<String> findDistinctSectors();

@@ -1,9 +1,11 @@
 package com.pda.stockservice.controller;
 
+import com.pda.stockservice.dto.request.MyPortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.StockFilterRequest;
 import com.pda.stockservice.dto.request.StockLineGraphRequestDTO;
 import com.pda.stockservice.dto.response.*;
 
+import com.pda.stockservice.enums.Market;
 import com.pda.stockservice.feign.UserServiceClient;
 import com.pda.stockservice.service.StockService;
 import com.pda.utilservice.response.ApiResponse;
@@ -140,7 +142,7 @@ public class StockController {
     }
 
     @GetMapping("/search")
-    public ApiResponse<List<StockAutoCompleteResponseDTO>> searchStocks(@RequestParam String keyword) {
+    public ApiResponse<List<StockAutoCompleteResponseDTO>> searchStocks(@RequestParam(value = "keyword") String keyword) {
         List<StockAutoCompleteResponseDTO> response = stockService.searchStocks(keyword);
 
         return ApiResponse.onSuccess(response);
@@ -174,4 +176,11 @@ public class StockController {
         StockLineGraphResponseDTO response = stockService.getStockLineGraph(request.getStockId());
         return ApiResponse.onSuccess(response);
     }
+
+    // 나의 포트폴리오 vs 시장 그래프 조회 OpenFeign 코드
+//    @GetMapping("/my/graph")
+//    public ApiResponse<MyPortfolioMarketGraphResponseDTO> getMyPortfolioMarketGraph(@RequestBody MyPortfolioMarketGraphRequestDTO request, @RequestParam(value = "markets") List<Market> markets) {
+//        MyPortfolioMarketGraphResponseDTO response = stockService.getMyPortfolioMarketGraph(request, markets);
+//        return ApiResponse.onSuccess(response);
+//    }
 }
