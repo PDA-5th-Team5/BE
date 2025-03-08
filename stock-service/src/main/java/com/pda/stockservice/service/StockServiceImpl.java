@@ -1,5 +1,6 @@
 package com.pda.stockservice.service;
 
+import com.pda.stockservice.dto.request.MyPortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.SnowflakeDTO;
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
@@ -11,6 +12,7 @@ import com.pda.stockservice.feign.UserServiceClient;
 
 import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
+import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +21,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,6 +37,7 @@ public class StockServiceImpl implements StockService {
     private final StockStatRepository stockStatRepository;
     private final StockCommentRepository stockCommentRepository;
     private final StockIndicatorThresholdsRepository stockIndicatorThresholdsRepository;
+    private final MarketIndicatorPriceRepository marketIndicatorPriceRepository;
     private final StockMapper stockMapper;
     private final RedisService redisService;
     private final UserServiceClient userServiceClient;
@@ -514,9 +515,15 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional(readOnly = true)
     public List<StockAutoCompleteResponseDTO> searchStocks(String keyword) {
-        System.out.println(keyword);
-        List<Stock> stocks = stockRepository.findByTickerContainingOrCompanyNameContaining(keyword,keyword);
-        System.out.println(stocks.get(0).toString());
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Stock> stocks = stockRepository.findByTickerContainingOrCompanyNameContaining(keyword);
+
+        if (stocks.isEmpty()) {
+            throw new PortfolioHandler(ErrorStatus.STOCK_NOT_FOUND);
+        }
 
         return stocks.stream()
                 .map(StockAutoCompleteResponseDTO::toDTO)
@@ -560,4 +567,149 @@ public class StockServiceImpl implements StockService {
                 .map(threshold -> threshold.getMaxValue() != null ? threshold.getMaxValue() : 0.0)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public StockLineGraphResponseDTO getStockLineGraph(Short stockId) {
+        LocalDate startDate = LocalDate.now().minusDays(365);
+        LocalDate endDate = LocalDate.now();
+        List<Market> markets = Arrays.asList(Market.KOSPI, Market.KOSDAQ);
+
+        List<StockLineGraphResponseDTO.MarketIndicatorGraphResponseDTO> marketGraphList = new ArrayList<>();
+
+        for (Market market : markets) {
+            List<MarketIndicatorPrice> priceList = marketIndicatorPriceRepository.findMarketPricesRange(market, startDate, endDate);
+
+            if (priceList.isEmpty()) continue;
+
+            float firstPrice = priceList.get(0).getPrice();
+
+            Map<String, Float> priceRatios = new TreeMap<>();
+            priceList.forEach(p -> priceRatios.put(
+                    p.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                    Math.round((p.getPrice() / firstPrice) * 100.0f) / 100.0f
+            ));
+
+            marketGraphList.add(StockLineGraphResponseDTO.MarketIndicatorGraphResponseDTO.builder()
+                    .market(market)
+                    .price(priceRatios)
+                    .build());
+        }
+
+        StockLineGraphResponseDTO.StockGraphResponseDTO stockGraph = getStockPriceRatio(stockId, startDate, endDate);
+
+        return StockLineGraphResponseDTO.builder()
+                .lineGraph(StockLineGraphResponseDTO.LineGraphDTO.builder()
+                        .marketGraph(marketGraphList)
+                        .stockGraph(stockGraph)
+                        .build())
+                .build();
+    }
+
+    private StockLineGraphResponseDTO.StockGraphResponseDTO getStockPriceRatio(Short stockId, LocalDate startDate, LocalDate endDate) {
+        List<StockPriceDay> priceList = stockPriceDayRepository.findStockClosePricesInRange(stockId, startDate, endDate);
+
+        if (priceList.isEmpty()) return null;
+
+        float firstPrice = priceList.get(0).getClosePrice();
+
+        Map<String, Float> closePriceRatios = new TreeMap<>();
+        priceList.forEach(p -> closePriceRatios.put(
+                p.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                Math.round((p.getClosePrice() / firstPrice) * 100.0f) / 100.0f
+        ));
+
+        return StockLineGraphResponseDTO.StockGraphResponseDTO.builder()
+                .companyName(priceList.get(0).getStock().getCompanyName())
+                .closePrice(closePriceRatios)
+                .build();
+    }
+
+//    @Override
+//    public MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(MyPortfolioMarketGraphRequestDTO requestDTO, List<Market> selectedMarkets) {
+//        return getStockLineGraph(requestDTO, selectedMarkets);
+//    }
+//
+//    @Transactional(readOnly = true)
+//    public MyPortfolioMarketGraphResponseDTO getStockLineGraph(MyPortfolioMarketGraphRequestDTO requestDTO, List<Market> selectedMarkets) {
+//        LocalDate startDate = LocalDate.now().minusDays(365);
+//        LocalDate endDate = LocalDate.now();
+//
+//        // Market.ALL이 포함되어 있으면 KOSPI + KOSDAQ 모두 조회
+//        List<Market> markets = (selectedMarkets == null || selectedMarkets.isEmpty() || selectedMarkets.contains(Market.ALL))
+//                ? Arrays.asList(Market.KOSPI, Market.KOSDAQ)
+//                : selectedMarkets;
+//
+//        // 📌 시장 지표 데이터 조회
+//        MyPortfolioMarketGraphResponseDTO.MarketGraphDTO marketGraph = getMarketGraphData(markets, startDate, endDate);
+//
+//        // 📌 포트폴리오 주식 종가 평균 변동률 계산
+//        MyPortfolioMarketGraphResponseDTO.MyPortfolioGraphDTO myPortfolioGraph =
+//                getPortfolioAveragePriceRatio(requestDTO.getStockIds(), startDate, endDate, requestDTO.getPortfolioTitle());
+//
+//        // 📌 응답 DTO 구성
+//        return MyPortfolioMarketGraphResponseDTO.builder()
+//                .lineGraph(MyPortfolioMarketGraphResponseDTO.LineGraphDTO.builder()
+//                        .marketGraph(marketGraph)
+//                        .myPortfolioGraph(myPortfolioGraph)
+//                        .build())
+//                .build();
+//    }
+//
+//    /**
+//     * 📌 시장(Market) 지표 변동률 계산
+//     */
+//    private MyPortfolioMarketGraphResponseDTO.MarketGraphDTO getMarketGraphData(List<Market> markets, LocalDate startDate, LocalDate endDate) {
+//        Map<String, Float> priceRatios = new TreeMap<>();
+//
+//        for (Market market : markets) {
+//            List<MarketIndicatorPrice> priceList = marketIndicatorPriceRepository.findMarketPricesRange(market, startDate, endDate);
+//            if (priceList.isEmpty()) continue;
+//
+//            float firstPrice = priceList.get(0).getPrice();
+//
+//            priceList.forEach(p -> priceRatios.put(
+//                    p.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+//                    Math.round((p.getPrice() / firstPrice) * 100.0f) / 100.0f
+//            ));
+//        }
+//
+//        return MyPortfolioMarketGraphResponseDTO.MarketGraphDTO.builder()
+//                .market((markets.size() > 1) ? Market.ALL : markets.get(0))
+//                .price(priceRatios)
+//                .build();
+//    }
+//
+//    /**
+//     * 📌 포트폴리오 내 모든 주식의 변동률을 계산한 후, 같은 날짜의 변동률을 평균 내어 반환
+//     */
+//    private MyPortfolioMarketGraphResponseDTO.MyPortfolioGraphDTO getPortfolioAveragePriceRatio(
+//            List<MyPortfolioMarketGraphRequestDTO.PortfolioStockDTO> stockIds, LocalDate startDate, LocalDate endDate, String portfolioTitle) {
+//
+//        Map<String, List<Float>> dailyPriceRatios = new TreeMap<>();
+//
+//        for (MyPortfolioMarketGraphRequestDTO.PortfolioStockDTO stock : stockIds) {
+//            List<StockPriceDay> priceList = stockPriceDayRepository.findStockClosePricesInRange(stock.getStockId(), startDate, endDate);
+//            if (priceList.isEmpty()) continue;
+//
+//            float firstPrice = priceList.get(0).getClosePrice();
+//
+//            for (StockPriceDay p : priceList) {
+//                String date = p.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+//                float ratio = Math.round((p.getClosePrice() / firstPrice) * 100.0f) / 100.0f;
+//                dailyPriceRatios.computeIfAbsent(date, k -> new ArrayList<>()).add(ratio);
+//            }
+//        }
+//
+//        // 📌 각 날짜별로 평균 변동률 계산
+//        Map<String, Float> avgClosePriceRatios = new TreeMap<>();
+//        for (Map.Entry<String, List<Float>> entry : dailyPriceRatios.entrySet()) {
+//            float average = (float) entry.getValue().stream().mapToDouble(Float::doubleValue).average().orElse(0);
+//            avgClosePriceRatios.put(entry.getKey(), average);
+//        }
+//
+//        return MyPortfolioMarketGraphResponseDTO.MyPortfolioGraphDTO.builder()
+//                .portfolioTitle(portfolioTitle)
+//                .avgClosePrice(avgClosePriceRatios)
+//                .build();
+//    }
 }

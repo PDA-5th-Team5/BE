@@ -1,6 +1,7 @@
 package com.pda.stockservice.controller;
 
 import com.pda.stockservice.dto.request.StockFilterRequest;
+import com.pda.stockservice.dto.request.StockLineGraphRequestDTO;
 import com.pda.stockservice.dto.response.*;
 
 import com.pda.stockservice.feign.UserServiceClient;
@@ -12,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -165,6 +165,13 @@ public class StockController {
     @GetMapping("/thresholds")
     public ApiResponse<ThresholdsResponseDTO> getAllStockIndicators() {
         ThresholdsResponseDTO response = stockService.getAllStockIndicatorThresholds();
+        return ApiResponse.onSuccess(response);
+    }
+
+    // 개별 종목 라인그래프 조회
+    @GetMapping("/graph")
+    public ApiResponse<StockLineGraphResponseDTO> getStockLineGraph(@RequestBody StockLineGraphRequestDTO request) {
+        StockLineGraphResponseDTO response = stockService.getStockLineGraph(request.getStockId());
         return ApiResponse.onSuccess(response);
     }
 }
