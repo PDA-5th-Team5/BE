@@ -1,11 +1,13 @@
 package com.pda.portfolioservice.service;
 
+import com.pda.portfolioservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.request.StockFilterRequest;
 import com.pda.portfolioservice.dto.response.*;
 import com.pda.portfolioservice.entity.MyPortfolio;
 import com.pda.portfolioservice.entity.SharePortfolio;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
+import com.pda.portfolioservice.enums.Market;
 import com.pda.portfolioservice.feign.StockServiceClient;
 import com.pda.portfolioservice.feign.UserServiceClient;
 import com.pda.portfolioservice.model.Portfolio;
@@ -26,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sound.sampled.Port;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -363,4 +364,26 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .map(portfolio -> new TopPortfolioInfoResponseDTO(portfolio.getSharePortfolioId(), portfolio.getLoadCount(), portfolio.getCreatedAt()))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market, String token) {
+
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
+        if (userId == null) {
+            throw new PortfolioHandler(ErrorStatus.NOT_AUTHORIZED);
+        }
+
+        return stockServiceClient.getMyPortfolioMarketGraph(request, market);
+    }
+
+    @Override
+    public PortfolioMarketGraphResponseDTO getSharePortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market) {
+
+        return stockServiceClient.getSharePortfolioMarketGraph(request, market);
+    }
+
+
+
 }

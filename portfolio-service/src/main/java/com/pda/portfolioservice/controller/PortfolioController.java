@@ -1,8 +1,10 @@
 package com.pda.portfolioservice.controller;
 
+import com.pda.portfolioservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.portfolioservice.dto.request.PortfolioRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.*;
+import com.pda.portfolioservice.enums.Market;
 import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.service.PortfolioService;
 import com.pda.utilservice.jwt.JWTUtil;
@@ -241,5 +243,20 @@ public class PortfolioController {
         List<SharePortfolioBoardDTO> expertPortfolios = portfolioService.getTopSharePortfolios(expertPortfoliosIds);
 
         return ApiResponse.onSuccess(expertPortfolios);
+    }
+
+    @PostMapping("/my/graph")
+    public ApiResponse<PortfolioMarketGraphResponseDTO> getMyPortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request,
+                                                                                  @RequestParam(value = "market") Market market,
+                                                                                  @RequestHeader(value = "Authorization", required = false) String token) {
+        PortfolioMarketGraphResponseDTO response = portfolioService.getMyPortfolioMarketGraph(request, market, token);
+        return ApiResponse.onSuccess(response);
+    }
+
+    @PostMapping("/share/graph")
+    public ApiResponse<PortfolioMarketGraphResponseDTO> getSharePortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request,
+                                                                                  @RequestParam(value = "market") Market market) {
+        PortfolioMarketGraphResponseDTO response = portfolioService.getSharePortfolioMarketGraph(request, market);
+        return ApiResponse.onSuccess(response);
     }
 }
