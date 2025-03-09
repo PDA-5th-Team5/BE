@@ -1,6 +1,5 @@
 package com.pda.stockservice.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pda.stockservice.enums.Market;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +12,7 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MyPortfolioMarketGraphResponseDTO {
+public class PortfolioMarketGraphResponseDTO {
 
     private LineGraphDTO lineGraph;
 

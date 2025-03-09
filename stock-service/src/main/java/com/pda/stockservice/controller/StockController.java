@@ -1,6 +1,6 @@
 package com.pda.stockservice.controller;
 
-import com.pda.stockservice.dto.request.MyPortfolioMarketGraphRequestDTO;
+import com.pda.stockservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.StockFilterRequest;
 import com.pda.stockservice.dto.request.StockLineGraphRequestDTO;
 import com.pda.stockservice.dto.response.*;
@@ -179,8 +179,13 @@ public class StockController {
 
     //나의 포트폴리오 vs 시장 그래프 조회 OpenFeign 코드
     @PostMapping("/my/graph")
-    public MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(@RequestBody MyPortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market) {
+    public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market) {
         return stockService.getMyPortfolioMarketGraph(request, market);
+    }
 
+    // 공유 포트폴리오 vs 시장 그래프 조회 OpenFeign 코드
+    @PostMapping("/share/graph")
+    public PortfolioMarketGraphResponseDTO getSharePortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market) {
+        return stockService.getMyPortfolioMarketGraph(request, market);
     }
 }

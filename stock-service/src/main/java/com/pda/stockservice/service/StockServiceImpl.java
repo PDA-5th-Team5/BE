@@ -1,6 +1,6 @@
 package com.pda.stockservice.service;
 
-import com.pda.stockservice.dto.request.MyPortfolioMarketGraphRequestDTO;
+import com.pda.stockservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.SnowflakeDTO;
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
@@ -625,7 +625,7 @@ public class StockServiceImpl implements StockService {
                 .build();
     }
 
-    public MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(MyPortfolioMarketGraphRequestDTO request, Market market) {
+    public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market) {
         LocalDate startDate = LocalDate.now().minusDays(365);
         LocalDate endDate = LocalDate.now();
 
@@ -638,11 +638,11 @@ public class StockServiceImpl implements StockService {
 
         List<Short> stockIdList = request.getStockIds();
 
-        return MyPortfolioMarketGraphResponseDTO.builder()
-                .lineGraph(MyPortfolioMarketGraphResponseDTO.LineGraphDTO.builder()
+        return PortfolioMarketGraphResponseDTO.builder()
+                .lineGraph(PortfolioMarketGraphResponseDTO.LineGraphDTO.builder()
                         .market(market)
                         .price(marketPriceRatios)
-                        .portfolioTitle("나의 포트폴리오")
+                        .portfolioTitle("포트폴리오")
                         .avgClosePrice(getPortfolioAverageClosePrice(stockIdList, startDate, endDate))
                         .build())
                 .build();

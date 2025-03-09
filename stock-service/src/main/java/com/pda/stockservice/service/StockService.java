@@ -1,6 +1,6 @@
 package com.pda.stockservice.service;
 
-import com.pda.stockservice.dto.request.MyPortfolioMarketGraphRequestDTO;
+import com.pda.stockservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
 import com.pda.stockservice.enums.Market;
@@ -38,5 +38,5 @@ public interface StockService {
 
     StockLineGraphResponseDTO getStockLineGraph(Short stockId);
 
-    MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(MyPortfolioMarketGraphRequestDTO request, Market market);
+    PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market);
 }

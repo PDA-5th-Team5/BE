@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MyPortfolioMarketGraphRequestDTO {
+public class PortfolioMarketGraphRequestDTO {
 
     private List<Short> stockIds;
 }

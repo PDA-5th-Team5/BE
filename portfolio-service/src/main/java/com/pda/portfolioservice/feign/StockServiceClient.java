@@ -1,8 +1,8 @@
 package com.pda.portfolioservice.feign;
 
-import com.pda.portfolioservice.dto.request.MyPortfolioMarketGraphRequestDTO;
+import com.pda.portfolioservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.portfolioservice.dto.request.StockFilterRequest;
-import com.pda.portfolioservice.dto.response.MyPortfolioMarketGraphResponseDTO;
+import com.pda.portfolioservice.dto.response.PortfolioMarketGraphResponseDTO;
 import com.pda.portfolioservice.dto.response.PortfolioSummaryResponseDTO;
 import com.pda.portfolioservice.dto.response.StockResponseDTO;
 import com.pda.portfolioservice.enums.Market;
@@ -33,5 +33,8 @@ public interface StockServiceClient {
     public PortfolioSummaryResponseDTO getStocksSummary(@RequestBody StockFilterRequest request);
 
     @PostMapping("/api/stocks/my/graph")
-    public MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(@RequestBody MyPortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market);
+    public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market);
+
+    @PostMapping("/api/stocks/share/graph")
+    public PortfolioMarketGraphResponseDTO getSharePortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market);
 }
