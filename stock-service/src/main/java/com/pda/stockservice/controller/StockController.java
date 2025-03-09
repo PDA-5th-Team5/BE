@@ -177,10 +177,10 @@ public class StockController {
         return ApiResponse.onSuccess(response);
     }
 
-    // 나의 포트폴리오 vs 시장 그래프 조회 OpenFeign 코드
-//    @GetMapping("/my/graph")
-//    public ApiResponse<MyPortfolioMarketGraphResponseDTO> getMyPortfolioMarketGraph(@RequestBody MyPortfolioMarketGraphRequestDTO request, @RequestParam(value = "markets") List<Market> markets) {
-//        MyPortfolioMarketGraphResponseDTO response = stockService.getMyPortfolioMarketGraph(request, markets);
-//        return ApiResponse.onSuccess(response);
-//    }
+    //나의 포트폴리오 vs 시장 그래프 조회 OpenFeign 코드
+    @PostMapping("/my/graph")
+    public MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(@RequestBody MyPortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market) {
+        return stockService.getMyPortfolioMarketGraph(request, market);
+
+    }
 }

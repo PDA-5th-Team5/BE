@@ -1,8 +1,11 @@
 package com.pda.portfolioservice.feign;
 
+import com.pda.portfolioservice.dto.request.MyPortfolioMarketGraphRequestDTO;
 import com.pda.portfolioservice.dto.request.StockFilterRequest;
+import com.pda.portfolioservice.dto.response.MyPortfolioMarketGraphResponseDTO;
 import com.pda.portfolioservice.dto.response.PortfolioSummaryResponseDTO;
 import com.pda.portfolioservice.dto.response.StockResponseDTO;
+import com.pda.portfolioservice.enums.Market;
 import com.pda.utilservice.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,4 +31,7 @@ public interface StockServiceClient {
 
     @PostMapping("/api/stocks/summary")
     public PortfolioSummaryResponseDTO getStocksSummary(@RequestBody StockFilterRequest request);
+
+    @PostMapping("/api/stocks/my/graph")
+    public MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(@RequestBody MyPortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market);
 }

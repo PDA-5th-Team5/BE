@@ -1,7 +1,9 @@
 package com.pda.portfolioservice.service;
 
+import com.pda.portfolioservice.dto.request.MyPortfolioMarketGraphRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.*;
+import com.pda.portfolioservice.enums.Market;
 import com.pda.portfolioservice.model.Portfolio;
 
 import java.util.List;
@@ -56,4 +58,6 @@ public interface PortfolioService {
     List<SharePortfolioBoardDTO> getTopSharePortfolios(List<TopPortfolioInfoResponseDTO> topPortfoliosIds);
 
     List<TopPortfolioInfoResponseDTO> getExpertSharePortfolioIds(String expertUserId);
+
+    MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(MyPortfolioMarketGraphRequestDTO request, Market market);
 }

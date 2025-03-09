@@ -1,11 +1,13 @@
 package com.pda.portfolioservice.service;
 
+import com.pda.portfolioservice.dto.request.MyPortfolioMarketGraphRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.request.StockFilterRequest;
 import com.pda.portfolioservice.dto.response.*;
 import com.pda.portfolioservice.entity.MyPortfolio;
 import com.pda.portfolioservice.entity.SharePortfolio;
 import com.pda.portfolioservice.entity.SharePortfolioComment;
+import com.pda.portfolioservice.enums.Market;
 import com.pda.portfolioservice.feign.StockServiceClient;
 import com.pda.portfolioservice.feign.UserServiceClient;
 import com.pda.portfolioservice.model.Portfolio;
@@ -363,4 +365,11 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .map(portfolio -> new TopPortfolioInfoResponseDTO(portfolio.getSharePortfolioId(), portfolio.getLoadCount(), portfolio.getCreatedAt()))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(MyPortfolioMarketGraphRequestDTO request, Market market) {
+        return stockServiceClient.getMyPortfolioMarketGraph(request, market);
+    }
+
+
 }

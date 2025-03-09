@@ -26,11 +26,25 @@ public interface StockPriceDayRepository extends JpaRepository<StockPriceDay, St
     SELECT s FROM StockPriceDay s
     WHERE s.id.stockId = :stockId AND s.id.date BETWEEN :startDate AND :endDate
     ORDER BY s.id.date
-""")
+    """)
     List<StockPriceDay> findStockClosePricesInRange(
             @Param("stockId") Short stockId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    @Query("""
+    SELECT spd FROM StockPriceDay spd
+    WHERE spd.id.stockId IN :stockIds
+    AND spd.id.date BETWEEN :startDate AND :endDate
+    ORDER BY spd.id.stockId, spd.id.date
+""")
+    List<StockPriceDay> findStockListClosePricesInRange(
+            @Param("stockIds") List<Short> stockIds,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+
 
 }

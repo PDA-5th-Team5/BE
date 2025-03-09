@@ -1,7 +1,9 @@
 package com.pda.stockservice.service;
 
+import com.pda.stockservice.dto.request.MyPortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
+import com.pda.stockservice.enums.Market;
 
 import java.util.List;
 
@@ -33,5 +35,8 @@ public interface StockService {
     List<String> getSectors();
 
     ThresholdsResponseDTO getAllStockIndicatorThresholds();
+
     StockLineGraphResponseDTO getStockLineGraph(Short stockId);
+
+    MyPortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(MyPortfolioMarketGraphRequestDTO request, Market market);
 }
