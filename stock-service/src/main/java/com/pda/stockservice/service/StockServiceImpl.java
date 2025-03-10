@@ -1,6 +1,5 @@
 package com.pda.stockservice.service;
 
-import com.pda.stockservice.dto.request.MyPortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.SnowflakeDTO;
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
@@ -187,7 +186,6 @@ public class StockServiceImpl implements StockService {
                     .divYield(stockStat != null ? stockStat.getDividendYield() : null)
                     .foreignerRatio(stockStat != null ? stockStat.getForeignerRatio() : null)
                     .build();
-
 
             // 8. 기본 주식 정보 설정
             MyStockWatchlistResponseDTO responseDTO = MyStockWatchlistResponseDTO.builder()
@@ -639,14 +637,14 @@ public class StockServiceImpl implements StockService {
 //                ? Arrays.asList(Market.KOSPI, Market.KOSDAQ)
 //                : selectedMarkets;
 //
-//        // 📌 시장 지표 데이터 조회
+//        //  시장 지표 데이터 조회
 //        MyPortfolioMarketGraphResponseDTO.MarketGraphDTO marketGraph = getMarketGraphData(markets, startDate, endDate);
 //
-//        // 📌 포트폴리오 주식 종가 평균 변동률 계산
+//        //  포트폴리오 주식 종가 평균 변동률 계산
 //        MyPortfolioMarketGraphResponseDTO.MyPortfolioGraphDTO myPortfolioGraph =
 //                getPortfolioAveragePriceRatio(requestDTO.getStockIds(), startDate, endDate, requestDTO.getPortfolioTitle());
 //
-//        // 📌 응답 DTO 구성
+//        //  응답 DTO 구성
 //        return MyPortfolioMarketGraphResponseDTO.builder()
 //                .lineGraph(MyPortfolioMarketGraphResponseDTO.LineGraphDTO.builder()
 //                        .marketGraph(marketGraph)
@@ -656,7 +654,7 @@ public class StockServiceImpl implements StockService {
 //    }
 //
 //    /**
-//     * 📌 시장(Market) 지표 변동률 계산
+//     *  시장(Market) 지표 변동률 계산
 //     */
 //    private MyPortfolioMarketGraphResponseDTO.MarketGraphDTO getMarketGraphData(List<Market> markets, LocalDate startDate, LocalDate endDate) {
 //        Map<String, Float> priceRatios = new TreeMap<>();
@@ -680,7 +678,7 @@ public class StockServiceImpl implements StockService {
 //    }
 //
 //    /**
-//     * 📌 포트폴리오 내 모든 주식의 변동률을 계산한 후, 같은 날짜의 변동률을 평균 내어 반환
+//     *  포트폴리오 내 모든 주식의 변동률을 계산한 후, 같은 날짜의 변동률을 평균 내어 반환
 //     */
 //    private MyPortfolioMarketGraphResponseDTO.MyPortfolioGraphDTO getPortfolioAveragePriceRatio(
 //            List<MyPortfolioMarketGraphRequestDTO.PortfolioStockDTO> stockIds, LocalDate startDate, LocalDate endDate, String portfolioTitle) {
@@ -700,7 +698,7 @@ public class StockServiceImpl implements StockService {
 //            }
 //        }
 //
-//        // 📌 각 날짜별로 평균 변동률 계산
+//        //  각 날짜별로 평균 변동률 계산
 //        Map<String, Float> avgClosePriceRatios = new TreeMap<>();
 //        for (Map.Entry<String, List<Float>> entry : dailyPriceRatios.entrySet()) {
 //            float average = (float) entry.getValue().stream().mapToDouble(Float::doubleValue).average().orElse(0);

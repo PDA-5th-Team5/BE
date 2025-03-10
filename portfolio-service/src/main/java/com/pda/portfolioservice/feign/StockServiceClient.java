@@ -5,10 +5,7 @@ import com.pda.portfolioservice.dto.response.PortfolioSummaryResponseDTO;
 import com.pda.portfolioservice.dto.response.StockResponseDTO;
 import com.pda.utilservice.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,4 +25,6 @@ public interface StockServiceClient {
 
     @PostMapping("/api/stocks/summary")
     public PortfolioSummaryResponseDTO getStocksSummary(@RequestBody StockFilterRequest request);
+
+    // 나의 포트폴리오 종목 리스트 조회  (GET)
 }
