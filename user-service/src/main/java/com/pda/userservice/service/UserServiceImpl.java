@@ -20,9 +20,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +39,43 @@ public class UserServiceImpl implements UserService {
     private final StockServiceClient stockServiceClient;
     private final PortfolioServiceClient portfolioServiceClient;
 
+    @Transactional
+    @Override
+    public void updateTelegramChatId(String token, String chatId) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
+        User user = userRepository.findByUserId(userId);
+        System.out.println("User found: " + user.getUsername());
+        System.out.println(chatId);
+        user.setTelegramChatId(chatId);
+        System.out.println("User found: " + user.getTelegramChatId());
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public String getTelegramChatId(String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
+        User user = userRepository.findByUserId(userId);
+
+        return user.getTelegramChatId();
+    }
+
+    @Transactional
+    @Override
+    public void deleteTelegramChatId(String token) {
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
+
+        User user = userRepository.findByUserId(userId);
+
+        user.setTelegramChatId(null);  // ID 삭제
+        userRepository.save(user);
+    }
+
     @Override
     public ApiResponse<StocksResponseDTO> stocks(String token) {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
@@ -53,6 +90,18 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         return ApiResponse.onSuccess(commentsResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public String getTelegramChatIdUserId(String userId) {
+        User user = userRepository.findByUserId(userId);
+
+        if (user == null || user.getTelegramChatId() == null) {
+            throw new UserHandler(ErrorStatus.USER_NOT_FOUND);
+        }
+
+        return user.getTelegramChatId();
     }
 
     @Override
