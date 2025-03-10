@@ -387,7 +387,7 @@ public class StockServiceImpl implements StockService {
 
         List<Short> orderedStockIds = topStocks.stream()
                 .filter(stock -> !stock.getStockId().equals(stockId))
-                .limit(6)
+                .limit(5)
                 .map(Stock::getStockId)
                 .collect(Collectors.toList());
         List<StockStat> stockStats = stockStatRepository.findByStockIdIn(orderedStockIds);
