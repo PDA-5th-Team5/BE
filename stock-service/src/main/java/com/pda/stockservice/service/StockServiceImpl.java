@@ -515,9 +515,9 @@ public class StockServiceImpl implements StockService {
 
         List<Stock> stocks = stockRepository.findByTickerContainingOrCompanyNameContaining(keyword);
 
-        if (stocks.isEmpty()) {
-            throw new PortfolioHandler(ErrorStatus.STOCK_NOT_FOUND);
-        }
+//        if (stocks.isEmpty()) {
+//            throw new PortfolioHandler(ErrorStatus.STOCK_NOT_FOUND);
+//        }
 
         return stocks.stream()
                 .map(StockAutoCompleteResponseDTO::toDTO)
