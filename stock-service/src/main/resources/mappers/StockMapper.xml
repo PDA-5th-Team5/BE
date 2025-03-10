@@ -80,7 +80,7 @@
         <foreach item="stockId" collection="stockIds" open="(" separator="," close=")">
             #{stockId}
         </foreach>
-        ORDER BY s.company_name DESC
+        ORDER BY company_name DESC
     </select>
 
     <select id="countStockStatIds" resultType="long">
