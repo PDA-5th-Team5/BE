@@ -1,10 +1,8 @@
 package com.pda.stockservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pda.stockservice.enums.Market;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 import java.util.Map;
@@ -13,34 +11,21 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL) // null 값 자동제거
 public class StockLineGraphResponseDTO {
 
-    private LineGraphDTO lineGraph;
+    private List<LineGraphDTO> lineGraph;
 
     @Builder
     @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class MarketIndicatorGraphResponseDTO {
-        private Market market;
-        private Map<String, Float> price;
-    }
-
-    @Builder
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class StockGraphResponseDTO {
-        private String companyName;
-        private Map<String, Float> closePrice;
-    }
-
-    @Builder
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class LineGraphDTO {
-        private List<MarketIndicatorGraphResponseDTO> marketGraph;
-        private StockGraphResponseDTO stockGraph;
+        private Market market;
+        private String companyName;
+        private Map<String, Float> price;
+        private Map<String, Float> closePrice;
     }
 }

@@ -1,7 +1,9 @@
 package com.pda.stockservice.service;
 
+import com.pda.stockservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
+import com.pda.stockservice.enums.Market;
 
 import java.util.List;
 
@@ -10,7 +12,7 @@ public interface StockService {
     CandleResponseDTO getCandle(Short stockId);
 
     //개별종목 경쟁사 조회
-    CompetitorsResponseDTO getCompetitors(Short stockId, String sector);
+    CompetitorsResponseDTO getCompetitors(Short stockId);
     //댓글
     CommentResponseDTO getComments(Short stockId);
     void addComments(Short stockId, String content, String token);
@@ -33,5 +35,8 @@ public interface StockService {
     List<String> getSectors();
 
     ThresholdsResponseDTO getAllStockIndicatorThresholds();
+
     StockLineGraphResponseDTO getStockLineGraph(Short stockId);
+
+    PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market);
 }
