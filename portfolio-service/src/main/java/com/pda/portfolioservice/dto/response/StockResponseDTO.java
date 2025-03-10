@@ -51,7 +51,9 @@ public class StockResponseDTO {
                 .sector(stock.getSector())
                 .companyOverview(stock.getCompanyOverview())
                 .snowflakeS(SnowflakeDTO.filterSnowflake(stock.getSnowflakeS(), filters))
-                .marketCap(filters.getMarketCap() != null ? stock.getMarketCap() : null)
+                .marketCap(stock.getMarketCap())
+                .lbltRate(stock.getLbltRate())
+//                .marketCap(filters.getMarketCap() != null ? stock.getMarketCap() : null)
                 .thtrNtin(filters.getThtrNtin() != null ? stock.getThtrNtin() : null)
                 .bsopPrti(filters.getBsopPrti() != null ? stock.getBsopPrti() : null)
                 .per(filters.getPer() != null ? stock.getPer() : null)
@@ -63,7 +65,6 @@ public class StockResponseDTO {
                 .sps(filters.getSps() != null ? stock.getSps() : null)
                 .saleAccount(filters.getSaleAccount() != null ? stock.getSaleAccount() : null)
                 .crntRate(filters.getCrntRate() != null ? stock.getCrntRate() : null)
-                .lbltRate(filters.getLbltRate() != null ? stock.getLbltRate() : null)
                 .ntinInrt(filters.getNtinInrt() != null ? stock.getNtinInrt() : null)
                 .bsopPrfiInrt(filters.getBsopPrfiInrt() != null ? stock.getBsopPrfiInrt() : null)
                 .grs(filters.getGrs() != null ? stock.getGrs() : null)
@@ -75,4 +76,6 @@ public class StockResponseDTO {
                 .fav(stock.getFav())
                 .build();
     }
+
+
 }

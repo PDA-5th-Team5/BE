@@ -57,5 +57,18 @@
             #{stockId}
         </foreach>
     </select>
+
+    <select id="countStockStatIds" resultType="long">
+        SELECT COUNT(*)
+        FROM stock_stat s
+        WHERE s.market_type IN
+        <foreach item="marketType" collection="marketType" open="(" separator="," close=")">
+            #{marketType}
+        </foreach>
+        AND s.sector IN
+        <foreach item="sector" collection="sector" open="(" separator="," close=")">
+            #{sector}
+        </foreach>
+    </select>
 </mapper>
 
