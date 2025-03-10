@@ -1,6 +1,8 @@
 package com.pda.apigateway.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pda.apigateway.filter.CustomUserDetails;
+import com.pda.utilservice.response.ApiResponse;
 import com.pda.utilservice.jwt.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -13,7 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -23,13 +24,12 @@ public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
 
     public JWTFilter(JWTUtil jwtUtil) {
-
         this.jwtUtil = jwtUtil;
     }
 
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         System.out.println("JWTFilter.doFilterInternal API Gateway");
 
@@ -58,11 +58,10 @@ public class JWTFilter extends OncePerRequestFilter {
                 "/snowflake/elements/graph(\\?elementType=.*)?"
         );
 
-
         // 현재 요청 URL 가져오기
         String requestURI = request.getRequestURI();
 
-        // 현재 요청이 필터 제외 대상인지 확인
+        // 필터 제외 대상이면 그대로 체인에 넘김
         boolean isExcluded = excludeUrlPatterns.stream()
                 .anyMatch(pattern -> Pattern.matches(pattern, requestURI));
 
@@ -72,68 +71,48 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        //request에서 Authorization 헤더를 찾음
-        String authorization= request.getHeader("Authorization");
+        // 요청에서 Authorization 헤더 추출
+        String authorization = request.getHeader("Authorization");
 
-        //Authorization 헤더 검증
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-
             System.out.println("token null");
             filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
             return;
         }
 
         System.out.println("authorization now");
-        //Bearer 부분 제거 후 순수 토큰만 획득
+        // Bearer 접두어 제거 후 토큰만 획득
         String accessToken = authorization.split(" ")[1];
 
-//        // 헤더에서 access키에 담긴 토큰을 꺼냄
-//        String accessToken = request.getHeader("access");
-
-//        // 토큰이 없다면 다음 필터로 넘김
-//        if (accessToken == null) {
-//
-//            filterChain.doFilter(request, response);
-//
-//            return;
-//        }
-
-        // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
+        // 토큰 만료 여부 확인
         try {
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException e) {
-
-            //response body
-            PrintWriter writer = response.getWriter();
-            writer.print("access token expired");
-
-            //response status code
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            // 만료된 access 토큰에 대해 401 에러와 JSON 응답 전송
+            ApiResponse<Void> res = ApiResponse.onSuccess(HttpServletResponse.SC_UNAUTHORIZED, "Access 토큰 만료");
+            new ObjectMapper().writeValue(response.getWriter(), res);
             return;
         }
 
-        // 토큰이 access인지 확인 (발급시 페이로드에 명시)
+        // 토큰의 카테고리가 access 토큰인지 확인
         String category = jwtUtil.getCategory(accessToken);
 
         if (!category.equals("access")) {
-
-            //response body
-            PrintWriter writer = response.getWriter();
-            writer.print("invalid access token");
-
-            //response status code
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            // 유효하지 않은 access 토큰에 대해 401 에러와 JSON 응답 전송
+            ApiResponse<Void> res = ApiResponse.onSuccess(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 access 토큰");
+            new ObjectMapper().writeValue(response.getWriter(), res);
             return;
         }
 
-        // username, role 값을 획득
+        // 토큰에서 username과 role 값을 획득하여 인증 객체 생성
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
         CustomUserDetails customUserDetails = new CustomUserDetails(username, role);
-
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
