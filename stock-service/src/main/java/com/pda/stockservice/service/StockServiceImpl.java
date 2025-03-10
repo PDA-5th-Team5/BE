@@ -47,7 +47,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     @Transactional
-    public List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token) {
+    public StockSearchResponseDTO searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token) {
         List<Market> markets = new ArrayList<>();
         if (market.equals("ALL")) {
             markets.add(Market.KOSPI);
@@ -55,8 +55,9 @@ public class StockServiceImpl implements StockService {
         } else {
             markets.add(Market.valueOf(market));
         }
+
         List<Short> favStocks = new ArrayList<>();
-        if (token!=null){
+        if (token != null) {
             JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
             String userId = jwtUtil.getBearerUserId(token);
             favStocks = favoriteStockRepository.findStockIdsByUserId(userId);
@@ -66,9 +67,13 @@ public class StockServiceImpl implements StockService {
         int limit = 24;  // 한 페이지에 24개씩
         int offset = page * limit;  // 페이지 인덱스 기반 오프셋 계산
 
+        // ✅ 전체 개수 조회
+        long totalCount = stockMapper.countStockStatIds(markets, sector, filters);
+
+        // ✅ 페이징된 종목 데이터 조회
         List<SnowflakeDTO> stockStats = stockMapper.searchStockStatIds(markets, sector, filters, offset, limit);
         if (stockStats.isEmpty()) {
-            return Collections.emptyList();
+            return new StockSearchResponseDTO(Collections.emptyList(), 0);
         }
 
         List<Integer> stockIds = stockStats.stream()
@@ -92,18 +97,13 @@ public class StockServiceImpl implements StockService {
             String stockId = String.valueOf(stock.getStockId());
             String ticker = stock.getTicker();
 
-            if (favStocks.contains(stock.getStockId())){
-                stock.setFav(true);
-            }
-            else{
-                stock.setFav(false);
-            }
+            stock.setFav(favStocks.contains(stock.getStockId()));
 
             if (snowflakeMap.containsKey(stock.getStockId())) {
                 stock.setSnowflakeS(SnowflakeDTO.filterSnowflake(snowflakeMap.get(stock.getStockId()), filters));
             }
 
-            //1주, 1년 수익률
+            // ✅ 1주, 1년 수익률 설정
             Map<Object, Object> periodChangeRate = stockReturns.get(stockId);
             if (periodChangeRate != null) {
                 if (periodChangeRate.containsKey("week_rate_change")) {
@@ -114,9 +114,8 @@ public class StockServiceImpl implements StockService {
                 }
             }
 
-            // 현재가 및 변동률 데이터 반영
+            // ✅ 현재가 및 변동률 데이터 반영
             Map<Object, Object> priceData = stockPrices.get(ticker);
-
             if (priceData != null) {
                 if (priceData.containsKey("currentPrice")) {
                     stock.setCurrentPrice((int) Double.parseDouble(priceData.get("currentPrice").toString()));
@@ -129,7 +128,7 @@ public class StockServiceImpl implements StockService {
             filteredStockResponses.add(StockResponseDTO.filterStockResponse(stock, filters));
         }
 
-        return filteredStockResponses;
+        return new StockSearchResponseDTO(filteredStockResponses, totalCount);
     }
 
     @Override
@@ -381,21 +380,16 @@ public class StockServiceImpl implements StockService {
     //개별종목 경쟁사 조회
     @Override
     @Transactional(readOnly = true)
-    public CompetitorsResponseDTO getCompetitors(Short stockId, String sector) {
-        log.info("Fetching competitors for stockId: {}, sector: {}", stockId, sector);
+    public CompetitorsResponseDTO getCompetitors(Short stockId) {
 
-        String targetSector = CompetitorsResponseDTO.determineSector(stockId, sector, stockRepository);
-        log.info("Found stocks in sector {}", targetSector);
-        List<Stock> topStocks = stockRepository.findTopCompetitors(targetSector);
+        List<Stock> topStocks = stockRepository.findTopCompetitors(stockId);
 
         List<Short> orderedStockIds = topStocks.stream()
                 .filter(stock -> !stock.getStockId().equals(stockId))
                 .limit(6)
                 .map(Stock::getStockId)
                 .collect(Collectors.toList());
-        log.info("Filtered to {} competitors", orderedStockIds.size());
         List<StockStat> stockStats = stockStatRepository.findByStockIdIn(orderedStockIds);
-        log.info("Retrieved {} stock stats", stockStats.size());
 
         return CompetitorsResponseDTO.toDTO(stockStats, orderedStockIds);
     }

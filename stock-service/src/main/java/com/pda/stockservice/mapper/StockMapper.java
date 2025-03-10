@@ -19,4 +19,7 @@ public interface StockMapper {
                                           @Param("limit") int limit);
 
     List<StockResponseDTO> findStocksByIds(@Param("stockIds") List<Integer> stockIds);
-}
+
+    Long countStockStatIds(@Param("marketType") List<Market> marketType,
+                           @Param("sector") List<String> sector,
+                           @Param("filters") StockFilter filters);}
