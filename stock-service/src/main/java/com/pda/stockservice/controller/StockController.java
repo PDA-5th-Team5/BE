@@ -70,9 +70,8 @@ public class StockController {
     //경쟁사 정보조회
     @GetMapping("/{stockId}/competitors")
     public ApiResponse<CompetitorsResponseDTO> getCompetitors(
-            @PathVariable("stockId") Short stockId,
-            @RequestParam(value = "sector", required = false) String sector) {
-        CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId, sector);
+            @PathVariable("stockId") Short stockId) {
+        CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId);
         return ApiResponse.onSuccess(competitorsResponseDTO);
     }
 
