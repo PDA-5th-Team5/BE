@@ -386,7 +386,7 @@ public class StockServiceImpl implements StockService {
 
         List<Short> orderedStockIds = topStocks.stream()
                 .filter(stock -> !stock.getStockId().equals(stockId))
-                .limit(6)
+                .limit(5)
                 .map(Stock::getStockId)
                 .collect(Collectors.toList());
         List<StockStat> stockStats = stockStatRepository.findByStockIdIn(orderedStockIds);
@@ -509,15 +509,16 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional(readOnly = true)
     public List<StockAutoCompleteResponseDTO> searchStocks(String keyword) {
+        System.out.println(keyword);
         if (keyword == null || keyword.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
         List<Stock> stocks = stockRepository.findByTickerContainingOrCompanyNameContaining(keyword);
 
-        if (stocks.isEmpty()) {
-            throw new PortfolioHandler(ErrorStatus.STOCK_NOT_FOUND);
-        }
+//        if (stocks.isEmpty()) {
+//            throw new PortfolioHandler(ErrorStatus.STOCK_NOT_FOUND);
+//        }
 
         return stocks.stream()
                 .map(StockAutoCompleteResponseDTO::toDTO)

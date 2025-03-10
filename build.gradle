@@ -10,7 +10,7 @@ repositories {
     maven { url 'https://repo.spring.io/milestone' }
 }
 
-// ✅ 루트 프로젝트는 실행되지 않고, 설정만 제공하는 역할
+//  루트 프로젝트는 실행되지 않고, 설정만 제공하는 역할
 // 하위 모듈에만 공통 설정 적용
 subprojects {
     apply plugin: 'java'
@@ -45,7 +45,7 @@ subprojects {
     }
 }
 
-// ✅ API Gateway 모듈
+//  API Gateway 모듈
 project(':api-gateway') {
     dependencies {
         implementation(project(':util-service'))
@@ -62,7 +62,7 @@ project(':api-gateway') {
     }
 }
 
-// ✅ Eureka Server 모듈
+//  Eureka Server 모듈
 project(':eureka-server') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -73,7 +73,7 @@ project(':eureka-server') {
     }
 }
 
-// ✅ User Service 모듈
+//  User Service 모듈
 project(':user-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -100,7 +100,7 @@ project(':user-service') {
     }
 }
 
-// ✅ Stock Service 모듈
+//  Stock Service 모듈
 project(':stock-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -116,7 +116,7 @@ project(':stock-service') {
     }
 }
 
-// ✅ portfolio Service 모듈
+//  portfolio Service 모듈
 project(':portfolio-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -128,11 +128,12 @@ project(':portfolio-service') {
         implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
         implementation 'io.github.openfeign:feign-jackson:13.3'
         implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+        implementation 'org.springframework.boot:spring-boot-starter-batch'
 
     }
 }
 
-// ✅ Util Service 모듈 (라이브러리 역할, 실행되지 않음)
+//  Util Service 모듈 (라이브러리 역할, 실행되지 않음)
 project(':util-service') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter'

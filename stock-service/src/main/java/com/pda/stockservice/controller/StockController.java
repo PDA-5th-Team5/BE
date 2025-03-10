@@ -3,6 +3,7 @@ package com.pda.stockservice.controller;
 import com.pda.stockservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.StockFilterRequest;
 import com.pda.stockservice.dto.request.StockLineGraphRequestDTO;
+import com.pda.stockservice.dto.request.StockSearchDTO;
 import com.pda.stockservice.dto.response.*;
 
 import com.pda.stockservice.enums.Market;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -142,10 +144,9 @@ public class StockController {
         return stockService.getMyWatchlistByUserId(userId);
     }
 
-    @GetMapping("/search")
-    public ApiResponse<List<StockAutoCompleteResponseDTO>> searchStocks(@RequestParam(value = "keyword") String keyword) {
-        List<StockAutoCompleteResponseDTO> response = stockService.searchStocks(keyword);
-
+    @PostMapping("/search")
+    public ApiResponse<List<StockAutoCompleteResponseDTO>> searchStocks(@RequestBody StockSearchDTO keyword) {
+        List<StockAutoCompleteResponseDTO> response = stockService.searchStocks(keyword.getKeyword());
         return ApiResponse.onSuccess(response);
     }
 
