@@ -12,13 +12,6 @@
         <foreach item="marketType" collection="marketType" open="(" separator="," close=")">
             #{marketType}
         </foreach>
-
-        <if test="sector != null and !sector.isEmpty()">
-            AND s.sector IN
-            <foreach item="sector" collection="sector" open="(" separator="," close=")">
-                #{sector}
-            </foreach>
-        </if>
         <if test="filters.marketCap != null">
             AND s.market_cap BETWEEN #{filters.marketCap.min} AND #{filters.marketCap.max}
         </if>
@@ -45,6 +38,30 @@
         </if>
         <if test="filters.saleAccount != null">
             AND s.sale_account BETWEEN #{filters.saleAccount.min} AND #{filters.saleAccount.max}
+        </if>
+        <if test="filters.crntRate != null">
+            AND s.crnt_rate BETWEEN #{filters.crntRate.min} AND #{filters.crntRate.max}
+        </if>
+        <if test="filters.lbltRate != null">
+            AND s.lblt_rate BETWEEN #{filters.lbltRate.min} AND #{filters.lbltRate.max}
+        </if>
+        <if test="filters.ntinInrt != null">
+            AND s.ntin_inrt BETWEEN #{filters.ntinInrt.min} AND #{filters.ntinInrt.max}
+        </if>
+        <if test="filters.bsopPrfiInrt != null">
+            AND s.bsop_prfi_inrt BETWEEN #{filters.bsopPrfiInrt.min} AND #{filters.bsopPrfiInrt.max}
+        </if>
+        <if test="filters.grs != null">
+            AND s.grs BETWEEN #{filters.grs.min} AND #{filters.grs.max}
+        </if>
+        <if test="filters.roeVal != null">
+            AND s.roe_val BETWEEN #{filters.roeVal.min} AND #{filters.roeVal.max}
+        </if>
+        <if test="filters.bsopPrti != null">
+            AND s.bsop_prti BETWEEN #{filters.bsopPrti.min} AND #{filters.bsopPrti.max}
+        </if>
+        <if test="filters.thtrNtin != null">
+            AND s.thtr_ntin BETWEEN #{filters.thtrNtin.min} AND #{filters.thtrNtin.max}
         </if>
         ORDER BY s.market_cap DESC  <!-- 시가총액 내림차순 정렬 -->
         LIMIT #{limit} OFFSET #{offset}
