@@ -86,7 +86,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setCharacterEncoding("UTF-8");
 //        response.setHeader("access", access);
         response.setHeader("Authorization", "Bearer " + access);
-        response.addCookie(createCookie("refresh", refresh));
+//        response.addCookie(createCookie("refresh", refresh));
+        addRefreshCookie(response, "refresh", refresh);
         response.setStatus(HttpStatus.OK.value());
 
         new ObjectMapper().writeValue(response.getWriter(), responseDTO);
@@ -115,14 +116,27 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         new ObjectMapper().writeValue(response.getWriter(), responseDTO);
     }
 
-    private Cookie createCookie(String key, String value) {
+//    private Cookie createCookie(String key, String value) {
+//
+//        Cookie cookie = new Cookie(key, value);
+//        cookie.setMaxAge(24*60*60);
+//        //cookie.setSecure(true);
+//        //cookie.setPath("/");
+//        cookie.setHttpOnly(true);
+//
+//        return cookie;
+//    }
 
+    private void addRefreshCookie(HttpServletResponse response, String key, String value) {
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        //cookie.setSecure(true);
-        //cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60);
+        cookie.setPath("/");
         cookie.setHttpOnly(true);
+        cookie.setSecure(true); // HTTPS 환경에서만 동작 (개발 환경에서는 주석처리 가능)
 
-        return cookie;
+        // 기존 Cookie API는 SameSite 속성을 지원하지 않으므로, 헤더 문자열에 직접 추가합니다.
+        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=None",
+                cookie.getName(), cookie.getValue(), cookie.getMaxAge(), cookie.getPath());
+        response.addHeader("Set-Cookie", cookieHeader);
     }
 }
