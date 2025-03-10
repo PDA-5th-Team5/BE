@@ -2,10 +2,7 @@ package com.pda.userservice.entity;
 
 import com.pda.userservice.enums.UserType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -35,6 +32,8 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private UserType userType;
+
+    private String telegramChatId;
 
     @PrePersist
     public void prePersist() {
