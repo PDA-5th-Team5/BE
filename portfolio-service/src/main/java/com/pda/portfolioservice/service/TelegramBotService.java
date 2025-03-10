@@ -12,9 +12,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TelegramBotService {
 
-    @Value("${telegram.bot.token}")
-    private String botToken;
-
+    private final String botToken = System.getenv("TELEGRAM_BOT_TOKEN");
     @Value("${telegram.api.url}")
     private String telegramApiUrl;
 
