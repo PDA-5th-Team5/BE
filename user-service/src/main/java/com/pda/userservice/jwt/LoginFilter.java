@@ -135,7 +135,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 //        cookie.setSecure(true); // HTTPS 환경에서만 동작 (개발 환경에서는 주석처리 가능)
 
         // 기존 Cookie API는 SameSite 속성을 지원하지 않으므로, 헤더 문자열에 직접 추가합니다.
-        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=None",
+        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; SameSite=None",
                 cookie.getName(), cookie.getValue(), cookie.getMaxAge(), cookie.getPath());
         response.addHeader("Set-Cookie", cookieHeader);
     }
