@@ -9,6 +9,7 @@ import com.pda.utilservice.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface UserService {
 
@@ -33,5 +34,11 @@ public interface UserService {
 
     ApiResponse<CommentsResponseDTO> comments(String token);
 
+    void updateTelegramChatId(String userId, String chatId);
+    String getTelegramChatId(String token);
+    void deleteTelegramChatId(String token);
     ApiResponse<StocksResponseDTO> stocks(String token);
+
+    String getTelegramChatIdUserId(String userId);
+
 }
