@@ -69,7 +69,7 @@
         <if test="filters.thtrNtin != null">
             AND s.thtr_ntin BETWEEN #{filters.thtrNtin.min} AND #{filters.thtrNtin.max}
         </if>
-        ORDER BY s.market_cap DESC  <!-- 시가총액 내림차순 정렬 -->
+        ORDER BY s.company_name DESC  <!-- 시가총액 내림차순 정렬 -->
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
