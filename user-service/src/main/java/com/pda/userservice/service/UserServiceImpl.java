@@ -153,8 +153,8 @@ public class UserServiceImpl implements UserService {
         String userId = userRepository.findByUsername(username).getUserId();
 
         String newAccess = jwtUtil.createJwt("access", userId, username, role, 600000L); // 10분 유효기간
-        response.setHeader("Authorization", "Bearer " + newAccess);
-//        response.setHeader("access", newAccess);
+//        response.setHeader("Authorization", "Bearer " + newAccess);
+        response.setHeader("access", newAccess);
 
         return ApiResponse.onSuccess(HttpStatus.OK.value(), "토큰 재발급 성공");
     }
