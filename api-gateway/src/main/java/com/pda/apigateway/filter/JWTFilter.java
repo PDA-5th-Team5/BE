@@ -32,10 +32,10 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            System.out.println(cookie.getName() + ":" + cookie.getValue());
-        }
+//        Cookie[] cookies = request.getCookies();
+//        for (Cookie cookie : cookies) {
+//            System.out.println(cookie.getName() + ":" + cookie.getValue());
+//        }
 
         System.out.println("JWTFilter.doFilterInternal API Gateway");
 
