@@ -12,6 +12,12 @@
         <foreach item="marketType" collection="marketType" open="(" separator="," close=")">
             #{marketType}
         </foreach>
+        <if test="sector != null and !sector.isEmpty()">
+            AND s.sector IN
+            <foreach item="sector" collection="sector" open="(" separator="," close=")">
+                #{sector}
+            </foreach>
+        </if>
         <if test="filters.marketCap != null">
             AND s.market_cap BETWEEN #{filters.marketCap.min} AND #{filters.marketCap.max}
         </if>
@@ -66,6 +72,7 @@
         ORDER BY s.market_cap DESC  <!-- 시가총액 내림차순 정렬 -->
         LIMIT #{limit} OFFSET #{offset}
     </select>
+
     <select id="findStocksByIds" resultType="com.pda.stockservice.dto.response.StockResponseDTO">
         SELECT *
         FROM stock
