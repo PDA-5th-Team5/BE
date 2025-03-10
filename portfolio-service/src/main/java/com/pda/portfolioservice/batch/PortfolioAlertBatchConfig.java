@@ -1,6 +1,7 @@
 package com.pda.portfolioservice.batch;
 
 import com.pda.portfolioservice.dto.response.StockResponseDTO;
+import com.pda.portfolioservice.dto.response.StockSearchResponseDTO;
 import com.pda.portfolioservice.entity.PortfolioAlert;
 import com.pda.portfolioservice.feign.UserServiceClient;
 import com.pda.portfolioservice.feign.StockServiceClient;
@@ -69,14 +70,16 @@ public class PortfolioAlertBatchConfig {
             System.out.println("[Processor] 포트폴리오 제목: " + portfolio.getTitle());
 
             //  포트폴리오에 포함된 종목 가져오기
-            List<StockResponseDTO> stocks = portfolioService.getPortfolioStock(portfolio, 0);
+            StockSearchResponseDTO stocksearch = portfolioService.getPortfolioStock(portfolio, 0);
+            List<StockResponseDTO> stocks = stocksearch.getStocks();
+            Long totalCount = stocksearch.getTotalCount();
 
             StringBuilder sb = new StringBuilder();
             sb.append(formattedDateTime+"\n");
             sb.append("[포트폴리오 업데이트 : ").append(portfolio.getTitle()).append("]\n");
 
-            if (stocks != null && !stocks.isEmpty()) {
-                System.out.println("📊 [Processor] " + stocks.size() + "개의 종목 데이터를 가져옴.");
+            if (stocks != null ) {
+                System.out.println("📊 [Processor] " + totalCount+ "개의 종목 데이터를 가져옴.");
 
                 for (StockResponseDTO stock : stocks) {
                     sb.append(stock.getCompanyName()).append(" : ")
