@@ -22,7 +22,7 @@ public interface StockService {
     void addFavoriteStock(Short stockId, String token);
     void deleteFavoriteStock(Short stockId, String token);
 
-    List<StockResponseDTO> searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token);
+    StockSearchResponseDTO searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token);
 
     MyStockCommentsResponseDTO getCommentsByUserId(String userId);
 

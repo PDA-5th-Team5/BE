@@ -30,12 +30,14 @@ public class StockController {
     }
     // 특정 조건으로 주식 종목 검색
     @PostMapping("/filter")
-    public ApiResponse<List<StockResponseDTO>> searchStockStatIds(
+    public ApiResponse<StockSearchResponseDTO> searchStockStatIds(
             @RequestBody StockFilterRequest request,
             @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(defaultValue = "0") int page) {
-        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page,token);
-        return ApiResponse.onSuccess(stocks);
+
+        StockSearchResponseDTO responseDTO = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page, token);
+
+        return ApiResponse.onSuccess(responseDTO);
     }
 
     //개별종목 정보조회

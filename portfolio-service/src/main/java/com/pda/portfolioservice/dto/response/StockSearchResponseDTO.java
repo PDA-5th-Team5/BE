@@ -1,4 +1,4 @@
-package com.pda.stockservice.dto.response;
+package com.pda.portfolioservice.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -76,7 +76,7 @@ public class SecurityConfig {
         ));
 
         // 허용할 HTTP 메서드
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
 
         // 허용할 헤더
         config.setAllowedHeaders(Arrays.asList("*"));
