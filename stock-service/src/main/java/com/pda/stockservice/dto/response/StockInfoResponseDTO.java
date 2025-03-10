@@ -20,6 +20,7 @@ public class StockInfoResponseDTO {
     public static class StockInfoDTO {
         private Short stockId;
         private String ticker;
+        private Long marketCap;
         private String companyName;
         private Market marketType;
         private Integer currentPrice;
@@ -55,6 +56,7 @@ public class StockInfoResponseDTO {
                         .companyName(stock.getCompanyName())
                         .marketType(stock.getMarketType())
                         .ticker(stock.getTicker())
+                        .marketCap(stock.getMarketCap())
 
 //                        .currentPrice(stock.getCurrentPrice())
 //                        .OneWeekProfitRate(stock.getOneWeekProfitRate())
