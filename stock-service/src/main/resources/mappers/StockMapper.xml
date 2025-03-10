@@ -65,10 +65,12 @@
         <foreach item="marketType" collection="marketType" open="(" separator="," close=")">
             #{marketType}
         </foreach>
-        AND s.sector IN
-        <foreach item="sector" collection="sector" open="(" separator="," close=")">
-            #{sector}
-        </foreach>
+        <if test="sector != null and !sector.isEmpty()">
+            AND s.sector IN
+            <foreach item="sector" collection="sector" open="(" separator="," close=")">
+                #{sector}
+            </foreach>
+        </if>
     </select>
 </mapper>
 
