@@ -380,21 +380,16 @@ public class StockServiceImpl implements StockService {
     //개별종목 경쟁사 조회
     @Override
     @Transactional(readOnly = true)
-    public CompetitorsResponseDTO getCompetitors(Short stockId, String sector) {
-        log.info("Fetching competitors for stockId: {}, sector: {}", stockId, sector);
+    public CompetitorsResponseDTO getCompetitors(Short stockId) {
 
-        String targetSector = CompetitorsResponseDTO.determineSector(stockId, sector, stockRepository);
-        log.info("Found stocks in sector {}", targetSector);
-        List<Stock> topStocks = stockRepository.findTopCompetitors(targetSector);
+        List<Stock> topStocks = stockRepository.findTopCompetitors(stockId);
 
         List<Short> orderedStockIds = topStocks.stream()
                 .filter(stock -> !stock.getStockId().equals(stockId))
                 .limit(6)
                 .map(Stock::getStockId)
                 .collect(Collectors.toList());
-        log.info("Filtered to {} competitors", orderedStockIds.size());
         List<StockStat> stockStats = stockStatRepository.findByStockIdIn(orderedStockIds);
-        log.info("Retrieved {} stock stats", stockStats.size());
 
         return CompetitorsResponseDTO.toDTO(stockStats, orderedStockIds);
     }

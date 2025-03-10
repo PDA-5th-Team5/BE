@@ -11,7 +11,7 @@ public interface StockService {
     CandleResponseDTO getCandle(Short stockId);
 
     //개별종목 경쟁사 조회
-    CompetitorsResponseDTO getCompetitors(Short stockId, String sector);
+    CompetitorsResponseDTO getCompetitors(Short stockId);
     //댓글
     CommentResponseDTO getComments(Short stockId);
     void addComments(Short stockId, String content, String token);

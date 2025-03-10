@@ -73,14 +73,9 @@ public class CompetitorsResponseDTO {
                 .build();
     }
 
-    public static String determineSector(Short stockId, String sector, StockRepository stockRepository) {
-        // 1. 섹터 정보 결정
-        String targetSector = sector;
-        if (targetSector == null || targetSector.isEmpty()) {
-            Stock stock = stockRepository.findById(stockId)
-                    .orElseThrow(() -> new EntityNotFoundException("Stock not found"));
-            targetSector = stock.getSector();
-        }
-        return targetSector;
+    public static String determineSector(Short stockId, StockRepository stockRepository) {
+        Stock stock = stockRepository.findById(stockId)
+                .orElseThrow(() -> new EntityNotFoundException("Stock not found"));
+        return stock.getSector();
     }
 }
