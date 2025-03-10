@@ -81,6 +81,9 @@ public class SecurityConfig {
         // 허용할 헤더
         config.setAllowedHeaders(Arrays.asList("*"));
 
+        // "Authorization" 헤더를 자바스크립트에서 접근할 수 있도록 노출
+        config.addExposedHeader("Authorization");
+
         // 인증정보 포함 여부
         config.setAllowCredentials(true);
 
