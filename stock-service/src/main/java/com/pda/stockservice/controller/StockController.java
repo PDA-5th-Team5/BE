@@ -1,5 +1,6 @@
 package com.pda.stockservice.controller;
 
+import com.pda.stockservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.StockFilterRequest;
 import com.pda.stockservice.dto.request.StockLineGraphRequestDTO;
 import com.pda.stockservice.dto.response.*;
@@ -29,12 +30,14 @@ public class StockController {
     }
     // 특정 조건으로 주식 종목 검색
     @PostMapping("/filter")
-    public ApiResponse<List<StockResponseDTO>> searchStockStatIds(
+    public ApiResponse<StockSearchResponseDTO> searchStockStatIds(
             @RequestBody StockFilterRequest request,
             @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(defaultValue = "0") int page) {
-        List<StockResponseDTO> stocks = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page,token);
-        return ApiResponse.onSuccess(stocks);
+
+        StockSearchResponseDTO responseDTO = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page, token);
+
+        return ApiResponse.onSuccess(responseDTO);
     }
 
     //개별종목 정보조회
@@ -69,9 +72,8 @@ public class StockController {
     //경쟁사 정보조회
     @GetMapping("/{stockId}/competitors")
     public ApiResponse<CompetitorsResponseDTO> getCompetitors(
-            @PathVariable("stockId") Short stockId,
-            @RequestParam(value = "sector", required = false) String sector) {
-        CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId, sector);
+            @PathVariable("stockId") Short stockId) {
+        CompetitorsResponseDTO competitorsResponseDTO = stockService.getCompetitors(stockId);
         return ApiResponse.onSuccess(competitorsResponseDTO);
     }
 
@@ -176,10 +178,15 @@ public class StockController {
         return ApiResponse.onSuccess(response);
     }
 
-    // 나의 포트폴리오 vs 시장 그래프 조회 OpenFeign 코드
-//    @GetMapping("/my/graph")
-//    public ApiResponse<MyPortfolioMarketGraphResponseDTO> getMyPortfolioMarketGraph(@RequestBody MyPortfolioMarketGraphRequestDTO request, @RequestParam(value = "markets") List<Market> markets) {
-//        MyPortfolioMarketGraphResponseDTO response = stockService.getMyPortfolioMarketGraph(request, markets);
-//        return ApiResponse.onSuccess(response);
-//    }
+    //나의 포트폴리오 vs 시장 그래프 조회 OpenFeign 코드
+    @PostMapping("/my/graph")
+    public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market) {
+        return stockService.getMyPortfolioMarketGraph(request, market);
+    }
+
+    // 공유 포트폴리오 vs 시장 그래프 조회 OpenFeign 코드
+    @PostMapping("/share/graph")
+    public PortfolioMarketGraphResponseDTO getSharePortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request, @RequestParam(value = "market") Market market) {
+        return stockService.getMyPortfolioMarketGraph(request, market);
+    }
 }

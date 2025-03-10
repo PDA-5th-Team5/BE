@@ -18,8 +18,8 @@ public class PortfolioAlertScheduler {
     /**
      *  매일 아침 8시 배치 실행
      */
-    @Scheduled(cron = "0 0 9 * * ?")
-//    @Scheduled(cron = "30 * * * * ?")
+//    @Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void runBatchJob() {
         try {
             System.out.println("🔔 [Scheduler] 배치 실행 시작");

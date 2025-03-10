@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface MyPortfolioRepository extends JpaRepository<MyPortfolio, Long> {
     List<MyPortfolio> findByUserId(String userId);
+
+
 }

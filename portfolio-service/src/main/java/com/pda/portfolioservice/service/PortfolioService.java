@@ -1,7 +1,9 @@
 package com.pda.portfolioservice.service;
 
+import com.pda.portfolioservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.*;
+import com.pda.portfolioservice.enums.Market;
 import com.pda.portfolioservice.model.Portfolio;
 
 import java.util.List;
@@ -15,7 +17,7 @@ public interface PortfolioService {
     List<SharePortfolioBoardDTO> getSharePortfolios(int page, String sortBy);
 
     //포트폴리오 종목 리스트 조회
-    List<StockResponseDTO> getPortfolioStock(Portfolio portfolio, int page);
+    StockSearchResponseDTO getPortfolioStock(Portfolio portfolio, int page);
 
     void deletePortfolio(String category, Long portfolioId);
 
@@ -56,4 +58,9 @@ public interface PortfolioService {
     List<SharePortfolioBoardDTO> getTopSharePortfolios(List<TopPortfolioInfoResponseDTO> topPortfoliosIds);
 
     List<TopPortfolioInfoResponseDTO> getExpertSharePortfolioIds(String expertUserId);
+
+    PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market, String token);
+
+    PortfolioMarketGraphResponseDTO getSharePortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market);
+
 }

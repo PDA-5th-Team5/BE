@@ -1,8 +1,10 @@
 package com.pda.portfolioservice.controller;
 
+import com.pda.portfolioservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.portfolioservice.dto.request.PortfolioRequestDTO;
 import com.pda.portfolioservice.dto.request.SharePortfolioCommentRequestDTO;
 import com.pda.portfolioservice.dto.response.*;
+import com.pda.portfolioservice.enums.Market;
 import com.pda.portfolioservice.model.Portfolio;
 import com.pda.portfolioservice.service.PortfolioService;
 import com.pda.utilservice.jwt.JWTUtil;
@@ -58,7 +60,7 @@ public class PortfolioController {
 
     // 나의 포트폴리오 종목 리스트 조회  (GET)
     @GetMapping("/my/{portfolioId}/stock")
-    public ApiResponse<List<StockResponseDTO>> getMyPortfolioStock(
+    public ApiResponse<StockSearchResponseDTO> getMyPortfolioStock(
             @PathVariable(value = "portfolioId") Long portfolioId,
             @RequestParam(defaultValue = "0") int page
     ) {
@@ -66,7 +68,7 @@ public class PortfolioController {
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
         // openfeign stock filter에 조건을 보내 포함 종목 가져오기
-        List<StockResponseDTO> stocks = portfolioService.getPortfolioStock(portfolio,page);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page);
 
         return ApiResponse.onSuccess(stocks);
     }
@@ -84,7 +86,7 @@ public class PortfolioController {
 
     // 공유 포트폴리오 종목 리스트 조회  (GET)
     @GetMapping("/share/{portfolioId}/stock")
-    public ApiResponse<List<StockResponseDTO>> getSharePortfolioStock(
+    public ApiResponse<StockSearchResponseDTO> getSharePortfolioStock(
             @PathVariable(value = "portfolioId") Long portfolioId,
             @RequestParam(defaultValue = "0") int page
     ) {
@@ -92,7 +94,7 @@ public class PortfolioController {
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
         // openfeign stock filter에 조건을 보내 포함 종목 가져오기
-        List<StockResponseDTO> stocks = portfolioService.getPortfolioStock(portfolio,page);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page);
 
         return ApiResponse.onSuccess(stocks);
     }
@@ -241,5 +243,20 @@ public class PortfolioController {
         List<SharePortfolioBoardDTO> expertPortfolios = portfolioService.getTopSharePortfolios(expertPortfoliosIds);
 
         return ApiResponse.onSuccess(expertPortfolios);
+    }
+
+    @PostMapping("/my/graph")
+    public ApiResponse<PortfolioMarketGraphResponseDTO> getMyPortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request,
+                                                                                  @RequestParam(value = "market") Market market,
+                                                                                  @RequestHeader(value = "Authorization", required = false) String token) {
+        PortfolioMarketGraphResponseDTO response = portfolioService.getMyPortfolioMarketGraph(request, market, token);
+        return ApiResponse.onSuccess(response);
+    }
+
+    @PostMapping("/share/graph")
+    public ApiResponse<PortfolioMarketGraphResponseDTO> getSharePortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request,
+                                                                                  @RequestParam(value = "market") Market market) {
+        PortfolioMarketGraphResponseDTO response = portfolioService.getSharePortfolioMarketGraph(request, market);
+        return ApiResponse.onSuccess(response);
     }
 }
