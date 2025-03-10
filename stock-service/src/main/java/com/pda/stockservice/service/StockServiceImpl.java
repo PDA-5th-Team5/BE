@@ -509,6 +509,7 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional(readOnly = true)
     public List<StockAutoCompleteResponseDTO> searchStocks(String keyword) {
+        System.out.println(keyword);
         if (keyword == null || keyword.trim().isEmpty()) {
             return Collections.emptyList();
         }
