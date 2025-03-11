@@ -124,7 +124,9 @@ public class UserServiceImpl implements UserService {
     public ApiResponse<Void> handleReissue(HttpServletRequest request, HttpServletResponse response) {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
 
-        String refresh = extractRefreshToken(request);
+//        String refresh = extractRefreshToken(request);
+        String refresh = request.getHeader("refresh");
+
 
         // Refresh 토큰이 헤더에 있는지 확인
         if (refresh == null) {
