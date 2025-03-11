@@ -184,9 +184,10 @@ public class PortfolioController {
 
     @PostMapping("/share/{sharePortfolioId}")
     public ApiResponse<SaveSharePortfolioResponseDTO> saveSharePortfolio(
-            @PathVariable(value = "sharePortfolioId") Long sharePortfolioId)
+            @PathVariable(value = "sharePortfolioId") Long sharePortfolioId,
+            @RequestHeader(value = "Authorization", required = false) String token)
     {
-        SaveSharePortfolioResponseDTO response = portfolioService.saveSharePortfolio(sharePortfolioId);
+        SaveSharePortfolioResponseDTO response = portfolioService.saveSharePortfolio(sharePortfolioId, token);
         return ApiResponse.onSuccess(response);
     }
     // 나의 포트폴리오 평균값 조회  (GET)

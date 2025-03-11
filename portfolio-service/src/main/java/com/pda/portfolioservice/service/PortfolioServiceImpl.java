@@ -278,7 +278,10 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public SaveSharePortfolioResponseDTO saveSharePortfolio(Long sharePortfolioId) {
+    public SaveSharePortfolioResponseDTO saveSharePortfolio(Long sharePortfolioId, String token) {
+
+        JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
+        String userId = jwtUtil.getBearerUserId(token);
 
         SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
@@ -294,7 +297,7 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .myPortfolioId(existingPortfolio.getPortfolioId())
                 .title(existingPortfolio.getTitle())
                 .description(existingPortfolio.getDescription())
-                .userId(sharePortfolio.getUserId())
+                .userId(userId)
                 .build();
 
         myPortfolio = myPortfolioRepository.save(myPortfolio);

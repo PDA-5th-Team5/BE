@@ -48,7 +48,7 @@ public interface PortfolioService {
     public MyPortfolioCommentsResponseDTO getCommentsByUserId(String userId);
 
     // 남의 공유 포트폴리오 가져오기 (저장)
-    public SaveSharePortfolioResponseDTO saveSharePortfolio(Long sharePortfolioId);
+    public SaveSharePortfolioResponseDTO saveSharePortfolio(Long sharePortfolioId, String token);
 
     // 포트폴리오 평균 조회
     PortfolioSummaryResponseDTO getPortfolioSummary(Portfolio portfolio);
