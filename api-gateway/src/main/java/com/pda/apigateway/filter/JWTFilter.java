@@ -41,28 +41,32 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 필터를 무시할 URL 패턴 설정
         List<String> excludeUrlPatterns = Arrays.asList(
-                "/user",
-                "/user/join",
-                "/user/login",
-                "/user/logout",
-                "/user/reissue",
-                "/portfolio/share(\\?sort=.*&page=\\d+&size=\\d+)?",
-                "/portfolio/share/\\d+/import",
-                "/portfolio/share/\\d+/summary",
-                "/portfolio/share/\\d+/graph",
-                "/portfolio/share/\\d+/snowflake",
-                "/portfolio/share/\\d+/stocks(\\?sort=.*)?",
-                "/portfolio/share/\\d+/comments",
-                "/stocks/\\d+",
-                "/stocks/\\d+/candle",
-                "/stocks/\\d+/competitors(\\?sector=.*)?",
-                "/stocks/\\d+/graph",
-                "/stocks/\\d+/comments(\\?page=\\d+&size=\\d+)?",
-                "/stocks/search(\\?keyword=.*)?",
-                "/snowflake",
-                "/snowflake/result(\\?sort=.*&page=\\d+&size=\\d+)?",
-                "/snowflake/elements/graph(\\?elementType=.*)?"
+            "/user",
+            "/user/join",
+            "/user/login",
+            "/user/logout",
+            "/user/reissue",
+            "/portfolio/share(\\?sort=.*&page=\\d+&size=\\d+)?",
+            "/portfolio/share/\\d+/import",
+            "/portfolio/share/\\d+/summary",
+            "/portfolio/share/\\d+/graph",
+            "/portfolio/share/\\d+/snowflake",
+            "/portfolio/share/\\d+/stocks(\\?sort=.*)?",
+            "/portfolio/share/\\d+/comments",
+            "/stocks/\\d+",
+            "/stocks/\\d+/candle",
+            "/stocks/\\d+/competitors(\\?sector=.*)?",
+            "/stocks/\\d+/graph",
+            "/stocks/\\d+/comments(\\?page=\\d+&size=\\d+)?",
+            "/stocks/search(\\?keyword=.*)?",
+            "/snowflake",
+            "/snowflake/result(\\?sort=.*&page=\\d+&size=\\d+)?",
+            "/snowflake/elements/graph(\\?elementType=.*)?",
+            "/stocks/sectors",
+            "/stocks/thresholds",
+            "/stocks/filter\\?page=\\d+"
         );
+
 
         // 현재 요청 URL 가져오기
         String requestURI = request.getRequestURI();
