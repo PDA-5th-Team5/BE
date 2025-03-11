@@ -289,10 +289,6 @@ public class PortfolioServiceImpl implements PortfolioService {
         Portfolio existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId("share", sharePortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
-        if (portfolioRepository.findByCategoryAndPortfolioId("my", sharePortfolioId).isPresent()) {
-            throw new PortfolioHandler(ErrorStatus.DUPLICATE_PORTFOLIO);
-        }
-
         MyPortfolio myPortfolio = MyPortfolio.builder()
                 .myPortfolioId(existingPortfolio.getPortfolioId())
                 .title(existingPortfolio.getTitle())
