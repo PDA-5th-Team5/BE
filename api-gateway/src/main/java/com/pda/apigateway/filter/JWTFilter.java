@@ -82,8 +82,15 @@ public class JWTFilter extends OncePerRequestFilter {
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             System.out.println("token null");
-            filterChain.doFilter(request, response);
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            // null access 토큰에 대해 403 에러와 JSON 응답 전송
+            ApiResponse<Void> res = ApiResponse.onSuccess(HttpServletResponse.SC_FORBIDDEN, "Access 토큰이 없습니다.");
+            new ObjectMapper().writeValue(response.getWriter(), res);
             return;
+//            filterChain.doFilter(request, response);
+//            return;
         }
 
         System.out.println("authorization now");
