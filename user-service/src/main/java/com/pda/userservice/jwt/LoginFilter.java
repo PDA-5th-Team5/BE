@@ -87,7 +87,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setHeader("access", access);
 //        response.setHeader("Authorization", "Bearer " + access);
 //        response.addCookie(createCookie("refresh", refresh));
-        addRefreshCookie(response, "refresh", refresh);
+        response.setHeader("refresh", refresh);
+//        addRefreshCookie(response, "refresh", refresh);
         response.setStatus(HttpStatus.OK.value());
 
         new ObjectMapper().writeValue(response.getWriter(), responseDTO);
