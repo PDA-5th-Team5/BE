@@ -243,6 +243,6 @@ public class UserServiceImpl implements UserService {
 
     private boolean isTokenStoredInDB(String token, String username) {
         Optional<Refresh> byId = refreshRepository.findById(username);
-        return byId.isPresent() && token.equals(byId.get().getRefresh());
+        return byId.isPresent();
     }
 }
