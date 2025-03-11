@@ -173,7 +173,7 @@ public class StockController {
     }
 
     // 개별 종목 라인그래프 조회
-    @GetMapping("/graph")
+    @PostMapping("/graph")
     public ApiResponse<StockLineGraphResponseDTO> getStockLineGraph(@RequestBody StockLineGraphRequestDTO request) {
         StockLineGraphResponseDTO response = stockService.getStockLineGraph(request.getStockId());
         return ApiResponse.onSuccess(response);
