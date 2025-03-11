@@ -104,13 +104,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-        Refresh refreshEntity = byId.get();
-        if (!refreshEntity.getRefresh().equals(refresh)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
-            ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그아웃 실패(redis에 없음2");
-            new ObjectMapper().writeValue(response.getWriter(), responseDTO);
-            return;
-        }
+//        Refresh refreshEntity = byId.get();
+//        if (!refreshEntity.getRefresh().equals(refresh)) {
+//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);// 최종 응답 DTO 생성
+//            ApiResponse<Void> responseDTO = ApiResponse.onFailure(HttpServletResponse.SC_BAD_REQUEST, "로그아웃 실패(redis에 없음2");
+//            new ObjectMapper().writeValue(response.getWriter(), responseDTO);
+//            return;
+//        }
 
         //로그아웃 진행
         //Refresh 토큰 DB에서 제거
