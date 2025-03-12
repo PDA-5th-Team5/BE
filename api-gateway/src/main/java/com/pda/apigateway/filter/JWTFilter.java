@@ -83,6 +83,8 @@ public class JWTFilter extends OncePerRequestFilter {
                 "/portfolio/api/portfolio/share/\\d+/stocks(\\?sort=.*)?",
                 "/portfolio/api/portfolio/share/\\d+/comments",
                 "/portfolio/api/portfolio/popular",
+                "/portfolio/api/portfolio/expert",
+                "/portfolio/api/portfolio/share/board",
                 "/stock/api/stocks/\\d+",
                 "/stock/api/stocks/\\d+/candle",
                 "/stock/api/stocks/\\d+/competitors(\\?sector=.*)?",
