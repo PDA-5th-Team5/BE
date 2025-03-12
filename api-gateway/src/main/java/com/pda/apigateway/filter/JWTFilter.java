@@ -36,6 +36,11 @@ public class JWTFilter extends OncePerRequestFilter {
 //        for (Cookie cookie : cookies) {
 //            System.out.println(cookie.getName() + ":" + cookie.getValue());
 //        }
+        // 🔥 Prometheus 요청은 JWT 인증을 건너뛰도록 예외 처리
+        if (request.getRequestURI().startsWith("/actuator/prometheus")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         System.out.println("JWTFilter.doFilterInternal API Gateway");
 

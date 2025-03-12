@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/user/**", "/stock/**", "/portfolio/**").permitAll()
                         .requestMatchers("/user/admin").hasRole("ADMIN")
+                        .requestMatchers("/actuator/prometheus").permitAll() // Prometheus 접근 허용
                         .anyRequest().authenticated());
 
         http
