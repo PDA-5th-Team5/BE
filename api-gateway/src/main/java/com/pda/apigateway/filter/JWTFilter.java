@@ -82,18 +82,17 @@ public class JWTFilter extends OncePerRequestFilter {
                 "/portfolio/api/portfolio/share/\\d+/snowflake",
                 "/portfolio/api/portfolio/share/\\d+/stocks(\\?sort=.*)?",
                 "/portfolio/api/portfolio/share/\\d+/comments",
+                "/portfolio/api/portfolio/popular",
                 "/stock/api/stocks/\\d+",
                 "/stock/api/stocks/\\d+/candle",
                 "/stock/api/stocks/\\d+/competitors(\\?sector=.*)?",
                 "/stock/api/stocks/\\d+/graph",
                 "/stock/api/stocks/\\d+/comments(\\?page=\\d+&size=\\d+)?",
                 "/stock/api/stocks/search(\\?keyword=.*)?",
-                "/snowflake",
-                "/snowflake/result(\\?sort=.*&page=\\d+&size=\\d+)?",
-                "/snowflake/elements/graph(\\?elementType=.*)?",
                 "/stock/api/stocks/sectors",
                 "/stock/api/stocks/thresholds",
-                "/stock/api/stocks/filter\\?page=\\d+"
+//                "/stock/api/stocks/filter\\?page=\\d+"
+                "/stock/api/stocks/filter"
         );
 
 
