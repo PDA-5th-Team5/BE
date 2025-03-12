@@ -36,6 +36,11 @@ public class JWTFilter extends OncePerRequestFilter {
 //        for (Cookie cookie : cookies) {
 //            System.out.println(cookie.getName() + ":" + cookie.getValue());
 //        }
+        // 🔥 Prometheus 요청은 JWT 인증을 건너뛰도록 예외 처리
+        if (request.getRequestURI().startsWith("/actuator/prometheus")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         System.out.println("JWTFilter.doFilterInternal API Gateway");
 
@@ -85,12 +90,10 @@ public class JWTFilter extends OncePerRequestFilter {
                 "/portfolio/api/portfolio/share/\\d+/stocks(\\?sort=.*)?",
                 "/portfolio/api/portfolio/share/\\d+/comments",
                 "/portfolio/api/portfolio/popular",
-                "/portfolio/api/portfolio/expert",
-                "/portfolio/api/portfolio/share/board",
                 "/stock/api/stocks/\\d+",
                 "/stock/api/stocks/\\d+/candle",
                 "/stock/api/stocks/\\d+/competitors(\\?sector=.*)?",
-                "/stock/api/stocks/graph",
+                "/stock/api/stocks/\\d+/graph",
                 "/stock/api/stocks/\\d+/comments(\\?page=\\d+&size=\\d+)?",
                 "/stock/api/stocks/search(\\?keyword=.*)?",
                 "/stock/api/stocks/sectors",
