@@ -95,7 +95,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 "/stock/api/stocks/\\d+",
                 "/stock/api/stocks/\\d+/candle",
                 "/stock/api/stocks/\\d+/competitors(\\?sector=.*)?",
-                "/stock/api/stocks/\\d+/graph",
+                "/stock/api/stocks/graph",
                 "/stock/api/stocks/\\d+/comments(\\?page=\\d+&size=\\d+)?",
                 "/stock/api/stocks/search(\\?keyword=.*)?",
                 "/stock/api/stocks/sectors",
