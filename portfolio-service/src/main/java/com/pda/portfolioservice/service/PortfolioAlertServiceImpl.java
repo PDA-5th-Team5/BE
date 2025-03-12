@@ -47,8 +47,8 @@ public class PortfolioAlertServiceImpl implements PortfolioAlertService {
      */
     @Transactional
     @Override
-    public ApiResponse<Void> deleteAlert(Long portfolioId, String userId) {
-        portfolioAlertRepository.deleteByUserIdAndMyPortfolio_MyPortfolioId(userId, portfolioId);
+    public ApiResponse<Void> deleteAlert(Long alertId, String userId) {
+        portfolioAlertRepository.deleteByUserIdAndAlertId(userId, alertId);
         return ApiResponse.onSuccess(204, "알림이 성공적으로 삭제되었습니다.");
     }
 
