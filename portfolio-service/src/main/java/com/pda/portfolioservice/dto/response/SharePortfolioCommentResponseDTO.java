@@ -27,18 +27,20 @@ public class SharePortfolioCommentResponseDTO {
         private String nickname;
         private String userId;
         private String content;
-        private String date;
+        private String createdAt;
+        private String updatedAt;
     }
 
     public static SharePortfolioCommentResponseDTO toDTO(List<SharePortfolioComment> comments, UserServiceClient userServiceClient) {
         List<CommentDTO> commentInfos = comments.stream()
                 .map(comment -> {
-                    NicknameResponseDTO nickname = new NicknameResponseDTO();
+                    NicknameResponseDTO nicknameResponse = userServiceClient.getNickname(comment.getUserId());
                     return CommentDTO.builder()
                             .commentId(comment.getCommentId())
-                            .nickname(nickname.getNickname())
+                            .nickname(nicknameResponse.getNickname())
                             .content(comment.getContent())
-                            .date(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                            .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                            .updatedAt(comment.getUpdatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                             .userId(comment.getUserId())
                             .build();
                 })
