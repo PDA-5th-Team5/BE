@@ -91,7 +91,7 @@ public class PortfolioController {
     public ApiResponse<StockSearchResponseDTO> getSharePortfolioStock(
             @PathVariable(value = "portfolioId") Long portfolioId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "3000") int limit
+            @RequestParam(defaultValue = "24") int limit
 
 
     ) {
