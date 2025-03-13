@@ -235,7 +235,7 @@ public class PortfolioController {
     @GetMapping("/expert")
     public ApiResponse<List<SharePortfolioBoardDTO>> getExpertPortfolio() {
         // 전문가 id
-        String expertUserId = "bd703313-cbc6-4aef-8363-e632efcc793b";
+        String expertUserId = "80dd9d5a-758d-4bfa-b490-67a7d6489a30";
 
         // 공유 포트폴리오에서 전문가 Id에 해당하는 portfolioId, count개수, 생성시간 가져오기
         List<TopPortfolioInfoResponseDTO> expertPortfoliosIds = portfolioService.getExpertSharePortfolioIds(expertUserId);
