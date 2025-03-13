@@ -306,6 +306,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         portfolioRepository.save(existingPortfolio);
 
+        sharePortfolio.setLoadCount(sharePortfolio.getLoadCount() + 1);
+        sharePortfolioRepository.save(sharePortfolio);
+
         return new SaveSharePortfolioResponseDTO(generatedPortfolioId);
 
 
