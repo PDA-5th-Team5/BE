@@ -239,6 +239,12 @@ public class PortfolioController {
 
         // 공유 포트폴리오에서 전문가 Id에 해당하는 portfolioId, count개수, 생성시간 가져오기
         List<TopPortfolioInfoResponseDTO> expertPortfoliosIds = portfolioService.getExpertSharePortfolioIds(expertUserId);
+        for (TopPortfolioInfoResponseDTO portfolio : expertPortfoliosIds) {
+            System.out.println("SharePortfolioId: " + portfolio.getSharePortfolioId() +
+                    ", LoadCount: " + portfolio.getLoadCount() +
+                    ", CreatedAt: " + portfolio.getCreatedAt());
+        }
+
 
         // 전문가 포트폴리오
         List<SharePortfolioBoardDTO> expertPortfolios = portfolioService.getTopSharePortfolios(expertPortfoliosIds);
