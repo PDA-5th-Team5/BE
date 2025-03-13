@@ -81,6 +81,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 "/user/logout",
                 "/user/reissue",
                 "/portfolio/api/portfolio/share(\\?sort=.*&page=\\d+&size=\\d+)?",
+                "/portfolio/api/portfolio/share/\\d+",
                 "/portfolio/api/portfolio/share/\\d+/import",
                 "/portfolio/api/portfolio/share/\\d+/summary",
                 "/portfolio/api/portfolio/share/\\d+/graph",
