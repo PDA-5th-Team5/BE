@@ -25,6 +25,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -229,7 +230,7 @@ public class PortfolioServiceImpl implements PortfolioService {
             throw new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND);
         }
 
-        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId);
+        List<SharePortfolioComment> comments = sharePortfolioCommentRepository.findBysharePortfolio_SharePortfolioId(sharePortfolioId, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         return SharePortfolioCommentResponseDTO.toDTO(comments, userServiceClient);
     }
@@ -304,6 +305,9 @@ public class PortfolioServiceImpl implements PortfolioService {
         existingPortfolio.setId(null);
 
         portfolioRepository.save(existingPortfolio);
+
+        sharePortfolio.setLoadCount(sharePortfolio.getLoadCount() + 1);
+        sharePortfolioRepository.save(sharePortfolio);
 
         return new SaveSharePortfolioResponseDTO(generatedPortfolioId);
 
