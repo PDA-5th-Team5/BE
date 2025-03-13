@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -226,9 +227,11 @@ public class PortfolioController {
     @GetMapping("/popular")
     public ApiResponse<List<SharePortfolioBoardDTO>> getPopularPortfolio() {
 
+
+
         // 공유 포트폴리오에서 Import 수 상위 10개 portfolioId 및 count개수 가져오기
         List<TopPortfolioInfoResponseDTO> topPortfoliosIds = portfolioService.getTopSharePortfolioIds();
-        
+
         // 인기 포트폴리오 10개
         List<SharePortfolioBoardDTO> topPortfolios = portfolioService.getTopSharePortfolios(topPortfoliosIds);
 
@@ -251,16 +254,36 @@ public class PortfolioController {
     }
 
     @PostMapping("/my/graph")
-    public ApiResponse<PortfolioMarketGraphResponseDTO> getMyPortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request,
+    public ApiResponse<PortfolioMarketGraphResponseDTO> getMyPortfolioMarketGraph(@RequestParam(value = "portfolioId") Long portfolioId,
                                                                                   @RequestParam(value = "market") Market market,
                                                                                   @RequestHeader(value = "Authorization", required = false) String token) {
+        String category = "my";
+
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,0,3000);
+        List<Short> stockIds = stocks.getStocks().stream()
+                .map(StockResponseDTO::getStockId)
+                .collect(Collectors.toList());
+        PortfolioMarketGraphRequestDTO request = new PortfolioMarketGraphRequestDTO(stockIds);
+
         PortfolioMarketGraphResponseDTO response = portfolioService.getMyPortfolioMarketGraph(request, market, token);
         return ApiResponse.onSuccess(response);
     }
 
     @PostMapping("/share/graph")
-    public ApiResponse<PortfolioMarketGraphResponseDTO> getSharePortfolioMarketGraph(@RequestBody PortfolioMarketGraphRequestDTO request,
+    public ApiResponse<PortfolioMarketGraphResponseDTO> getSharePortfolioMarketGraph(@RequestParam(value = "portfolioId") Long portfolioId,
                                                                                   @RequestParam(value = "market") Market market) {
+
+        String category = "share";
+        // 포트폴리오 id로 조건 찾기
+        Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,0,3000);
+
+        List<Short> stockIds = stocks.getStocks().stream()
+                .map(StockResponseDTO::getStockId)
+                .collect(Collectors.toList());
+
+        PortfolioMarketGraphRequestDTO request = new PortfolioMarketGraphRequestDTO(stockIds);
         PortfolioMarketGraphResponseDTO response = portfolioService.getSharePortfolioMarketGraph(request, market);
         return ApiResponse.onSuccess(response);
     }
