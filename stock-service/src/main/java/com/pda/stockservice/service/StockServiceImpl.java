@@ -530,33 +530,31 @@ public class StockServiceImpl implements StockService {
         List<StockIndicatorThresholds> thresholds = stockIndicatorThresholdsRepository.findAll();
 
         ThresholdsResponseDTO responseDTO = new ThresholdsResponseDTO();
-        responseDTO.setPbr(getMaxValues(thresholds, "pbr"));
-        responseDTO.setNtinInrt(getMaxValues(thresholds, "ntin_inrt"));
-        responseDTO.setBps(getMaxValues(thresholds, "bps"));
-        responseDTO.setRoeVal(getMaxValues(thresholds, "roe_val"));
-        responseDTO.setCrntRate(getMaxValues(thresholds, "crnt_rate"));
-        responseDTO.setSaleAccount(getMaxValues(thresholds, "sale_account"));
-        responseDTO.setGrs(getMaxValues(thresholds, "grs"));
-        responseDTO.setEps(getMaxValues(thresholds, "eps"));
-        responseDTO.setBsopPrfiInrt(getMaxValues(thresholds, "bsop_prfi_inrt"));
-        responseDTO.setMarketCap(getMaxValues(thresholds, "market_cap"));
-        responseDTO.setLbltRate(getMaxValues(thresholds, "lblt_rate"));
-        responseDTO.setSps(getMaxValues(thresholds, "sps"));
-        responseDTO.setForeignerRatio(getMaxValues(thresholds, "foreigner_ratio"));
-        responseDTO.setDividendYield(getMaxValues(thresholds, "dividend_yield"));
-        responseDTO.setPer(getMaxValues(thresholds, "per"));
-        responseDTO.setThtrNtin(getMaxValues(thresholds, "thtr_ntin"));
-        responseDTO.setBsopPrti(getMaxValues(thresholds, "bsop_prti"));
+        responseDTO.setPbr(getValues(thresholds, "pbr"));
+        responseDTO.setNtinInrt(getValues(thresholds, "ntin_inrt"));
+        responseDTO.setBps(getValues(thresholds, "bps"));
+        responseDTO.setRoeVal(getValues(thresholds, "roe_val"));
+        responseDTO.setCrntRate(getValues(thresholds, "crnt_rate"));
+        responseDTO.setSaleAccount(getValues(thresholds, "sale_account"));
+        responseDTO.setGrs(getValues(thresholds, "grs"));
+        responseDTO.setEps(getValues(thresholds, "eps"));
+        responseDTO.setBsopPrfiInrt(getValues(thresholds, "bsop_prfi_inrt"));
+        responseDTO.setMarketCap(getValues(thresholds, "market_cap"));
+        responseDTO.setLbltRate(getValues(thresholds, "lblt_rate"));
+        responseDTO.setSps(getValues(thresholds, "sps"));
+        responseDTO.setForeignerRatio(getValues(thresholds, "foreigner_ratio"));
+        responseDTO.setDividendYield(getValues(thresholds, "dividend_yield"));
+        responseDTO.setPer(getValues(thresholds, "per"));
+        responseDTO.setThtrNtin(getValues(thresholds, "thtr_ntin"));
+        responseDTO.setBsopPrti(getValues(thresholds, "bsop_prti"));
 
         return responseDTO;
     }
 
-    private List<Double> getMaxValues(List<StockIndicatorThresholds> thresholds, String indicator) {
+    private List<Double> getValues(List<StockIndicatorThresholds> thresholds, String indicator) {
         return thresholds.stream()
-                .filter(threshold -> threshold.getIndicator().equals(indicator)) // 해당 indicator만 필터링
-                .filter(threshold -> threshold.getMaxValue() != null) // max_value가 NULL이면 제외
-                .sorted(Comparator.comparing(StockIndicatorThresholds::getMaxValue)) // 🔥 max_value 기준 오름차순 정렬
-                .map(StockIndicatorThresholds::getMaxValue)
+                .filter(threshold -> threshold.getIndicator().equals(indicator))
+                .map(threshold -> threshold.getMaxValue() != null ? threshold.getMaxValue() : 0.0)
                 .collect(Collectors.toList());
     }
 
