@@ -386,7 +386,7 @@ public class StockServiceImpl implements StockService {
 
         List<Short> orderedStockIds = topStocks.stream()
                 .filter(stock -> !stock.getStockId().equals(stockId))
-                .limit(5)
+                .limit(4)
                 .map(Stock::getStockId)
                 .collect(Collectors.toList());
         List<StockStat> stockStats = stockStatRepository.findByStockIdIn(orderedStockIds);
@@ -515,10 +515,6 @@ public class StockServiceImpl implements StockService {
         }
 
         List<Stock> stocks = stockRepository.findByTickerContainingOrCompanyNameContaining(keyword);
-
-//        if (stocks.isEmpty()) {
-//            throw new PortfolioHandler(ErrorStatus.STOCK_NOT_FOUND);
-//        }
 
         return stocks.stream()
                 .map(StockAutoCompleteResponseDTO::toDTO)
