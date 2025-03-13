@@ -17,7 +17,7 @@ public interface PortfolioService {
     List<SharePortfolioBoardDTO> getSharePortfolios(int page, String sortBy);
 
     //포트폴리오 종목 리스트 조회
-    StockSearchResponseDTO getPortfolioStock(Portfolio portfolio, int page);
+    StockSearchResponseDTO getPortfolioStock(Portfolio portfolio, int page,int limit);
 
     void deletePortfolio(String category, Long portfolioId);
 

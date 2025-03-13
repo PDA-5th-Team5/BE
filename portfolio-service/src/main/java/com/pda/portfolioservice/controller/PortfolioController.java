@@ -62,13 +62,14 @@ public class PortfolioController {
     @GetMapping("/my/{portfolioId}/stock")
     public ApiResponse<StockSearchResponseDTO> getMyPortfolioStock(
             @PathVariable(value = "portfolioId") Long portfolioId,
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "24") int limit
     ) {
         String category = "my";
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
         // openfeign stock filter에 조건을 보내 포함 종목 가져오기
-        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page,limit);
 
         return ApiResponse.onSuccess(stocks);
     }
@@ -88,13 +89,16 @@ public class PortfolioController {
     @GetMapping("/share/{portfolioId}/stock")
     public ApiResponse<StockSearchResponseDTO> getSharePortfolioStock(
             @PathVariable(value = "portfolioId") Long portfolioId,
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "3000") int limit
+
+
     ) {
         String category = "share";
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
         // openfeign stock filter에 조건을 보내 포함 종목 가져오기
-        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page,limit);
 
         return ApiResponse.onSuccess(stocks);
     }

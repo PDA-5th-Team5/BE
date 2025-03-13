@@ -47,7 +47,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     @Transactional
-    public StockSearchResponseDTO searchStockInfos(String market, List<String> sector, StockFilter filters, int page, String token) {
+    public StockSearchResponseDTO searchStockInfos(String market, List<String> sector, StockFilter filters, int page,int limit, String token) {
         List<Market> markets = new ArrayList<>();
         if (market.equals("ALL")) {
             markets.add(Market.KOSPI);
@@ -64,7 +64,6 @@ public class StockServiceImpl implements StockService {
         }
 
 
-        int limit = 24;  // 한 페이지에 24개씩
         int offset = page * limit;  // 페이지 인덱스 기반 오프셋 계산
 
         // ✅ 전체 개수 조회
@@ -242,7 +241,7 @@ public class StockServiceImpl implements StockService {
             markets.add(Market.valueOf(marketType));
         }
 
-        List<SnowflakeDTO> stockStats = stockMapper.searchStockStatIds(markets, sector, filters, 0, 24);
+        List<SnowflakeDTO> stockStats = stockMapper.searchStockStatIds(markets, sector, filters, 0, 3000);
         if (stockStats.isEmpty()) {
             return null;
         }

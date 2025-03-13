@@ -35,9 +35,12 @@ public class StockController {
     public ApiResponse<StockSearchResponseDTO> searchStockStatIds(
             @RequestBody StockFilterRequest request,
             @RequestHeader(value = "Authorization", required = false) String token,
-            @RequestParam(defaultValue = "0") int page) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "24") int limit)
 
-        StockSearchResponseDTO responseDTO = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page, token);
+    {
+
+        StockSearchResponseDTO responseDTO = stockService.searchStockInfos(request.getMarketType(), request.getSector(), request.getFilters(), page, limit, token);
 
         return ApiResponse.onSuccess(responseDTO);
     }

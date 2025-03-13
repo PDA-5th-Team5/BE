@@ -70,7 +70,7 @@ public class PortfolioAlertBatchConfig {
             System.out.println("[Processor] 포트폴리오 제목: " + portfolio.getTitle());
 
             //  포트폴리오에 포함된 종목 가져오기
-            StockSearchResponseDTO stocksearch = portfolioService.getPortfolioStock(portfolio, 0);
+            StockSearchResponseDTO stocksearch = portfolioService.getPortfolioStock(portfolio, 0,24);
             List<StockResponseDTO> stocks = stocksearch.getStocks();
             Long totalCount = stocksearch.getTotalCount();
 

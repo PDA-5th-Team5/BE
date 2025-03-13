@@ -110,13 +110,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     //포트폴리오 종목 리스트 조회
     @Override
-    public StockSearchResponseDTO getPortfolioStock(Portfolio portfolio, int page) {
+    public StockSearchResponseDTO getPortfolioStock(Portfolio portfolio, int page,int limit) {
 
         StockFilterRequest stockFilterRequest = new StockFilterRequest();
         stockFilterRequest.setFilters(portfolio.toStockFilter());
         stockFilterRequest.setMarketType(portfolio.getMarket());
         stockFilterRequest.setSector(portfolio.getSector());
-        ApiResponse<StockSearchResponseDTO> stocks = stockServiceClient.searchStockStatIds(stockFilterRequest,page);
+        ApiResponse<StockSearchResponseDTO> stocks = stockServiceClient.searchStockStatIds(stockFilterRequest,page,limit);
         return stocks.getData();
     }
 

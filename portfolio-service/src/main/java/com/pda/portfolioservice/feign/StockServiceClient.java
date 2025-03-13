@@ -25,7 +25,8 @@ public interface StockServiceClient {
     @PostMapping("/api/stocks/filter")
     public ApiResponse<StockSearchResponseDTO> searchStockStatIds(
             @RequestBody StockFilterRequest request,
-            @RequestParam(defaultValue = "0") int page);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "24") int limit);
 
     @PostMapping("/api/stocks/summary")
     public PortfolioSummaryResponseDTO getStocksSummary(@RequestBody StockFilterRequest request);
