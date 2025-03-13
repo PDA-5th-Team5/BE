@@ -10,6 +10,8 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "stock_price_day", indexes = {
+        @Index(name = "idx_stock_date", columnList = "stock_id, date")})
 public class StockPriceDay {
 
     @Embeddable
@@ -18,8 +20,8 @@ public class StockPriceDay {
     @AllArgsConstructor
     @Getter
     public static class StockPriceDayId implements Serializable {
-        private LocalDate date;
         private Short stockId;
+        private LocalDate date;
     }
 
     @EmbeddedId

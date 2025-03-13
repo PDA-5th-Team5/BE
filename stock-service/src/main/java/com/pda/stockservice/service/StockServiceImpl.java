@@ -3,6 +3,7 @@ package com.pda.stockservice.service;
 import com.pda.stockservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.SnowflakeDTO;
 import com.pda.stockservice.dto.request.StockFilter;
+import com.pda.stockservice.dto.request.StockPriceDayDTO;
 import com.pda.stockservice.dto.response.*;
 import com.pda.stockservice.entity.*;
 import com.pda.stockservice.enums.Market;
@@ -16,6 +17,7 @@ import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -669,18 +671,27 @@ public class StockServiceImpl implements StockService {
 
     private Map<String, Float> getPortfolioAverageClosePrice(List<Short> stockIds, LocalDate startDate, LocalDate endDate) {
 
-        List<StockPriceDay> priceList = stockPriceDayRepository.findStockListClosePricesInRange(stockIds, startDate, endDate);
+        List<Object[]> priceList = stockPriceDayRepository.findStockPricesNative(stockIds, startDate, endDate);
 
         if (priceList.isEmpty()) {
-            System.out.println("No price data found for the provided date range.");
             return new TreeMap<>();
         }
 
-        Map<String, Float> averageClosePrices = priceList.stream()
+        // DTO 변환 (stockId, date, closePrice)
+        List<StockPriceDayDTO> stockPrices = priceList.stream()
+                .map(row -> new StockPriceDayDTO(
+                        ((Number) row[0]).shortValue(),  // stock_id
+                        ((java.sql.Date) row[1]).toLocalDate(),  // date
+                        ((Number) row[2]).floatValue()  // close_price
+                ))
+                .toList();
+
+        // 날짜별 평균 종가 계산
+        Map<String, Float> averageClosePrices = stockPrices.stream()
                 .collect(Collectors.groupingBy(
-                        sp -> sp.getId().getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                        sp -> sp.getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                         TreeMap::new,
-                        Collectors.averagingDouble(sp -> sp.getClosePrice())
+                        Collectors.averagingDouble(StockPriceDayDTO::getClosePrice)
                 ))
                 .entrySet().stream()
                 .collect(Collectors.toMap(
@@ -690,15 +701,17 @@ public class StockServiceImpl implements StockService {
                         TreeMap::new
                 ));
 
-        Float firstAvg = averageClosePrices.values().iterator().next();
-        Map<String, Float> averageRatioPrices = new TreeMap<>();
+        // 첫 번째 평균 값 가져오기
+        Float firstAvg = averageClosePrices.values().stream().findFirst().orElse(1.0f);
 
-        for (Map.Entry<String, Float> entry : averageClosePrices.entrySet()) {
-            float ratio = (firstAvg != 0) ? Math.round((entry.getValue() / firstAvg) * 100.0f) / 100.0f : 1.0f;
-            averageRatioPrices.put(entry.getKey(), ratio);
-            System.out.println("Date: " + entry.getKey() + ", Ratio: " + ratio);
-        }
-        return averageRatioPrices;
+        // 비율 계산 및 매핑
+        return averageClosePrices.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> firstAvg != 0 ? Math.round((e.getValue() / firstAvg) * 100.0f) / 100.0f : 1.0f,
+                        (a, b) -> a,
+                        TreeMap::new
+                ));
     }
 
 }

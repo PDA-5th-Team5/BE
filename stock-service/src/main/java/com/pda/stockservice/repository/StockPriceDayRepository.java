@@ -45,6 +45,15 @@ public interface StockPriceDayRepository extends JpaRepository<StockPriceDay, St
             @Param("endDate") LocalDate endDate
     );
 
-
+    @Query(value = """
+    SELECT spd.stock_id, spd.date, spd.close_price 
+    FROM stock_price_day spd
+    WHERE spd.stock_id IN (:stockIds)
+    AND spd.date >= :startDate AND spd.date <= :endDate
+    """, nativeQuery = true)
+    List<Object[]> findStockPricesNative(
+            @Param("stockIds") List<Short> stockIds,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 
 }
