@@ -284,14 +284,16 @@ public class PortfolioServiceImpl implements PortfolioService {
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));
         String userId = jwtUtil.getBearerUserId(token);
 
+        // mysql
         SharePortfolio sharePortfolio = sharePortfolioRepository.findById(sharePortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
+        // mongo
         Portfolio existingPortfolio = portfolioRepository.findByCategoryAndPortfolioId("share", sharePortfolioId)
                 .orElseThrow(() -> new PortfolioHandler(ErrorStatus.PORTFOLIO_NOT_FOUND));
 
+        // mysql
         MyPortfolio myPortfolio = MyPortfolio.builder()
-                .myPortfolioId(existingPortfolio.getPortfolioId())
                 .title(existingPortfolio.getTitle())
                 .description(existingPortfolio.getDescription())
                 .userId(userId)
