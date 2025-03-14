@@ -48,7 +48,6 @@ public class StockServiceImpl implements StockService {
     private final EurekaDiscoveryClient discoveryClient;
 
     @Override
-    @Transactional
     public StockSearchResponseDTO searchStockInfos(String market, List<String> sector, StockFilter filters, int page,int limit, String token) {
         List<Market> markets = new ArrayList<>();
         if (market.equals("ALL")) {
@@ -296,7 +295,6 @@ public class StockServiceImpl implements StockService {
 
     // 개별 종목 정보 조회
     @Override
-    @Transactional(readOnly = true)
     public StockInfoResponseDTO getStocks(Short stockId, String token){
         Stock stock = stockRepository.findById(stockId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.STOCK_NOT_FOUND));
@@ -365,7 +363,6 @@ public class StockServiceImpl implements StockService {
 
     //캔들 차트 데이터 조회
     @Override
-    @Transactional(readOnly = true)
     public CandleResponseDTO getCandle(Short stockId) {
         //주식이 존재하는 지 확인
         if (!stockRepository.existsById(stockId)){
@@ -560,7 +557,6 @@ public class StockServiceImpl implements StockService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public StockLineGraphResponseDTO getStockLineGraph(Short stockId) {
         LocalDate startDate = LocalDate.now().minusDays(365);
         LocalDate endDate = LocalDate.now();
