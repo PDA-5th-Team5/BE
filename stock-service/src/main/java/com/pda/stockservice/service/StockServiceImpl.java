@@ -553,7 +553,7 @@ public class StockServiceImpl implements StockService {
     }
 
     public StockLineGraphResponseDTO getStockLineGraph(Short stockId) {
-        LocalDate startDate = LocalDate.now().minusDays(90);
+        LocalDate startDate = LocalDate.now().minusDays(180);
         LocalDate endDate = LocalDate.now();
         List<Market> markets = Arrays.asList(Market.KOSPI, Market.KOSDAQ);
 
@@ -608,8 +608,9 @@ public class StockServiceImpl implements StockService {
                 .build();
     }
 
+    @Cacheable(value = "portfolioMarketGraph", key = "#request.toString() + '_' + #market.name()")
     public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market) {
-        LocalDate startDate = LocalDate.now().minusDays(90);
+        LocalDate startDate = LocalDate.now().minusDays(180);
         LocalDate endDate = LocalDate.now();
 
         Map<String, Float> marketPriceRatios;

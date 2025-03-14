@@ -23,7 +23,7 @@ public class  CacheConfig {
 
         // 특정 캐시에 대한 TTL 설정
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        cacheConfigurations.put("portfolioAverageClosePrice",
+        cacheConfigurations.put("portfolioMarketGraph",
                 defaultConfig.entryTtl(Duration.ofDays(1))); // 1일 TTL
 
         return RedisCacheManager.builder(redisConnectionFactory)
