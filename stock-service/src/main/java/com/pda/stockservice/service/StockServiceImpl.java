@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +46,7 @@ public class StockServiceImpl implements StockService {
 
     private final Environment environment;
     private final EurekaDiscoveryClient discoveryClient;
+    private final ApplicationContext applicationContext;
 
     @Override
     public StockSearchResponseDTO searchStockInfos(String market, List<String> sector, StockFilter filters, int page,int limit, String token) {
@@ -608,8 +610,17 @@ public class StockServiceImpl implements StockService {
                 .build();
     }
 
-    @Cacheable(value = "portfolioMarketGraph", key = "#request.toString() + '_' + #market.name()")
+
+    @Override
     public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market) {
+        // ✅ Spring Context에서 자기 자신을 가져와서 호출
+        StockServiceImpl self = applicationContext.getBean(StockServiceImpl.class);
+        return self.getMyPortfolioMarketGraphCached(request, market);
+    }
+
+    // ✅ 캐싱을 적용할 별도 메서드 생성
+    @Cacheable(value = "portfolioMarketGraph", key = "#request.toString() + '_' + #market.name()")
+    public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraphCached(PortfolioMarketGraphRequestDTO request, Market market) {
         LocalDate startDate = LocalDate.now().minusDays(180);
         LocalDate endDate = LocalDate.now();
 
