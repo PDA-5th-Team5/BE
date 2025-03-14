@@ -660,7 +660,6 @@ public class StockServiceImpl implements StockService {
         }
         return priceRatios;
     }
-    @Cacheable(value = "portfolioAverageClosePrice", key = "{#stockIds, #startDate, #endDate}")
     public Map<String, Float> getPortfolioAverageClosePrice(List<Short> stockIds, LocalDate startDate, LocalDate endDate) {
 
         List<Object[]> priceList = stockPriceDayRepository.findStockPricesNative(stockIds, startDate, endDate);
