@@ -618,9 +618,10 @@ public class StockServiceImpl implements StockService {
         return self.getMyPortfolioMarketGraphCached(request, market);
     }
 
-    // ✅ 캐싱을 적용할 별도 메서드 생성
     @Cacheable(value = "portfolioMarketGraph", key = "#request.toString() + '_' + #market.name()")
+    @Override
     public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraphCached(PortfolioMarketGraphRequestDTO request, Market market) {
+        System.out.println("캐시");
         LocalDate startDate = LocalDate.now().minusDays(180);
         LocalDate endDate = LocalDate.now();
 
@@ -642,7 +643,6 @@ public class StockServiceImpl implements StockService {
                         .build())
                 .build();
     }
-
     private Map<String, Float> getAverageMarketGraphData(List<Market> markets, LocalDate startDate, LocalDate endDate) {
         Map<String, List<Float>> combinedPriceRatios = new TreeMap<>();
         for (Market market : markets) {

@@ -4,6 +4,7 @@ import com.pda.stockservice.dto.request.PortfolioMarketGraphRequestDTO;
 import com.pda.stockservice.dto.request.StockFilter;
 import com.pda.stockservice.dto.response.*;
 import com.pda.stockservice.enums.Market;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
@@ -39,4 +40,7 @@ public interface StockService {
     StockLineGraphResponseDTO getStockLineGraph(Short stockId);
 
     PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market);
+
+    @Cacheable(value = "portfolioMarketGraph", key = "#request.toString() + '_' + #market.name()")
+    PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraphCached(PortfolioMarketGraphRequestDTO request, Market market);
 }
