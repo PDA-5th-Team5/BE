@@ -38,7 +38,7 @@ public class CompetitorsResponseDTO {
         private Byte per;
         private Byte lbltRate;
         private Byte marketCap;
-        private Byte divYield;
+        private Byte dividendYield;
         private Byte foreignerRatio;
     }
 
@@ -60,7 +60,7 @@ public class CompetitorsResponseDTO {
                                     .per(ss.getPer())
                                     .lbltRate(ss.getLbltRate())
                                     .marketCap(ss.getMarketCap())
-                                    .divYield(ss.getDividendYield())
+                                    .dividendYield(ss.getDividendYield())
                                     .foreignerRatio(ss.getForeignerRatio())
                                     .build()
                             )
