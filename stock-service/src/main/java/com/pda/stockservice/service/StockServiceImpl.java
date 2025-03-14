@@ -13,11 +13,9 @@ import com.pda.stockservice.feign.UserServiceClient;
 
 import com.pda.utilservice.jwt.JWTUtil;
 import com.pda.utilservice.response.code.resultCode.ErrorStatus;
-import com.pda.utilservice.response.exception.handler.PortfolioHandler;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;

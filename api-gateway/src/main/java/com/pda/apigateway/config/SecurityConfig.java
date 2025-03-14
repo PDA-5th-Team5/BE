@@ -73,6 +73,7 @@ public class SecurityConfig {
         // 허용할 도메인 설정
         config.setAllowedOrigins(Arrays.asList(
                 "https://snowper.shop",
+                "https://www.snowper.shop",
                 "http://localhost:5173"
         ));
 
