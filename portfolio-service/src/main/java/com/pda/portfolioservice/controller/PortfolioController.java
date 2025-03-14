@@ -64,13 +64,14 @@ public class PortfolioController {
     public ApiResponse<StockSearchResponseDTO> getMyPortfolioStock(
             @PathVariable(value = "portfolioId") Long portfolioId,
             @RequestParam(defaultValue = "0") int page,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(defaultValue = "24") int limit
     ) {
         String category = "my";
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
         // openfeign stock filter에 조건을 보내 포함 종목 가져오기
-        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page,limit);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page,token,limit);
 
         return ApiResponse.onSuccess(stocks);
     }
@@ -91,6 +92,7 @@ public class PortfolioController {
     public ApiResponse<StockSearchResponseDTO> getSharePortfolioStock(
             @PathVariable(value = "portfolioId") Long portfolioId,
             @RequestParam(defaultValue = "0") int page,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(defaultValue = "24") int limit
 
 
@@ -99,7 +101,7 @@ public class PortfolioController {
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
         // openfeign stock filter에 조건을 보내 포함 종목 가져오기
-        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page,limit);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,page,token, limit);
 
         return ApiResponse.onSuccess(stocks);
     }
@@ -260,7 +262,7 @@ public class PortfolioController {
         String category = "my";
 
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
-        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,0,3000);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,0,null,3000);
         List<Short> stockIds = stocks.getStocks().stream()
                 .map(StockResponseDTO::getStockId)
                 .collect(Collectors.toList());
@@ -277,7 +279,7 @@ public class PortfolioController {
         String category = "share";
         // 포트폴리오 id로 조건 찾기
         Portfolio portfolio = portfolioService.getPortfolio(category, portfolioId);
-        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,0,3000);
+        StockSearchResponseDTO stocks = portfolioService.getPortfolioStock(portfolio,0,null,3000);
 
         List<Short> stockIds = stocks.getStocks().stream()
                 .map(StockResponseDTO::getStockId)

@@ -25,6 +25,7 @@ public interface StockServiceClient {
     @PostMapping("/api/stocks/filter")
     public ApiResponse<StockSearchResponseDTO> searchStockStatIds(
             @RequestBody StockFilterRequest request,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "24") int limit);
 
