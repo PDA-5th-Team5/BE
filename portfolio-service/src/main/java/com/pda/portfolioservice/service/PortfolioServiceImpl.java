@@ -128,7 +128,6 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public MyPortfolioTitleResponseDTO.myPortfolioListDTO getMyPortfolioTitleList(String token) {
 
         JWTUtil jwtUtil = new JWTUtil(Objects.requireNonNull(environment.getProperty("spring.jwt.secret")));

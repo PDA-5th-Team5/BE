@@ -16,6 +16,7 @@ import com.pda.utilservice.response.code.resultCode.ErrorStatus;
 import com.pda.utilservice.response.exception.handler.StockHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -130,7 +131,6 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public MyStockCommentsResponseDTO getCommentsByUserId(String userId) {
         List<StockComment> comments = stockCommentRepository.findByUserId(userId)
                 .orElseThrow(() -> new StockHandler(ErrorStatus.MY_COMMENTS_NOT_FOUND));
@@ -375,7 +375,6 @@ public class StockServiceImpl implements StockService {
 
     //개별종목 경쟁사 조회
     @Override
-    @Transactional(readOnly = true)
     public CompetitorsResponseDTO getCompetitors(Short stockId) {
 
         List<Stock> topStocks = stockRepository.findTopCompetitors(stockId);
@@ -432,7 +431,6 @@ public class StockServiceImpl implements StockService {
 
     //댓글조회
     @Override
-    @Transactional(readOnly = true)
     public CommentResponseDTO getComments(Short stockId) {
         if (!stockRepository.existsById(stockId)){
             throw new StockHandler(ErrorStatus.STOCK_NOT_FOUND);
@@ -503,7 +501,6 @@ public class StockServiceImpl implements StockService {
 
     // 주식 검색 자동완성
     @Override
-    @Transactional(readOnly = true)
     public List<StockAutoCompleteResponseDTO> searchStocks(String keyword) {
         System.out.println(keyword);
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -556,7 +553,7 @@ public class StockServiceImpl implements StockService {
     }
 
     public StockLineGraphResponseDTO getStockLineGraph(Short stockId) {
-        LocalDate startDate = LocalDate.now().minusDays(365);
+        LocalDate startDate = LocalDate.now().minusDays(90);
         LocalDate endDate = LocalDate.now();
         List<Market> markets = Arrays.asList(Market.KOSPI, Market.KOSDAQ);
 
@@ -612,7 +609,7 @@ public class StockServiceImpl implements StockService {
     }
 
     public PortfolioMarketGraphResponseDTO getMyPortfolioMarketGraph(PortfolioMarketGraphRequestDTO request, Market market) {
-        LocalDate startDate = LocalDate.now().minusDays(365);
+        LocalDate startDate = LocalDate.now().minusDays(90);
         LocalDate endDate = LocalDate.now();
 
         Map<String, Float> marketPriceRatios;
@@ -662,8 +659,8 @@ public class StockServiceImpl implements StockService {
         }
         return priceRatios;
     }
-
-    private Map<String, Float> getPortfolioAverageClosePrice(List<Short> stockIds, LocalDate startDate, LocalDate endDate) {
+    @Cacheable(value = "portfolioAverageClosePrice", key = "{#stockIds, #startDate, #endDate}")
+    public Map<String, Float> getPortfolioAverageClosePrice(List<Short> stockIds, LocalDate startDate, LocalDate endDate) {
 
         List<Object[]> priceList = stockPriceDayRepository.findStockPricesNative(stockIds, startDate, endDate);
 
