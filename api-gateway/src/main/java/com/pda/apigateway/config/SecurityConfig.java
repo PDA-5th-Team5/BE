@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/**", "/stock/**", "/portfolio/**").permitAll()
                         .requestMatchers("/user/admin").hasRole("ADMIN")
                         .requestMatchers("/actuator/prometheus").permitAll() // Prometheus 접근 허용
+                        .requestMatchers("/portfolio/api/telegram/webhook").permitAll() // Telegram Webhook 인증 없이 허용
                         .anyRequest().authenticated());
 
         http
