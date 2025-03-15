@@ -80,6 +80,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 "/user/login",
                 "/user/logout",
                 "/user/reissue",
+                "/portfolio/api/telegram/webhook",  // Telegram Webhook 예외 처리 추가
                 "/portfolio/api/portfolio/share(\\?sort=.*&page=\\d+&size=\\d+)?",
                 "/portfolio/api/portfolio/share/\\d+",
                 "/portfolio/api/portfolio/share/\\d+/import",
