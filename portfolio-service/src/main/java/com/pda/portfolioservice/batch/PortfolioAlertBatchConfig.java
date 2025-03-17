@@ -47,7 +47,14 @@ public class PortfolioAlertBatchConfig {
     @Bean
     @StepScope
     public ListItemReader<PortfolioAlert> portfolioAlertReader() {
-        List<PortfolioAlert> alerts = portfolioAlertRepository.findAll();
+        List<PortfolioAlert> alerts;
+        try {
+            alerts = portfolioAlertRepository.findAll();
+        } catch (Exception e) {
+            System.err.println("❌ [Reader] 포트폴리오 알림 데이터를 조회하는 중 오류 발생: " + e.getMessage());
+            alerts = List.of();  // 빈 리스트 반환
+        }
+
         System.out.println(" [배치 시작] 총 " + alerts.size() + "개의 포트폴리오 알림을 읽음.");
         return new ListItemReader<>(alerts);
     }
@@ -58,36 +65,52 @@ public class PortfolioAlertBatchConfig {
     @Bean
     public ItemProcessor<PortfolioAlert, String> portfolioAlertProcessor() {
         return alert -> {
+            if (alert.getMyPortfolio() == null) {
+                System.err.println("⚠️ [Processor] 포트폴리오 ID가 존재하지 않는 알림: " + alert.getAlertId());
+                return null; // 예외 발생 방지 및 필터링
+            }
+
             LocalDateTime now = LocalDateTime.now(TimeZone.getTimeZone("Asia/Seoul").toZoneId());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.KOREA);
             String formattedDateTime = now.format(formatter);
 
-
             System.out.println("🔄 [Processor] 포트폴리오 ID: " + alert.getMyPortfolio().getMyPortfolioId());
 
-            //  포트폴리오 정보 가져오기
-            Portfolio portfolio = portfolioService.getPortfolio("my", alert.getMyPortfolio().getMyPortfolioId());
+            Portfolio portfolio;
+            try {
+                portfolio = portfolioService.getPortfolio("my", alert.getMyPortfolio().getMyPortfolioId());
+            } catch (Exception e) {
+                System.err.println("❌ [Processor] 포트폴리오 ID " + alert.getMyPortfolio().getMyPortfolioId() + " 정보를 가져오는 중 오류 발생: " + e.getMessage());
+                return null;
+            }
+
             System.out.println("[Processor] 포트폴리오 제목: " + portfolio.getTitle());
 
-            //  포트폴리오에 포함된 종목 가져오기
-            StockSearchResponseDTO stocksearch = portfolioService.getPortfolioStock(portfolio, 0,null,24);
-            List<StockResponseDTO> stocks = stocksearch.getStocks();
-            Long totalCount = stocksearch.getTotalCount();
+            StockSearchResponseDTO stockSearch;
+            try {
+                stockSearch = portfolioService.getPortfolioStock(portfolio, 0, null, 24);
+            } catch (Exception e) {
+                System.err.println("❌ [Processor] 포트폴리오 종목 데이터를 가져오는 중 오류 발생: " + e.getMessage());
+                return null;
+            }
+
+            List<StockResponseDTO> stocks = stockSearch.getStocks();
+            Long totalCount = stockSearch.getTotalCount();
 
             StringBuilder sb = new StringBuilder();
-            sb.append(formattedDateTime+"\n");
+            sb.append(formattedDateTime).append("\n");
             sb.append("[포트폴리오 업데이트 : ").append(portfolio.getTitle()).append("]\n");
 
-            if (stocks != null ) {
-                System.out.println("📊 [Processor] " + totalCount+ "개의 종목 데이터를 가져옴.");
-
+            if (stocks != null) {
+                System.out.println("📊 [Processor] " + totalCount + "개의 종목 데이터를 가져옴.");
                 for (StockResponseDTO stock : stocks) {
                     sb.append(stock.getCompanyName()).append(" : ")
-                            .append(stock.getCurrentPrice()).append("원  (").append((int) Math.round(stock.getChangeRate() * 1000.0) / 10.0).append("%)\n");
+                            .append(stock.getCurrentPrice()).append("원  (")
+                            .append((int) Math.round(stock.getChangeRate() * 1000.0) / 10.0).append("%)\n");
                 }
             } else {
                 sb.append(" 종목 정보를 가져올 수 없음\n");
-                System.out.println("x [Processor] 포트폴리오 ID: " + alert.getMyPortfolio().getMyPortfolioId() + "의 종목 데이터를 가져올 수 없음.");
+                System.out.println("⚠️ [Processor] 포트폴리오 ID: " + alert.getMyPortfolio().getMyPortfolioId() + "의 종목 데이터를 가져올 수 없음.");
             }
 
             return sb.toString().trim();
@@ -99,30 +122,44 @@ public class PortfolioAlertBatchConfig {
     @Bean
     public ItemWriter<String> portfolioAlertWriter() {
         return messages -> {
-            List<PortfolioAlert> alerts = portfolioAlertRepository.findAll();
+            List<PortfolioAlert> alerts;
+            try {
+                alerts = portfolioAlertRepository.findAll();
+            } catch (Exception e) {
+                System.err.println("❌ [Writer] 포트폴리오 알림 데이터를 조회하는 중 오류 발생: " + e.getMessage());
+                return; // 오류 발생 시 실행 중단
+            }
+
             System.out.println("📩 [Writer] 총 " + messages.size() + "개의 메시지를 전송할 예정.");
 
             for (PortfolioAlert alert : alerts) {
                 String userId = alert.getUserId();
-
-                //  Feign Client를 통해 UserService에서 TelegramChatId 조회
-                ApiResponse<String> response = userServiceClient.getTelegramChatId(userId);
+                ApiResponse<String> response;
+                try {
+                    response = userServiceClient.getTelegramChatId(userId);
+                } catch (Exception e) {
+                    System.err.println("❌ [Writer] 유저 ID: " + userId + " | Telegram Chat ID 조회 중 오류 발생: " + e.getMessage());
+                    continue;
+                }
 
                 if (response.getStatus() == 200 && response.getData() != null) {
                     String chatId = response.getData();
                     System.out.println("📨 [Writer] 유저 ID: " + userId + " | Chat ID: " + chatId);
 
                     for (String message : messages) {
-                        System.out.println("📤 [Writer] 메시지 전송 -> " + message);
-                        telegramBotService.sendMessage(chatId, message);
+                        try {
+                            System.out.println("📤 [Writer] 메시지 전송 -> " + message);
+                            telegramBotService.sendMessage(chatId, message);
+                        } catch (Exception e) {
+                            System.err.println("❌ [Writer] 텔레그램 메시지 전송 중 오류 발생: " + e.getMessage());
+                        }
                     }
                 } else {
-                    System.out.println("x [Writer] 유저 " + userId + "의 텔레그램 Chat ID를 찾을 수 없음");
+                    System.out.println("⚠️ [Writer] 유저 " + userId + "의 텔레그램 Chat ID를 찾을 수 없음");
                 }
             }
         };
     }
-
     /**
      *  스텝 설정 (Spring Boot 3.x 이상)
      */
@@ -137,6 +174,9 @@ public class PortfolioAlertBatchConfig {
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
+                .faultTolerant()
+                .skip(Exception.class) // 예외 발생 시 Step이 중단되지 않음
+                .skipLimit(10) // 최대 10개의 예외 허용
                 .build();
     }
 
