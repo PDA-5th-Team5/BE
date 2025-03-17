@@ -18,9 +18,9 @@ public class PortfolioAlert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long alertId; // 알림 ID
 
-    @ManyToOne(fetch = FetchType.EAGER)  // 즉시 로딩 적용
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "my_portfolio_id", nullable = false, referencedColumnName = "myPortfolioId", foreignKey = @ForeignKey(name = "FK_PORTFOLIO_ALERTS_MY_PORTFOLIO"))
-    private MyPortfolio myPortfolio; // 포트폴리오 ID
+    private MyPortfolio myPortfolio;
 
     @Column(nullable = false)
     private String userId; // 유저 ID
